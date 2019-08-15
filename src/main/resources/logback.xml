@@ -1,0 +1,42 @@
+<configuration>
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+
+
+
+
+    <!-- This is just for contents of web service operations and can get quite large -->
+    <appender name="Installation" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>
+                %d{HH:mm:ss.SSS} %-5level %logger{5} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+    <!-- This is just for contents of web service operations and can get quite large -->
+    <appender name="InstallationFILE" class="ch.qos.logback.core.FileAppender">
+        <encoder>
+            <pattern>
+                %d{HH:mm:ss.SSS} %-5level %logger{5} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+
+    <logger name="Installation" level="INFO">
+        <appender-ref ref="Installation"/>
+        <appender-ref ref="InstallationFILE"/>
+
+
+    </logger>
+
+
+    <logger name="org.apache.cxf" level="INFO"/>
+
+    <!-- Set additivity to false when deployed -->
+    <logger name="org.apache.cxf.interceptor" additivity="true">
+        <appender-ref ref="Installation"/>
+        <appender-ref ref="InstallationFILE"/>
+    </logger>
+
+
+</configuration>

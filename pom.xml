@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.flexicore</groupId>
+    <artifactId>flexicore-installer</artifactId>
+    <version>1.0.0</version>
+    <properties>
+        <slf4j.version>1.7.26</slf4j.version>
+        <log4j.version>2.12.0</log4j.version>
+    </properties>
+
+    <dependencies>
+        <!-- https://mvnrepository.com/artifact/org.pf4j/pf4j -->
+        <dependency>
+            <groupId>org.pf4j</groupId>
+            <artifactId>pf4j</artifactId>
+            <version>3.0.1</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.jgrapht</groupId>
+            <artifactId>jgrapht-core</artifactId>
+            <version>1.3.1</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-cli</groupId>
+            <artifactId>commons-cli</artifactId>
+            <version>1.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+
+        </dependency>
+
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+            <version>7.1</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.github.zafarkhaja/java-semver -->
+        <dependency>
+            <groupId>com.github.zafarkhaja</groupId>
+            <artifactId>java-semver</artifactId>
+            <version>0.9.0</version>
+        </dependency>
+
+
+
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <release>11</release>
+                    <source>11</source>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.moditect</groupId>
+                <artifactId>moditect-maven-plugin</artifactId>
+                <version>1.0.0.Beta2</version>
+                <executions>
+                    <execution>
+                        <id>add-module-info-to-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>add-module-info</goal>
+                        </goals>
+                        <configuration>
+                            <overwriteExistingFiles>true</overwriteExistingFiles>
+                            <outputDirectory>${project.build.directory}/modules</outputDirectory>
+                            <modules>
+                                <module>
+                                    <artifact>
+                                        <groupId>commons-cli</groupId>
+                                        <artifactId>commons-cli</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>commons.cli</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.jgrapht</groupId>
+                                        <artifactId>jgrapht-core</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>org.jgrapht.core</name>
+                                    </moduleInfo>
+
+                                </module>
+
+                                <module>
+                                    <artifact>
+                                        <groupId>org.jheaps</groupId>
+                                        <artifactId>jheaps</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>org.jheaps</name>
+                                    </moduleInfo>
+
+                                </module>
+
+                                <module>
+                                    <artifact>
+                                        <groupId>org.slf4j</groupId>
+                                        <artifactId>slf4j-api</artifactId>
+                                    </artifact>
+                                    <moduleInfoSource>
+                                        module slf4j.api {
+                                        exports org.slf4j;
+                                        }
+                                    </moduleInfoSource>
+
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.ow2.asm</groupId>
+                                        <artifactId>asm</artifactId>
+                                    </artifact>
+                                    <moduleInfoSource>
+                                        module org.objectweb.asm {
+                                        }
+                                    </moduleInfoSource>
+
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>com.github.zafarkhaja</groupId>
+                                        <artifactId>java-semver</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>java.semver</name>
+                                    </moduleInfo>
+
+                                </module>
+
+
+                                <module>
+                                    <artifact>
+                                        <groupId>org.pf4j</groupId>
+                                        <artifactId>pf4j</artifactId>
+                                    </artifact>
+                                    <moduleInfoSource>
+                                        module org.pf4j {
+                                        }
+                                    </moduleInfoSource>
+
+                                </module>
+
+
+
+                            </modules>
+
+
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.moditect</groupId>
+                <artifactId>moditect-maven-plugin</artifactId>
+                <version>1.0.0.Beta2</version>
+                <executions>
+                    <execution>
+                        <id>create-runtime-image</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>create-runtime-image</goal>
+                        </goals>
+                        <configuration>
+
+                            <modulePath>
+                                <path>${project.build.directory}/modules</path>
+                                <path>${project.build.directory}/flexicore-installer-1.0.0.jar</path>
+
+                            </modulePath>
+                            <modules>
+                                <module>flexicore.installer</module>
+
+                            </modules>
+
+                            <launcher>
+                                <name>Start</name>
+                                <module>flexicore.installer/com.flexicore.installer.runner.Start</module>
+
+                            </launcher>
+                            <outputDirectory>
+                                ${project.build.directory}/jlink-image
+                            </outputDirectory>
+
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+
+
+
+        </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+
+            </resource>
+        </resources>
+    </build>
+
+
+</project>
