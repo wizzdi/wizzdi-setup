@@ -12,17 +12,12 @@ import org.jgrapht.traverse.TopologicalOrderIterator;
 import org.pf4j.DefaultPluginManager;
 import org.pf4j.PluginManager;
 
+import javax.print.attribute.standard.Severity;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.FileHandler;
-import java.util.logging.Handler;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
+import java.util.*;
+import java.util.logging.*;
 import java.util.stream.Collectors;
 
 public class Start {
@@ -30,14 +25,16 @@ public class Start {
     private static final String HELP = "h";
     private static final String LOG_PATH_OPT = "l";
     private static final String INSTALLATION_TASKS_FOLDER = "tasks";
-
+    private static Logger logger;
     public static void main(String[] args) throws MissingInstallationTaskDependency, ParseException {
 
         Options options = initOptions();
         CommandLineParser parser = new DefaultParser();
-        CommandLine mainCmd = parser.parse(options, args, true); //will not fail if fed with plugins options.
+        String[] trueArgs=getTrueArgs(args,options);
 
-        Logger logger = initLogger("Installer", mainCmd.getOptionValue(LOG_PATH_OPT, "logs"));
+        CommandLine mainCmd = parser.parse(options, trueArgs, false); //will not fail if fed with plugins options.
+
+        logger = initLogger("Installer", mainCmd.getOptionValue(LOG_PATH_OPT, "logs"));
         File pluginRoot = new File(mainCmd.getOptionValue(INSTALLATION_TASKS_FOLDER, "tasks"));
         logger.info("Will load tasks from " + pluginRoot.getAbsolutePath());
         PluginManager pluginManager = new DefaultPluginManager(pluginRoot.toPath());
@@ -48,20 +45,32 @@ public class Start {
         Simple simple = new Simple();
         installationTasks.put(simple.getId(), simple);
         Map<String, TaskWrapper> tasks = new HashMap<>();
-        if (mainCmd.hasOption(HELP)) {
-            for (IInstallationTask task : installationTasks.values()) {
-                OptionGroup group = getOptionsGroup(task);
-                Options taskOptions = new Options().addOptionGroup(group);
+        Parameters parameters = new Parameters();
+        // handle parameters and command line options here.
+        for (IInstallationTask task : installationTasks.values()) {
+            OptionGroup group = getOptionsGroup(task);
+            Options taskOptions = new Options().addOptionGroup(group);
+            if (mainCmd.hasOption(HELP)) {
                 if (taskOptions.getOptions().size() != 0) {
+
                     System.out.println("command line options for: " + task.getId() + "  " + task.getInstallerDescription());
-                    if (task.getPrerequisitesTask().size()!=0) {
-                        System.out.println("Requires: "+task.getPrerequisitesTask());
+                    if (task.getPrerequisitesTask().size() != 0) {
+                        System.out.println("Requires: " + task.getPrerequisitesTask());
                     }
                     System.out.println("This plugin require");
                     HelpFormatter formatter = new HelpFormatter();
                     formatter.printHelp("Start.bat ", taskOptions);
-               }
+
+                }
+            }else {
+
+                if (!updateParameters(task,parameters,taskOptions,args,parser)) {
+                    severe("Error while parsing task parameters, quitting on task: "+task.getId());
+                   return; // quit here
+                }
             }
+        }
+        if (mainCmd.hasOption(HELP)){
             if (options.getOptions().size() != 0) {
                 System.out.println("command line options for installer");
 
@@ -69,9 +78,11 @@ public class Start {
                 formatter.printHelp("Start.bat ", options);
             }
             return;
+
         }
 
-        Parameters parameters = new Parameters();
+
+
 
 
         InstallationContext installationContext = new InstallationContext()
@@ -101,6 +112,55 @@ public class Start {
 
         // stop and unload all plugins
         pluginManager.stopPlugins();
+    }
+
+    /**
+     * adjust args to options, otherwise Apache library get confused.
+     * @param args
+     * @param options
+     * @return
+     */
+    private static String[] getTrueArgs(String[] args, Options options) {
+        List<String> data=new ArrayList<>();
+        for (int i=0;i<args.length;i++) {
+            if (options.hasOption(args[i])) {
+                data.add(args[i]);
+                if (i<args.length-1) {
+                    if (!args[i+1].startsWith("-")) {
+                        data.add(args[i+1]);
+                       i++;
+                    }
+                }
+            }
+        }
+        String[] result = new String[data.size()];
+        result = data.toArray(result);
+        return result;
+    }
+
+    private static boolean updateParameters(IInstallationTask task, Parameters parameters, Options taskOptions, String[] args, CommandLineParser parser) {
+        try {
+            String[] trueArgs=getTrueArgs(args,taskOptions);
+            CommandLine cmd = parser.parse(taskOptions, trueArgs);
+            Parameters taskParameters=task.getParameters();
+            int count=0;
+            for (String name: Collections.list(taskParameters.getKeys())) {
+                 Parameter parameter=taskParameters.getParameter(name);
+                 if (parameter.isHasValue()) {
+                     parameter.setValue(cmd.getOptionValue(name, parameter.getDefaultValue())); //set correct
+                 }else {
+                     boolean test=cmd.hasOption(name);
+                     parameter.setValue(String.valueOf(cmd.hasOption(name)));
+                 }
+                parameters.addParameter(parameter);
+                count++;
+            }
+            info("Have added "+count+" parameters to installation task: "+task.getId()+" ->>"+task.getInstallerDescription());
+        } catch (ParseException e) {
+            logger.log(Level.SEVERE,"error while parsing command line",e);
+            return false;
+        }
+        return true;
     }
 
     private static OptionGroup getOptionsGroup(IInstallationTask task) {
@@ -178,5 +238,21 @@ public class Start {
         }
         return logger;
 
+    }
+    public static void info(String message) {
+        if (logger != null) logger.info(message);
+    }
+
+    public static void error(String message, Throwable e) {
+        if (logger != null) logger.log(Level.SEVERE, message, e);
+    }
+
+    public static void severe(String message, Throwable e) {
+
+        error(message, e);
+    }
+
+    public static void severe(String message) {
+        if (logger!=null) logger.log(Level.SEVERE, message);
     }
 }

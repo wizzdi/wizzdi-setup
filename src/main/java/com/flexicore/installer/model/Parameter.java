@@ -23,6 +23,9 @@ public class Parameter {
         this.defaultValue=defaultValue;
     }
 
+    public Parameter() {
+    }
+
     public String getDefaultValue() {
         return defaultValue;
     }

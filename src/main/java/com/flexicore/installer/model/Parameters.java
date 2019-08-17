@@ -1,6 +1,7 @@
 package com.flexicore.installer.model;
 
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Parameters {
@@ -10,6 +11,9 @@ public class Parameters {
     }
     public Collection<Parameter> getValues() {
         return map.values();
+    }
+    public Enumeration<String> getKeys() {
+        return map.keys();
     }
     public Parameters addParameter(String name,String description,Boolean hasValue,String defaultValue) {
         Parameter parameter=new Parameter(name,description,hasValue,defaultValue);
