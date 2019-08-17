@@ -48,8 +48,7 @@ public class Start {
         Parameters parameters = new Parameters();
         // handle parameters and command line options here.
         for (IInstallationTask task : installationTasks.values()) {
-            OptionGroup group = getOptionsGroup(task);
-            Options taskOptions = new Options().addOptionGroup(group);
+            Options taskOptions  = getOptions(task);
             if (mainCmd.hasOption(HELP)) {
                 if (taskOptions.getOptions().size() != 0) {
 
@@ -141,7 +140,7 @@ public class Start {
     private static boolean updateParameters(IInstallationTask task, Parameters parameters, Options taskOptions, String[] args, CommandLineParser parser) {
         try {
             String[] trueArgs=getTrueArgs(args,taskOptions);
-            CommandLine cmd = parser.parse(taskOptions, trueArgs);
+            CommandLine cmd = parser.parse(taskOptions, trueArgs,true);
             Parameters taskParameters=task.getParameters();
             int count=0;
             for (String name: Collections.list(taskParameters.getKeys())) {
@@ -163,8 +162,8 @@ public class Start {
         return true;
     }
 
-    private static OptionGroup getOptionsGroup(IInstallationTask task) {
-        OptionGroup options = new OptionGroup();
+    private static Options getOptions(IInstallationTask task) {
+        Options options = new Options();
         Parameters parameters = task.getParameters();
         for (Parameter parameter : parameters.getValues()) {
             Option option = new Option(parameter.getName(), parameter.isHasValue(), parameter.getDescription());
