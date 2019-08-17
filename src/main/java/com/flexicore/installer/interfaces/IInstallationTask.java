@@ -7,10 +7,10 @@ import org.pf4j.ExtensionPoint;
 import java.util.Set;
 
 
-public interface InstallationTask extends ExtensionPoint {
+public interface IInstallationTask extends ExtensionPoint {
 
     InstallationResult install(InstallationContext installationContext);
     String getId();
-    Set<String> getDependentTasks();
+    Set<String> getPrerequisitesTask();
 
 }

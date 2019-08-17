@@ -1,9 +1,11 @@
 package com.flexicore.installer.runner;
 
 import com.flexicore.installer.exceptions.MissingInstallationTaskDependency;
-import com.flexicore.installer.interfaces.InstallationTask;
+import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.InstallationContext;
 import com.flexicore.installer.model.InstallationResult;
+import com.flexicore.installer.model.InstallationStatus;
+import com.flexicore.installer.model.Parameters;
 import org.apache.commons.cli.*;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -40,30 +42,41 @@ public class Start {
         pluginManager.startPlugins();
 
         InstallationContext installationContext = new InstallationContext()
-                .setLogger(logger);
-        Map<String,InstallationTask> installationTasks = pluginManager.getExtensions(InstallationTask.class).parallelStream().collect(Collectors.toMap(f->f.getId(), f->f));
+                .setLogger(logger).setParameters(new Parameters());
+        Map<String, IInstallationTask> installationTasks = pluginManager.getExtensions(IInstallationTask.class).parallelStream().collect(Collectors.toMap(f->f.getId(), f->f));
         TopologicalOrderIterator<String, DefaultEdge> topologicalOrderIterator = getInstallationTaskIterator(installationTasks);
-
+        int successes=0;
+        int failures=0;
         while(topologicalOrderIterator.hasNext()){
            String installationTaskUniqueId=topologicalOrderIterator.next();
-            InstallationTask installationTask=installationTasks.get(installationTaskUniqueId);
+            IInstallationTask installationTask=installationTasks.get(installationTaskUniqueId);
             logger.info("Starting " + installationTask.getId());
             InstallationResult installationResult = installationTask.install(installationContext);
+            if (installationResult.getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
+                successes++;
+            }else {
+                failures++;
+            }
+
             logger.info("Completed " + installationTask.getId() + " with " + installationResult);
        }
-
+        if (failures==0) {
+            logger.info("Have completed successfully  " + successes + " installation tasks");
+        }else {
+            logger.info("Have completed successfully  " + successes + " installation tasks , )"+failures+" installation tasks have failed");
+        }
 
         // stop and unload all plugins
         pluginManager.stopPlugins();
     }
 
-    private static TopologicalOrderIterator<String, DefaultEdge> getInstallationTaskIterator(Map<String, InstallationTask> installationTasks) throws MissingInstallationTaskDependency {
+    private static TopologicalOrderIterator<String, DefaultEdge> getInstallationTaskIterator(Map<String, IInstallationTask> installationTasks) throws MissingInstallationTaskDependency {
         Map<String, Set<String>> missingDependencies=new HashMap<>();
         Graph<String, DefaultEdge> g = new DefaultDirectedGraph<>(DefaultEdge.class);
-        for (InstallationTask installationTask : installationTasks.values()) {
+        for (IInstallationTask installationTask : installationTasks.values()) {
             String uniqueId = installationTask.getId();
             g.addVertex(uniqueId);
-            for (String req : installationTask.getDependentTasks()) {
+            for (String req : installationTask.getPrerequisitesTask()) {
                 if(installationTasks.containsKey(req)){
                     g.addVertex(req);
                     g.addEdge(req, uniqueId);
