@@ -3,15 +3,16 @@ package com.flexicore.installer.tests;
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
 
+import java.util.HashSet;
 import java.util.Set;
 
-public class simple extends InstallationTask implements IInstallationTask {
+public class Simple extends InstallationTask implements IInstallationTask {
 
    static Parameter[] preDefined={
-            new Parameter("targetpath","description",true,"c:\\test5"),
-            new Parameter("sourcepath","description",true,"c:\\test5"),
-            new Parameter("remoteip","description",true,"c:\\test5"),
-            new Parameter("localip","description",true,"c:\\test5")
+            new Parameter("targetpath","description 1 ",true,"1"),
+            new Parameter("sourcepath","description 2 ",true,"2"),
+            new Parameter("remoteip","description 3 ",true,"3"),
+            new Parameter("localip","description 3 ",true,"4")
      };
 
     public static Parameters getPrivateParameters() {
@@ -39,7 +40,11 @@ public class simple extends InstallationTask implements IInstallationTask {
 
     @Override
     public Set<String> getPrerequisitesTask() {
-        return null;
+        Set<String> result=new HashSet<>();
+
+        result.add("prerequisite 1");
+        result.add("prerequisite 2");
+        return  result;
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.flexicore.installer.runner;
 import com.flexicore.installer.exceptions.MissingInstallationTaskDependency;
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
+import com.flexicore.installer.tests.Simple;
 import org.apache.commons.cli.*;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -10,6 +11,7 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 import org.pf4j.DefaultPluginManager;
 import org.pf4j.PluginManager;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -43,24 +45,38 @@ public class Start {
         pluginManager.loadPlugins();
         pluginManager.startPlugins();
         Map<String, IInstallationTask> installationTasks = pluginManager.getExtensions(IInstallationTask.class).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
+        Simple simple = new Simple();
+        installationTasks.put(simple.getId(), simple);
         Map<String, TaskWrapper> tasks = new HashMap<>();
-        for (IInstallationTask task : installationTasks.values()) {
-            options.addOptionGroup(getOptionsGroup(task));
-//            TaskWrapper wrapper = new TaskWrapper(task, getOptions(task));
-//            tasks.put(task.getId(), wrapper);
-        }
-        if (mainCmd.hasOption(HELP) ){
-            HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp("", options);
+        if (mainCmd.hasOption(HELP)) {
+            for (IInstallationTask task : installationTasks.values()) {
+                OptionGroup group = getOptionsGroup(task);
+                Options taskOptions = new Options().addOptionGroup(group);
+                if (taskOptions.getOptions().size() != 0) {
+                    System.out.println("command line options for: " + task.getId() + "  " + task.getInstallerDescription());
+                    if (task.getPrerequisitesTask().size()!=0) {
+                        System.out.println("Requires: "+task.getPrerequisitesTask());
+                    }
+                    System.out.println("This plugin require");
+                    HelpFormatter formatter = new HelpFormatter();
+                    formatter.printHelp("Start.bat ", taskOptions);
+               }
+            }
+            if (options.getOptions().size() != 0) {
+                System.out.println("command line options for installer");
+
+                HelpFormatter formatter = new HelpFormatter();
+                formatter.printHelp("Start.bat ", options);
+            }
             return;
-
-
         }
+
         Parameters parameters = new Parameters();
 
 
         InstallationContext installationContext = new InstallationContext()
                 .setLogger(logger).setParameters(new Parameters());
+
         TopologicalOrderIterator<String, DefaultEdge> topologicalOrderIterator = getInstallationTaskIterator(installationTasks);
         int successes = 0;
         int failures = 0;
@@ -91,7 +107,7 @@ public class Start {
         OptionGroup options = new OptionGroup();
         Parameters parameters = task.getParameters();
         for (Parameter parameter : parameters.getValues()) {
-            Option option=new Option(parameter.getName(), parameter.isHasValue(), parameter.getDescription());
+            Option option = new Option(parameter.getName(), parameter.isHasValue(), parameter.getDescription());
             options.addOption(option);
         }
         return options;
@@ -149,7 +165,7 @@ public class Start {
             if (!(file = new File(folder)).exists()) {
                 Files.createDirectories(file.toPath());
             }
-            fh = new FileHandler(folder.isEmpty() ? name + "%u.log" : folder + "/" + name + "%u.log");
+            fh = new FileHandler(folder.isEmpty() ? name + ".log" : folder + "/" + name + ".log");
             logger.addHandler(fh);
             SimpleFormatter formatter = new SimpleFormatter();
             fh.setFormatter(formatter);
