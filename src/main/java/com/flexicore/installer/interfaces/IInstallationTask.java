@@ -2,7 +2,6 @@ package com.flexicore.installer.interfaces;
 
 import com.flexicore.installer.model.InstallationContext;
 import com.flexicore.installer.model.InstallationResult;
-import com.flexicore.installer.model.MergeResult;
 import com.flexicore.installer.model.Parameters;
 import org.pf4j.ExtensionPoint;
 
@@ -36,10 +35,9 @@ public interface IInstallationTask extends ExtensionPoint {
     Set<String> getPrerequisitesTask();
 
     /**
-     * returns a Parameters instance with the required parameters added , system will
-     * @param parameters
-     * @return MergeResult
+     *
+     * @return Parmeters
      */
-    MergeResult mergeParameters(Parameters parameters);
+    Parameters getParameters();
 
 }

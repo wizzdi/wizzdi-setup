@@ -2,6 +2,7 @@ package com.flexicore.installer.model;
 
 import com.flexicore.installer.utilities.CopyFileVisitor;
 import com.flexicore.installer.utilities.StreamGobbler;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -12,7 +13,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 
 public class InstallationTask {
+
     private InstallationContext context;
+    public static Parameters getPrivateParameters() {
+        return null;
+    }
+
     final public static boolean isWIndows = (System.getProperty("os.name")).toLowerCase().contains("windows");
     Queue<String> lines = new ConcurrentLinkedQueue<String>();
     Queue<String> errorLines = new ConcurrentLinkedQueue<String>();
@@ -90,9 +96,11 @@ public class InstallationTask {
 
         error(message, e);
     }
+
     public void severe(String message) {
-        if (context.getLogger()!= null) context.getLogger().log(Level.SEVERE, message);
+        if (context.getLogger() != null) context.getLogger().log(Level.SEVERE, message);
     }
+
     void debuglines(String command, boolean force) {
 
         if (errorLines.size() != 0 && (force || context.getParamaters().getBooleanValue("debug"))) {
@@ -105,6 +113,7 @@ public class InstallationTask {
             }
         }
     }
+
     boolean executeCommandByBuilder(String[] args, String toFind, boolean notTofind, String ownerName) throws IOException {
         ProcessBuilder pb = new ProcessBuilder(args);
         Process process;
@@ -160,6 +169,7 @@ public class InstallationTask {
 
         return true;
     }
+
     private boolean contWithProcess(Process process, String toFind, boolean notTofind, String ownerName) {
         try {
 
@@ -184,7 +194,7 @@ public class InstallationTask {
                 return false; //seems to be the response when looking for a non-existent service. TODO:make sure that this is the case
             } else {
                 if (exitVal == 1603) {
-                    severe( "Installation should run with administrative rights");
+                    severe("Installation should run with administrative rights");
                 }
             }
             if (toFind == null || toFind.isEmpty()) return exitVal == 0;

@@ -5,6 +5,7 @@ public class Parameter {
     String description="";
     String defaultValue="";
     String value;
+    boolean hasValue=false;
 
     public String getDescription() {
         return description;
@@ -15,7 +16,8 @@ public class Parameter {
         return this;
     }
 
-    public Parameter(String name, String description,String defaultValue) {
+    public Parameter(String name, String description,boolean hasValue,String defaultValue) {
+        this.hasValue=hasValue;
         this.name = name;
         this.description = description;
         this.defaultValue=defaultValue;
@@ -51,5 +53,14 @@ public class Parameter {
         String value= this.value!=null ?this.value :(defaultValue!=null ? defaultValue: "false");
         return Boolean.parseBoolean(value);
 
+    }
+
+    public boolean isHasValue() {
+        return hasValue;
+    }
+
+    public Parameter setHasValue(boolean hasValue) {
+        this.hasValue = hasValue;
+        return this;
     }
 }
