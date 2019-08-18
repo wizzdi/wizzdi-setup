@@ -6,15 +6,12 @@ import com.flexicore.installer.model.*;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Simple extends InstallationTask implements IInstallationTask {
+public class AnotherSimple extends InstallationTask implements IInstallationTask {
     /**
-     * this is just an example ho parameters should be defined.
+     * an
      */
     static Parameter[] preDefined = {
-            new Parameter("targetpath", "description 1 ", true, "1"),
-            new Parameter("sourcepath", "description 2 ", true, "2"),
-            new Parameter("remoteip", "description 3 ", true, "3"),
-            new Parameter("localip", "description 3 ", true, "4"),
+            new Parameter("test5", "description 1 ", true, "1"),
             new Parameter("dry", " this is a simple switch ", false, "false")
 
     };
@@ -27,10 +24,6 @@ public class Simple extends InstallationTask implements IInstallationTask {
         return result;
 
     }
-    @Override
-    public Parameters getParameters() {
-        return getPrivateParameters();
-    }
 
     @Override
     public InstallationResult install(InstallationContext installationContext) {
@@ -39,21 +32,25 @@ public class Simple extends InstallationTask implements IInstallationTask {
 
     @Override
     public String getId() {
-        return "simple-demo";
+        return "another-simple-demo";
     }
 
     @Override
     public String getInstallerDescription() {
-        return "This task is only for testing";
+        return "This task is only for testing another simple";
     }
 
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
+
         result.add("prerequisite 1");
         result.add("prerequisite 2");
         return result;
     }
 
-
+    @Override
+    public Parameters getParameters() {
+        return getPrivateParameters();
+    }
 }

@@ -3,6 +3,7 @@ package com.flexicore.installer.runner;
 import com.flexicore.installer.exceptions.MissingInstallationTaskDependency;
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
+import com.flexicore.installer.tests.AnotherSimple;
 import com.flexicore.installer.tests.Simple;
 import org.apache.commons.cli.*;
 import org.jgrapht.Graph;
@@ -42,8 +43,10 @@ public class Start {
         pluginManager.loadPlugins();
         pluginManager.startPlugins();
         Map<String, IInstallationTask> installationTasks = pluginManager.getExtensions(IInstallationTask.class).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
-        Simple simple = new Simple();
-        installationTasks.put(simple.getId(), simple);
+     //   Simple simple = new Simple();
+     //   installationTasks.put(simple.getId(), simple);
+     //   AnotherSimple anotherSimple = new AnotherSimple();
+      //  installationTasks.put(anotherSimple.getId(), anotherSimple);
         Map<String, TaskWrapper> tasks = new HashMap<>();
         Parameters parameters = new Parameters();
         // handle parameters and command line options here.
