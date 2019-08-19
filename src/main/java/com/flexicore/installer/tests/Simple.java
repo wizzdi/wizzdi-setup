@@ -6,7 +6,7 @@ import com.flexicore.installer.model.*;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Simple extends InstallationTask implements IInstallationTask {
+public class Simple extends InstallationTask  {
     /**
      * this is just an example ho parameters should be defined.
      */
@@ -28,7 +28,7 @@ public class Simple extends InstallationTask implements IInstallationTask {
 
     }
     @Override
-    public Parameters getParameters() {
+    public Parameters getParameters(InstallationContext installationContext) {
         return getPrivateParameters();
     }
 

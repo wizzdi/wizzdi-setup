@@ -3,8 +3,6 @@ package com.flexicore.installer.runner;
 import com.flexicore.installer.exceptions.MissingInstallationTaskDependency;
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
-import com.flexicore.installer.tests.AnotherSimple;
-import com.flexicore.installer.tests.Simple;
 import org.apache.commons.cli.*;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -13,7 +11,6 @@ import org.jgrapht.traverse.TopologicalOrderIterator;
 import org.pf4j.DefaultPluginManager;
 import org.pf4j.PluginManager;
 
-import javax.print.attribute.standard.Severity;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -28,7 +25,7 @@ public class Start {
     private static final String INSTALLATION_TASKS_FOLDER = "tasks";
     private static Logger logger;
     public static void main(String[] args) throws MissingInstallationTaskDependency, ParseException {
-
+        System.out.println(System.getProperty("user.dir"));
         Options options = initOptions();
         CommandLineParser parser = new DefaultParser();
         String[] trueArgs=getTrueArgs(args,options);
@@ -36,6 +33,8 @@ public class Start {
         CommandLine mainCmd = parser.parse(options, trueArgs, false); //will not fail if fed with plugins options.
 
         logger = initLogger("Installer", mainCmd.getOptionValue(LOG_PATH_OPT, "logs"));
+        InstallationContext installationContext = new InstallationContext()
+                .setLogger(logger).setParameters(new Parameters());
         File pluginRoot = new File(mainCmd.getOptionValue(INSTALLATION_TASKS_FOLDER, "tasks"));
         logger.info("Will load tasks from " + pluginRoot.getAbsolutePath());
         PluginManager pluginManager = new DefaultPluginManager(pluginRoot.toPath());
@@ -43,15 +42,13 @@ public class Start {
         pluginManager.loadPlugins();
         pluginManager.startPlugins();
         Map<String, IInstallationTask> installationTasks = pluginManager.getExtensions(IInstallationTask.class).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
-     //   Simple simple = new Simple();
-     //   installationTasks.put(simple.getId(), simple);
-     //   AnotherSimple anotherSimple = new AnotherSimple();
-      //  installationTasks.put(anotherSimple.getId(), anotherSimple);
+
         Map<String, TaskWrapper> tasks = new HashMap<>();
-        Parameters parameters = new Parameters();
+
+
         // handle parameters and command line options here.
         for (IInstallationTask task : installationTasks.values()) {
-            Options taskOptions  = getOptions(task);
+            Options taskOptions  = getOptions(task,installationContext);
             if (mainCmd.hasOption(HELP)) {
                 if (taskOptions.getOptions().size() != 0) {
 
@@ -66,7 +63,7 @@ public class Start {
                 }
             }else {
 
-                if (!updateParameters(task,parameters,taskOptions,args,parser)) {
+                if (!updateParameters(task,installationContext,taskOptions,args,parser)) {
                     severe("Error while parsing task parameters, quitting on task: "+task.getId());
                    return; // quit here
                 }
@@ -87,8 +84,7 @@ public class Start {
 
 
 
-        InstallationContext installationContext = new InstallationContext()
-                .setLogger(logger).setParameters(new Parameters());
+
 
         TopologicalOrderIterator<String, DefaultEdge> topologicalOrderIterator = getInstallationTaskIterator(installationTasks);
         int successes = 0;
@@ -140,11 +136,11 @@ public class Start {
         return result;
     }
 
-    private static boolean updateParameters(IInstallationTask task, Parameters parameters, Options taskOptions, String[] args, CommandLineParser parser) {
+    private static boolean updateParameters(IInstallationTask task, InstallationContext installationContext, Options taskOptions, String[] args, CommandLineParser parser) {
         try {
             String[] trueArgs=getTrueArgs(args,taskOptions);
             CommandLine cmd = parser.parse(taskOptions, trueArgs,true);
-            Parameters taskParameters=task.getParameters();
+            Parameters taskParameters=task.getParameters(installationContext);
             int count=0;
             for (String name: Collections.list(taskParameters.getKeys())) {
                  Parameter parameter=taskParameters.getParameter(name);
@@ -154,7 +150,7 @@ public class Start {
                      boolean test=cmd.hasOption(name);
                      parameter.setValue(String.valueOf(cmd.hasOption(name)));
                  }
-                parameters.addParameter(parameter);
+                installationContext.getParamaters().addParameter(parameter);
                 count++;
             }
             info("Have added "+count+" parameters to installation task: "+task.getId()+" ->>"+task.getInstallerDescription());
@@ -165,10 +161,11 @@ public class Start {
         return true;
     }
 
-    private static Options getOptions(IInstallationTask task) {
+    private static Options getOptions(IInstallationTask task,InstallationContext installationContext) {
         Options options = new Options();
-        Parameters parameters = task.getParameters();
+        Parameters parameters = task.getParameters(installationContext);
         for (Parameter parameter : parameters.getValues()) {
+            System.out.println(parameter);
             Option option = new Option(parameter.getName(), parameter.isHasValue(), parameter.getDescription());
             options.addOption(option);
         }

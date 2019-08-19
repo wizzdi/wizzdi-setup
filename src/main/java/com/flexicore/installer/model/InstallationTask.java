@@ -1,18 +1,19 @@
 package com.flexicore.installer.model;
-
+import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.utilities.CopyFileVisitor;
 import com.flexicore.installer.utilities.StreamGobbler;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 
-public class InstallationTask {
+public class InstallationTask implements IInstallationTask {
 
     private InstallationContext context;
     public static Parameters getPrivateParameters() {
@@ -22,6 +23,8 @@ public class InstallationTask {
     final public static boolean isWIndows = (System.getProperty("os.name")).toLowerCase().contains("windows");
     Queue<String> lines = new ConcurrentLinkedQueue<String>();
     Queue<String> errorLines = new ConcurrentLinkedQueue<String>();
+
+
 
     public boolean executeBashScript(String script, String toFind, String ownerName) {
 
@@ -85,11 +88,15 @@ public class InstallationTask {
     }
 
     public void info(String message) {
-        if (context.getLogger() != null) context.getLogger().info(message);
+        if (context!=null) {
+            if (context.getLogger() != null) context.getLogger().info(message);
+        }
     }
 
     public void error(String message, Throwable e) {
-        if (context.getLogger() != null) context.getLogger().log(Level.SEVERE, message, e);
+        if (context!=null) {
+            if (context.getLogger() != null) context.getLogger().log(Level.SEVERE, message, e);
+        }
     }
 
     public void severe(String message, Throwable e) {
@@ -98,7 +105,9 @@ public class InstallationTask {
     }
 
     public void severe(String message) {
-        if (context.getLogger() != null) context.getLogger().log(Level.SEVERE, message);
+        if (context!=null) {
+            if (context.getLogger() != null) context.getLogger().log(Level.SEVERE, message);
+        }
     }
 
     void debuglines(String command, boolean force) {
@@ -213,4 +222,37 @@ public class InstallationTask {
     }
 
 
+    @Override
+    public InstallationResult install(InstallationContext installationContext) {
+          return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
+    }
+
+    @Override
+    public String getId() {
+        return "no-id";
+    }
+
+    @Override
+    public String getInstallerDescription() {
+        return "No description has been provided";
+    }
+
+    @Override
+    public Set<String> getPrerequisitesTask() {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public Parameters getParameters(InstallationContext installationContext) {
+        return new Parameters();
+    }
+
+    public InstallationContext getContext() {
+        return context;
+    }
+
+    public InstallationTask setContext() {
+        this.context = context;
+        return this;
+    }
 }

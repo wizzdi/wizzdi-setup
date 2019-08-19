@@ -6,7 +6,7 @@ import com.flexicore.installer.model.*;
 import java.util.HashSet;
 import java.util.Set;
 
-public class AnotherSimple extends InstallationTask implements IInstallationTask {
+public class AnotherSimple extends InstallationTask  {
     /**
      * an
      */
@@ -50,7 +50,7 @@ public class AnotherSimple extends InstallationTask implements IInstallationTask
     }
 
     @Override
-    public Parameters getParameters() {
+    public Parameters getParameters(InstallationContext installationContext) {
         return getPrivateParameters();
     }
 }

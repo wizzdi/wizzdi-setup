@@ -36,8 +36,8 @@ public interface IInstallationTask extends ExtensionPoint {
 
     /**
      *
-     * @return Parmeters
+     * @return Parameters
      */
-    Parameters getParameters();
+    Parameters getParameters(InstallationContext installationContext);
 
 }

@@ -5,7 +5,7 @@ import java.util.Enumeration;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Parameters {
-    ConcurrentHashMap<String,Parameter> map=new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String,Parameter> map=new ConcurrentHashMap<>();
     public Parameter getParameter(String key) {
         return  map.get(key);
     }
