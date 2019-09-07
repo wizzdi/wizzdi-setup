@@ -1,8 +1,5 @@
 package com.flexicore.installer.tests;
-import com.flexicore.installer.model.InstallationContext;
-import com.flexicore.installer.model.InstallationTask;
-import com.flexicore.installer.model.Parameter;
-import com.flexicore.installer.model.Parameters;
+import com.flexicore.installer.model.*;
 import org.pf4j.Extension;
 
 import java.io.File;
@@ -45,7 +42,10 @@ public class CommonParameters extends InstallationTask  {
         return getPrivateParameters();
     }
 
-
+    @Override
+    public InstallationResult install (InstallationContext installationContext) {
+        return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
+    }
     @Override
     public String getId() {
         return "common-parameters";

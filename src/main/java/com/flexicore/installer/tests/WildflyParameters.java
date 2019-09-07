@@ -1,9 +1,6 @@
 package com.flexicore.installer.tests;
 
-import com.flexicore.installer.model.InstallationContext;
-import com.flexicore.installer.model.InstallationTask;
-import com.flexicore.installer.model.Parameter;
-import com.flexicore.installer.model.Parameters;
+import com.flexicore.installer.model.*;
 import org.pf4j.Extension;
 
 import java.io.File;
@@ -32,7 +29,10 @@ public class WildflyParameters extends InstallationTask {
         return result;
 
     }
-
+    @Override
+    public InstallationResult install (InstallationContext installationContext) {
+        return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
+    }
     @Override
     public Parameters getParameters(InstallationContext installationContext) {
 
