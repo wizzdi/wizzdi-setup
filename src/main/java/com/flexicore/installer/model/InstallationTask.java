@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalTime;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -25,7 +27,39 @@ public class InstallationTask implements IInstallationTask {
     Queue<String> errorLines = new ConcurrentLinkedQueue<String>();
 
 
+    public boolean testServiceRunning(String serviceName, String ownerName) {
+        if (isWIndows) {
 
+            return executeCommand("sc query " + serviceName, "RUNNING", "checking if service " + serviceName + " runs");
+        } else {
+            return executeCommand("service  " + serviceName + " status", "active", "checking if service " + serviceName + " runs");
+        }
+    }
+    public boolean setServiceToAuto(String serviceName, String ownerName) {
+        if (isWIndows) {
+            return executeCommand("sc config " + serviceName + " start= auto", "success", "Set Service To Auto");
+        }
+        return  true;
+    }
+    public void addMessage(String phase, String severity, String message) {
+        if (severity != "info") {
+            severe(phase + "  " + message);
+        } else {
+            info(phase + "  " + message);
+        }
+
+    }
+    public boolean setServiceToStop(String serviceName, String ownerName) {
+        if (isWIndows) {
+            return executeCommand("sc stop " + serviceName, "STOP_PENDING", "Set Service To Stop " + serviceName);
+        }else {
+            return executeCommand("service  " + serviceName+ " stop", "", "Set Service To Stop " +serviceName);
+        }
+    }
+
+    public boolean setServiceToStart(String serviceName, String ownerName) {
+        return executeCommand("sc start " + serviceName, "START_PENDING", "Set Service To Stop " + serviceName);
+    }
     public boolean executeBashScript(String script, String toFind, String ownerName) {
 
         if (new File(script).exists()) {
@@ -132,52 +166,7 @@ public class InstallationTask implements IInstallationTask {
 
     }
 
-    /**
-     * copy complete tree recursively , create folders on the fly
-     *
-     * @param installationDir
-     * @param targetDir
-     * @return
-     * @throws InterruptedException
-     */
-    boolean copy(String installationDir, String targetDir, String ownerName) throws InterruptedException {
-        info("copying" + ownerName + " from: " + installationDir + " to: " + targetDir);
 
-        File target = new File(targetDir);
-        Path targetPath = Paths.get(targetDir);
-        Path sourcePath = Paths.get(installationDir);
-        File sourceFile = new File(installationDir);
-        if (sourceFile.exists()) {
-            if (!context.getParamaters().getBooleanValue("dry")) {
-                if (!target.exists()) {
-                    target.mkdirs();
-                    info("Folder : " + targetPath + " was created");
-                } else {
-                    info("folder :" + targetPath + " already exists");
-                }
-                try {
-                    CopyFileVisitor copyFileVisitor = null;
-
-                    if (!context.getParamaters().getBooleanValue("dry")) {
-                        Files.walkFileTree(sourcePath, copyFileVisitor = new CopyFileVisitor(targetPath).setInstallationTask(this).setLogger(context.getLogger()).setCopyOver(true));
-                    }
-
-
-                } catch (IOException e) {
-                    error("Error while moving " + ownerName + "  :", e);
-                    return false;
-                }
-                info("Have copied " + ownerName + " from :" + sourcePath + " to: " + targetPath);
-
-            }
-        } else {
-
-            severe("Cannot move " + ownerName + ", path: " + sourcePath + " cannot be found");
-        }
-
-
-        return true;
-    }
 
     private boolean contWithProcess(Process process, String toFind, boolean notTofind, String ownerName) {
         try {
@@ -247,6 +236,11 @@ public class InstallationTask implements IInstallationTask {
         return new Parameters();
     }
 
+    @Override
+    public boolean enabled() {
+        return true;
+    }
+
     public InstallationContext getContext() {
         return context;
     }
@@ -255,4 +249,83 @@ public class InstallationTask implements IInstallationTask {
         this.context = context;
         return this;
     }
+
+    public void deleteDirectoryStream(Path path) throws IOException {
+        Files.walk(path)
+                .sorted(Comparator.reverseOrder())
+                .map(Path::toFile)
+                .forEach(File::delete);
+    }
+    protected void ensureTarget(String targetDir) {
+        File target = new File(targetDir);
+        if (!target.exists()) {
+            target.mkdirs();
+            info("Folder : " + target.getAbsolutePath() + " was created");
+        } else {
+            info("folder :" + target.getAbsolutePath() + " already exists");
+        }
+    }
+    public  boolean move(String source, String target) {
+        boolean result = false;
+        try {
+            if (isWIndows) {
+                result = executeCommandByBuilder(new String[]{"cmd", "/C", "move", source, target}, "", false, "move server sources");
+            }
+        } catch (IOException e) {
+            severe("Error while moving server sources", e);
+        }
+
+        return result;
+    }
+    private boolean isDry() {
+        return getContext().getParamaters().getBooleanValue("dry");
+    }
+
+    /**
+     *
+     * @param installationDir source of the copy
+     * @param targetDir target of the copy
+     * @param ownerName this is for logging purposes only
+     * @return
+     * @throws InterruptedException
+     */
+    public boolean copy(String installationDir, String targetDir, String ownerName) throws InterruptedException {
+        info("copying" + ownerName + " from: " + installationDir + " to: " + targetDir);
+        addMessage("application server-Sanity", "info", "starting parameters sanity check");
+
+        Path targetPath = Paths.get(targetDir);
+        Path sourcePath = Paths.get(installationDir);
+        File sourceFile = new File(installationDir);
+        if (sourceFile.exists()) {
+            if (!isDry()) {
+                ensureTarget(targetDir);
+                try {
+                    CopyFileVisitor copyFileVisitor = null;
+                    addMessage("" + ownerName + " copying server", "info", "copy started, make take few minutes");
+                    if (!isDry()) {
+                        Files.walkFileTree(sourcePath, copyFileVisitor = new CopyFileVisitor(targetPath).setInstallationTask(this).setLogger(getContext().getLogger()).setCopyOver(true));
+                    }
+                    addMessage(ownerName + " copying server", "info", "copy finished " + ((copyFileVisitor == null) ? "" : ((copyFileVisitor.getCount() + "  files copied" + (copyFileVisitor.getErrors() == 0 ? "" : "  Errors: " + copyFileVisitor.getErrors())))));
+                    copyFileVisitor.clear();
+
+
+                } catch (IOException e) {
+                    error("Error while moving " + ownerName + "  :", e);
+                    return false;
+                }
+                info("Have copied " + ownerName + " from :" + sourcePath + " to: " + targetPath);
+                addMessage("application server-closing", "info", "done");
+            } else {
+                addMessage("application server-closing", "info", "done, dry run in effect");
+            }
+        } else {
+            addMessage("application server-sanity", "error", "source server files cannot be found");
+            severe("Cannot move " + ownerName + ", path: " + sourcePath + " cannot be found");
+        }
+
+
+        return true;
+    }
+
+
 }

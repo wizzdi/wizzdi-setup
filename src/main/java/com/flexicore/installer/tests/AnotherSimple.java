@@ -24,7 +24,10 @@ public class AnotherSimple extends InstallationTask  {
         return result;
 
     }
-
+    @Override
+    public boolean enabled() {
+        return true;
+    }
     @Override
     public InstallationResult install(InstallationContext installationContext) {
         return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);

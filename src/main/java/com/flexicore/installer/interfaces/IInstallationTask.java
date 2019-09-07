@@ -16,6 +16,7 @@ public interface IInstallationTask extends ExtensionPoint {
      */
     InstallationResult install(InstallationContext installationContext);
 
+
     /**
      *  ID must be unique across all plugins
      * @return
@@ -39,5 +40,7 @@ public interface IInstallationTask extends ExtensionPoint {
      * @return Parameters
      */
     Parameters getParameters(InstallationContext installationContext);
+
+    boolean enabled ();
 
 }

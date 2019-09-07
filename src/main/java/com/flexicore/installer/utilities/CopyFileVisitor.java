@@ -83,7 +83,7 @@ public class CopyFileVisitor extends SimpleFileVisitor<Path> {
 
     @Override
     public FileVisitResult visitFile(final Path file,
-                                     final BasicFileAttributes attrs) throws IOException {
+                                     final BasicFileAttributes attrs) {
 
         Path path=null;
         try {
@@ -106,5 +106,9 @@ public class CopyFileVisitor extends SimpleFileVisitor<Path> {
 
         }
         return FileVisitResult.CONTINUE;
+    }
+
+    public void clear() {
+        count=0;
     }
 }

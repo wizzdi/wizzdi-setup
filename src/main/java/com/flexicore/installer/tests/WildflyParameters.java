@@ -1,0 +1,71 @@
+package com.flexicore.installer.tests;
+
+import com.flexicore.installer.model.InstallationContext;
+import com.flexicore.installer.model.InstallationTask;
+import com.flexicore.installer.model.Parameter;
+import com.flexicore.installer.model.Parameters;
+import org.pf4j.Extension;
+
+import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.logging.Logger;
+
+@Extension
+public class WildflyParameters extends InstallationTask {
+    static Logger logger;
+    static String currentFolder = System.getProperty("user.dir");
+    static String parentFolder = new File(currentFolder).getParent();
+    static Parameter[] preDefined = {
+            new Parameter("wildflysourcepath", "where to get wildfly files", true, parentFolder + "/resources/server/wildfly"),
+    };
+
+    public static Parameters getPrivateParameters() {
+
+        Parameters result = new Parameters();
+
+        for (Parameter parameter : preDefined) {
+            result.addParameter(parameter);
+            logger.info("Got a default parameter: " + parameter.toString());
+        }
+
+        return result;
+
+    }
+
+    @Override
+    public Parameters getParameters(InstallationContext installationContext) {
+
+        super.getParameters(installationContext);
+        logger = installationContext.getLogger();
+        logger.info("Getting parameters for " + this.toString());
+        return getPrivateParameters();
+    }
+    @Override
+    public Set<String> getPrerequisitesTask() {
+        Set<String > result=new HashSet<>();
+        result.add("common-parameters");
+
+        return result;
+    }
+    @Override
+    public boolean enabled() {
+        return true;
+    }
+    @Override
+    public String getId() {
+        return "wildfly-parameters";
+    }
+
+    @Override
+    public String getInstallerDescription() {
+        return "This component is used to define preferred paths and other common parameters better globally defined. ";
+    }
+
+    @Override
+    public String toString() {
+        return "Installation task: " + this.getId();
+    }
+
+
+}

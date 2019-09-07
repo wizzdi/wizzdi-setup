@@ -142,7 +142,7 @@ public class Start {
             CommandLine cmd = parser.parse(taskOptions, trueArgs,true);
             Parameters taskParameters=task.getParameters(installationContext);
             int count=0;
-            for (String name: Collections.list(taskParameters.getKeys())) {
+            for (String name: taskParameters.getKeys()) {
                  Parameter parameter=taskParameters.getParameter(name);
                  if (parameter.isHasValue()) {
                      parameter.setValue(cmd.getOptionValue(name, parameter.getDefaultValue())); //set correct

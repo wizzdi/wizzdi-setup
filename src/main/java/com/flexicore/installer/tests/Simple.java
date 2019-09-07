@@ -46,7 +46,10 @@ public class Simple extends InstallationTask  {
     public String getInstallerDescription() {
         return "This task is only for testing";
     }
-
+    @Override
+    public boolean enabled() {
+        return true;
+    }
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();

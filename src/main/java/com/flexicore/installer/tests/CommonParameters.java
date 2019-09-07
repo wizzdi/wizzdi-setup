@@ -1,0 +1,66 @@
+package com.flexicore.installer.tests;
+import com.flexicore.installer.model.InstallationContext;
+import com.flexicore.installer.model.InstallationTask;
+import com.flexicore.installer.model.Parameter;
+import com.flexicore.installer.model.Parameters;
+import org.pf4j.Extension;
+
+import java.io.File;
+import java.util.logging.Logger;
+@Extension
+public class CommonParameters extends InstallationTask  {
+    static Logger logger;
+    static String currentFolder=System.getProperty("user.dir");
+    static String parentFolder=new File(currentFolder).getParent();
+    static Parameter[] preDefined = {
+
+            new Parameter("targetpath", "the target path to install this installation into", true, "/server"),
+            new Parameter("serverpath", "where to get this installation files from (not alien components)", true, parentFolder+"/resources/server"),
+            new Parameter("instllationspath", "where to find alien components installation files, for example Java installation. This is more relevant for Windows", true, parentFolder+"/resources/installations"),
+            new Parameter("dry", "If set (used) installation will run but nothing really installed", false, "false")
+
+    };
+    @Override
+    public boolean enabled() {
+        return true;
+    }
+    public static Parameters getPrivateParameters() {
+
+        Parameters result = new Parameters();
+
+        for (Parameter parameter : preDefined) {
+            result.addParameter(parameter);
+            logger.info("Got a default parameter: "+ parameter.toString());
+        }
+
+        return result;
+
+    }
+    @Override
+    public Parameters getParameters(InstallationContext installationContext) {
+
+        super.getParameters(installationContext);
+        logger=installationContext.getLogger();
+        logger.info("Getting parameters for "+this.toString());
+        return getPrivateParameters();
+    }
+
+
+    @Override
+    public String getId() {
+        return "common-parameters";
+    }
+
+    @Override
+    public String getInstallerDescription() {
+        return "This component is used to define preferred paths and other common parameters better globally defined. ";
+    }
+    @Override
+    public String toString() {
+        return "Installation task: "+this.getId();
+    }
+
+
+
+
+}
