@@ -3,6 +3,9 @@ package com.flexicore.installer.runner;
 import com.flexicore.installer.exceptions.MissingInstallationTaskDependency;
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
+import com.flexicore.installer.tests.CommonParameters;
+import com.flexicore.installer.tests.WildflyInstall;
+import com.flexicore.installer.tests.WildflyParameters;
 import org.apache.commons.cli.*;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -18,6 +21,8 @@ import java.util.*;
 import java.util.logging.*;
 import java.util.stream.Collectors;
 
+
+
 public class Start {
 
     private static final String HELP = "h";
@@ -25,6 +30,7 @@ public class Start {
     private static final String INSTALLATION_TASKS_FOLDER = "tasks";
     private static Logger logger;
     public static void main(String[] args) throws MissingInstallationTaskDependency, ParseException {
+
         System.out.println(System.getProperty("user.dir"));
         Options options = initOptions();
         CommandLineParser parser = new DefaultParser();
@@ -42,6 +48,12 @@ public class Start {
         pluginManager.loadPlugins();
         pluginManager.startPlugins();
         Map<String, IInstallationTask> installationTasks = pluginManager.getExtensions(IInstallationTask.class).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
+        IInstallationTask iInstallationTask=new WildflyParameters();
+        installationTasks.put(iInstallationTask.getId(),iInstallationTask);
+        iInstallationTask=new WildflyInstall();
+        installationTasks.put(iInstallationTask.getId(),iInstallationTask);
+         iInstallationTask=new CommonParameters();
+        installationTasks.put(iInstallationTask.getId(),iInstallationTask);
 
         Map<String, TaskWrapper> tasks = new HashMap<>();
 

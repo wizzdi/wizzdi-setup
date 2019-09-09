@@ -7,11 +7,8 @@ module flexicore.installer {
     requires java.base;
     requires java.desktop;
     requires java.naming;
-    exports com.flexicore.installer.interfaces;
     exports com.flexicore.installer.exceptions;
     exports com.flexicore.installer.model;
     exports com.flexicore.installer.runner;
-
-
 
 }

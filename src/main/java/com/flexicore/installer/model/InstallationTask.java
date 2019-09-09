@@ -213,6 +213,7 @@ public class InstallationTask implements IInstallationTask {
 
     @Override
     public InstallationResult install(InstallationContext installationContext) {
+            context=installationContext;
           return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
     }
 

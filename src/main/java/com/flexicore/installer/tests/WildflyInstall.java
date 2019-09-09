@@ -20,22 +20,25 @@ import java.util.logging.Logger;
 public class WildflyInstall extends InstallationTask {
     static Logger logger;
     public static String[] toDeleteOnUpdate = {"itamar-app/", "entities/", "plugins", "wildfly/standalone/deployments", "wildfly/standalone/log"};
-    public static  String[] toCopyOnUpdate = {"itamar-app", "Itamar Report", "entities", "plug-ins", "wildfly/standalone/deployments", "wildfly/standalone/log"};
+    public static String[] toCopyOnUpdate = {"itamar-app", "Itamar Report", "entities", "plug-ins", "wildfly/standalone/deployments", "wildfly/standalone/log"};
     static Parameter[] preDefined = {
             new Parameter("heapsize", "Heap size for Wildfly application server", true, "768")
     };
+
     @Override
     public Set<String> getPrerequisitesTask() {
-        Set<String > result=new HashSet<>();
+        Set<String> result = new HashSet<>();
         result.add("common-parameters");
         result.add("wildfly-parameters");
 
         return result;
     }
+
     @Override
     public boolean enabled() {
         return true;
     }
+
     public static Parameters getPrivateParameters() {
 
         Parameters result = new Parameters();
@@ -48,11 +51,13 @@ public class WildflyInstall extends InstallationTask {
         return result;
 
     }
+
     @Override
-    public InstallationResult install (InstallationContext installationContext) {
+    public InstallationResult install(InstallationContext installationContext) {
+        super.install(installationContext);
         try {
 
-            if (!installationContext.getParamaters().getBooleanValue("dry")) {
+            if (!isDry()) {
                 boolean serviceRunning = testServiceRunning("wildfly", "Wildfly installation");
 
                 if (serviceRunning && getContext().getParamaters().getBooleanValue("force")) {
@@ -80,10 +85,10 @@ public class WildflyInstall extends InstallationTask {
                     addMessage("Wildfly Update", "info", "Have deleted old files");
 
                     for (String update : toCopyOnUpdate) {
-                        Path path = Paths.get(getSourcePath() + "/server/" + update);
+                        Path path = Paths.get(getServerPath() + "/" + update);
                         if (new File(path.toString()).exists()) {
                             String s, t;
-                            copy(s = getSourcePath() + "/server/" + update, t = getTargetPath() + "/server/" + update, "Wildfly installer");
+                            copy(s = getServerPath() + "/" + update, t = getFlexicoreHome() + "/" + update, "Wildfly installer");
                             info(" Copied source: " + s + " to: " + t);
                         }
 
@@ -105,25 +110,43 @@ public class WildflyInstall extends InstallationTask {
 
                     if (!isWIndows) {
 
-                        executeBashScript(getInstallationPath() + "/wildfly-Install.sh", "success", "Wildfly installation");
-                        String updatedWildfly = getInstallationPath() + "/updatedWildfly";
-                        if (new File(updatedWildfly).exists()) {
-                            if (executeCommand("cp -r " + getInstallationPath() + "/updatedWildfly/*" + "/opt/wildfly/", "", "wildflyinstallation")) {
-
-
-                            } else {
-                                severe("Failed to copy new wildfly files");
-                            }
+                        boolean wildfly14exists = new File("/opt/wildfly-14.0.1.Final").exists();
+                       if (wildfly14exists) {
+                            boolean result = false;
+                            info("Will now remove old wildfly installation");
+                            result = executeCommand("rm /opt/wildfly", "", "install wildfly");
+                            info("result of removing symbolic link of factory installed wildfly: " + result);
+                            result = executeCommand("rm -r /opt/wildfly-14.0.1.Final", "", "install wildfly");
+                            info("result of removing wildfly-14.0.1.final : " + result);
+                            result = executeCommand("cp /home/firefly/flexicore/installations/standalone-java11-32bit.conf /opt/wildfly-16.0.0.Final/bin/standalone.conf", "", "install wildfly");
+                            info("result of copying the correct standalone.conf for Java 11, 32 bits " + result);
+                        } else {
+                            info("cannot find wildfly 14 on this device, not a new installation");
                         }
+                       if (!new File("/opt/wildfly").exists()) {
+                            if (executeBashScriptLocal("wildfly-wizzdi-install.sh", "", "Wildfly install as a service")) {
+                                simpleMessage("Wildfly installation", "info", "Have installed Wildfly ");
+                                if (executeCommand("service wildfly stop", "", "Wildfly installation")) {
+                                    simpleMessage("Wildfly installation", "info", "Have stopped Wildfly service");
+                                } else {
+                                    simpleMessage("Wildfly installation", "severe", "Have failed to stop Wildfly ");
+                                }
+                            } else {
+                                simpleMessage("Wildfly installation", "severe", "Have failed to install Wildfly ");
+                            }
+                        } else {
+                            info("Wildfly link found, not a fresh installation");
+                        }
+
 
                     } else {
 
                         File movefile = new File(getTargetPath());
 
                         if (!movefile.exists()) {
-                            addMessage("Wildfly installation", "info", "Clean installation , will move server files, it is faster but files from: " + getSourcePath() + " will disappear");
+                            addMessage("Wildfly installation", "info", "Clean installation , will move server files, it is faster but files from: " + getServerPath() + " will disappear");
                             ensureTarget(getTargetPath());
-                            File source = new File(getContext().getParamaters().getValue("absoluteserversource"));
+                            File source = new File(getServerPath());
                             File[] files = source.listFiles();
                             int directory = 0;
                             int directoryErrors = 0;
@@ -131,7 +154,7 @@ public class WildflyInstall extends InstallationTask {
                             int fileSuccess = 0;
                             for (File file : files) {
                                 boolean isDirectory = file.isDirectory();
-                                info(isDirectory ? "File: "+ file.getAbsolutePath()+" is directory":"File :"+file.getAbsolutePath()+" is a file");
+                                info(isDirectory ? "File: " + file.getAbsolutePath() + " is directory" : "File :" + file.getAbsolutePath() + " is a file");
                                 boolean result = move(file.getAbsolutePath(), getTargetPath());
 
                                 if (isDirectory) { //for some reason isDirectory wasn't working.
@@ -143,7 +166,7 @@ public class WildflyInstall extends InstallationTask {
                                 } else {
                                     if (result) {
                                         fileSuccess++;
-                                    }else {
+                                    } else {
                                         fileErrors++;
                                     }
 
@@ -158,7 +181,6 @@ public class WildflyInstall extends InstallationTask {
                                     + fileSuccess + " folders , had errors in " + fileErrors + " folders");
 
 
-
                         } else {
                             addMessage("Wildfly installation", "info", "Target folder exists, cannot use move to install Wildfly");
                             copy(getAbsoluteServerSource(), getTargetPath());
@@ -168,9 +190,9 @@ public class WildflyInstall extends InstallationTask {
                          */
                         if (isWIndows) {
                             Utilities.editFile(getWildflyHome() + "/bin/standalone.conf.bat", "", "/home/flexicore", getFlexicoreHome(), true, false, true);
-                            Utilities.editFile(getFlexicoreHome() + "/flexicore.config","", "/home/flexicore", getFlexicoreHome(), true, false,true);
-                            Utilities.editFile(getWildflyHome() + "/standalone/configuration/standalone.xml", "","/home/flexicore", getFlexicoreHome(),false,false,true);
-                            Utilities.editFile(getFlexicoreHome() + "/itamar.config", "","/home/flexicore", getFlexicoreHome(),false,true,true);
+                            Utilities.editFile(getFlexicoreHome() + "/flexicore.config", "", "/home/flexicore", getFlexicoreHome(), true, false, true);
+                            Utilities.editFile(getWildflyHome() + "/standalone/configuration/standalone.xml", "", "/home/flexicore", getFlexicoreHome(), false, false, true);
+                            Utilities.editFile(getFlexicoreHome() + "/itamar.config", "", "/home/flexicore", getFlexicoreHome(), false, true, true);
 
                             addMessage("Wildfly-env vars", "info", " setting environment vars");
                             Map<String, String> env = System.getenv();
@@ -209,6 +231,17 @@ public class WildflyInstall extends InstallationTask {
 
     }
 
+    private void simpleMessage(String owner, String info, String message) {
+        switch (info) {
+             case "severe":
+                severe(message);
+                break;
+            default:
+                info(message);
+
+        }
+    }
+
     boolean executeCommandByRuntime(String target, String ownerName) {
         return executeCommand(target, "", ownerName);
 
@@ -242,39 +275,51 @@ public class WildflyInstall extends InstallationTask {
 
     /**
      * where the source of files is located (for copying)
+     *
      * @return
      */
-    private String getSourcePath() {
-        return  getContext().getParamaters().getValue("sourcepath");
+    private String getWildflySourcePath() {
+        return getContext().getParamaters().getValue("wildflysourcepath");
+    }
+
+    private String getServerPath() {
+        return getContext().getParamaters().getValue("serverpath");
     }
 
     /**
      * get the target server installation , this is usually c:\server in Windows and not relevant under Linux
+     *
      * @return
      */
     private String getTargetPath() {
-        return  getContext().getParamaters().getValue("targetpath");
+        return getContext().getParamaters().getValue("targetpath");
     }
+
     private boolean isDry() {
         return getContext().getParamaters().getBooleanValue("dry");
     }
 
     /**
      * get
+     *
      * @return
      */
     private String getFlexicoreHome() {
-        return  getContext().getParamaters().getValue("flexicorehome");
+        return getContext().getParamaters().getValue("flexicorehome");
     }
+
     private String getWildflyHome() {
-        return  getContext().getParamaters().getValue("wildflyhome");
+        return getContext().getParamaters().getValue("wildflyhome");
     }
+
     private String getAbsoluteServerSource() {
-        return  getContext().getParamaters().getValue("sourcepath")+"/wildfly";
+        return getContext().getParamaters().getValue("sourcepath") + "/wildfly";
     }
+
     private String getInstallationPath() {
-        return  getContext().getParamaters().getValue("installlations");
+        return getContext().getParamaters().getValue("installlations");
     }
+
     boolean copy(String installationDir, String targetDir) throws InterruptedException {
 
         addMessage("application server-Sanity", "info", "starting parameters sanity check");

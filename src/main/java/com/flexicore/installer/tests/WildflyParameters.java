@@ -14,7 +14,7 @@ public class WildflyParameters extends InstallationTask {
     static String currentFolder = System.getProperty("user.dir");
     static String parentFolder = new File(currentFolder).getParent();
     static Parameter[] preDefined = {
-            new Parameter("wildflysourcepath", "where to get wildfly files", true, parentFolder + "/resources/server/wildfly"),
+            new Parameter("wildflysourcepath", "where to get wildfly files", true, parentFolder + "/resources/server/wildfly")
     };
 
     public static Parameters getPrivateParameters() {
