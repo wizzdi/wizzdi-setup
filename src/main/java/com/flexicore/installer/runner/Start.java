@@ -4,8 +4,10 @@ import com.flexicore.installer.exceptions.MissingInstallationTaskDependency;
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
 import com.flexicore.installer.tests.CommonParameters;
+import com.flexicore.installer.tests.FlexioCoreParameters;
 import com.flexicore.installer.tests.WildflyInstall;
 import com.flexicore.installer.tests.WildflyParameters;
+import com.flexicore.installer.utilities.classfinder.TestInterface;
 import org.apache.commons.cli.*;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -20,7 +22,7 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.logging.*;
 import java.util.stream.Collectors;
-
+import java.util.regex.*;
 
 
 public class Start {
@@ -29,12 +31,13 @@ public class Start {
     private static final String LOG_PATH_OPT = "l";
     private static final String INSTALLATION_TASKS_FOLDER = "tasks";
     private static Logger logger;
+
     public static void main(String[] args) throws MissingInstallationTaskDependency, ParseException {
 
         System.out.println(System.getProperty("user.dir"));
         Options options = initOptions();
         CommandLineParser parser = new DefaultParser();
-        String[] trueArgs=getTrueArgs(args,options);
+        String[] trueArgs = getTrueArgs(args, options);
 
         CommandLine mainCmd = parser.parse(options, trueArgs, false); //will not fail if fed with plugins options.
 
@@ -48,19 +51,25 @@ public class Start {
         pluginManager.loadPlugins();
         pluginManager.startPlugins();
         Map<String, IInstallationTask> installationTasks = pluginManager.getExtensions(IInstallationTask.class).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
-        IInstallationTask iInstallationTask=new WildflyParameters();
-        installationTasks.put(iInstallationTask.getId(),iInstallationTask);
-        iInstallationTask=new WildflyInstall();
-        installationTasks.put(iInstallationTask.getId(),iInstallationTask);
-         iInstallationTask=new CommonParameters();
-        installationTasks.put(iInstallationTask.getId(),iInstallationTask);
+        IInstallationTask iInstallationTask = new FlexioCoreParameters();
+        installationTasks.put(iInstallationTask.getId(), iInstallationTask);
+        iInstallationTask = new CommonParameters();
+        installationTasks.put(iInstallationTask.getId(), iInstallationTask);
 
         Map<String, TaskWrapper> tasks = new HashMap<>();
 
 
-        // handle parameters and command line options here.
-        for (IInstallationTask task : installationTasks.values()) {
-            Options taskOptions  = getOptions(task,installationContext);
+        // handle parameters and command line options here. do it at the dependency order.
+        TopologicalOrderIterator<String, DefaultEdge> topologicalOrderIterator = getInstallationTaskIterator(installationTasks);
+        while (topologicalOrderIterator.hasNext()) {
+            String installationTaskUniqueId = topologicalOrderIterator.next();
+            IInstallationTask task = installationTasks.get(installationTaskUniqueId);
+            Options taskOptions = getOptions(task, installationContext);
+            if (!updateParameters(task, installationContext, taskOptions, args, parser)) {
+                severe("Error while parsing task parameters, quitting on task: " + task.getId());
+                return; // quit here
+            }
+
             if (mainCmd.hasOption(HELP)) {
                 if (taskOptions.getOptions().size() != 0) {
 
@@ -68,20 +77,20 @@ public class Start {
                     if (task.getPrerequisitesTask().size() != 0) {
                         System.out.println("Requires: " + task.getPrerequisitesTask());
                     }
-                    System.out.println("This plugin require");
+
                     HelpFormatter formatter = new HelpFormatter();
                     formatter.printHelp("Start.bat ", taskOptions);
 
-                }
-            }else {
+                    System.out.println("Task default parameters:");
+                   for (Parameter p :task.getParameters(installationContext).getValues()) {
+                       System.out.println(p);
+                   }
 
-                if (!updateParameters(task,installationContext,taskOptions,args,parser)) {
-                    severe("Error while parsing task parameters, quitting on task: "+task.getId());
-                   return; // quit here
                 }
             }
         }
-        if (mainCmd.hasOption(HELP)){
+
+        if (mainCmd.hasOption(HELP)) {
             if (options.getOptions().size() != 0) {
                 System.out.println("command line options for installer");
 
@@ -93,14 +102,12 @@ public class Start {
         }
 
 
+        //reset
+        topologicalOrderIterator = getInstallationTaskIterator(installationTasks);
 
-
-
-
-
-        TopologicalOrderIterator<String, DefaultEdge> topologicalOrderIterator = getInstallationTaskIterator(installationTasks);
         int successes = 0;
         int failures = 0;
+
         while (topologicalOrderIterator.hasNext()) {
             String installationTaskUniqueId = topologicalOrderIterator.next();
             IInstallationTask installationTask = installationTasks.get(installationTaskUniqueId);
@@ -126,19 +133,20 @@ public class Start {
 
     /**
      * adjust args to options, otherwise Apache library get confused.
+     *
      * @param args
      * @param options
      * @return
      */
     private static String[] getTrueArgs(String[] args, Options options) {
-        List<String> data=new ArrayList<>();
-        for (int i=0;i<args.length;i++) {
+        List<String> data = new ArrayList<>();
+        for (int i = 0; i < args.length; i++) {
             if (options.hasOption(args[i])) {
                 data.add(args[i]);
-                if (i<args.length-1) {
-                    if (!args[i+1].startsWith("-")) {
-                        data.add(args[i+1]);
-                       i++;
+                if (i < args.length - 1) {
+                    if (!args[i + 1].startsWith("-")) {
+                        data.add(args[i + 1]);
+                        i++;
                     }
                 }
             }
@@ -150,34 +158,57 @@ public class Start {
 
     private static boolean updateParameters(IInstallationTask task, InstallationContext installationContext, Options taskOptions, String[] args, CommandLineParser parser) {
         try {
-            String[] trueArgs=getTrueArgs(args,taskOptions);
-            CommandLine cmd = parser.parse(taskOptions, trueArgs,true);
-            Parameters taskParameters=task.getParameters(installationContext);
-            int count=0;
-            for (String name: taskParameters.getKeys()) {
-                 Parameter parameter=taskParameters.getParameter(name);
-                 if (parameter.isHasValue()) {
-                     parameter.setValue(cmd.getOptionValue(name, parameter.getDefaultValue())); //set correct
-                 }else {
-                     boolean test=cmd.hasOption(name);
-                     parameter.setValue(String.valueOf(cmd.hasOption(name)));
-                 }
+            String[] trueArgs = getTrueArgs(args, taskOptions);
+            CommandLine cmd = parser.parse(taskOptions, trueArgs, true);
+            Parameters taskParameters = task.getParameters(installationContext);
+            int count = 0;
+            for (String name : taskParameters.getKeys()) {
+                Parameter parameter = taskParameters.getParameter(name);
+                if (parameter.isHasValue()) {
+                    parameter.setValue(cmd.getOptionValue(name, getCalculatedDefaultValue(parameter, installationContext))); //set correct
+                } else {
+                    boolean test = cmd.hasOption(name);
+                    parameter.setValue(String.valueOf(cmd.hasOption(name)));
+                }
                 installationContext.getParamaters().addParameter(parameter);
                 count++;
             }
-            info("Have added "+count+" parameters to installation task: "+task.getId()+" ->>"+task.getInstallerDescription());
+            info("Have added " + count + " parameters to installation task: " + task.getId() + " ->>" + task.getInstallerDescription());
         } catch (ParseException e) {
-            logger.log(Level.SEVERE,"error while parsing command line",e);
+            logger.log(Level.SEVERE, "error while parsing command line", e);
             return false;
         }
         return true;
     }
 
-    private static Options getOptions(IInstallationTask task,InstallationContext installationContext) {
+    private static String getCalculatedDefaultValue(Parameter parameter, InstallationContext installationContext) {
+        String result = parameter.getDefaultValue();
+        if (result != null) {
+            int a = result.indexOf("&");
+            if (a > -1) {
+                int index = a + 2;
+                String temp = null;
+                int i = 1;
+                while (index < result.length()) {
+                    if (!result.substring(a + i++, index++).matches("[a-zA-Z0-9]+")) break;
+
+                }
+
+                String toReplace = result.substring(a, index - 2);
+                String newString = installationContext.getParamaters().getValue(toReplace.substring(1));
+                if (newString != null) {
+                    result = result.replace(result.substring(a, index - 2), newString);
+                }
+            }
+        }
+        return result;
+    }
+
+    private static Options getOptions(IInstallationTask task, InstallationContext installationContext) {
         Options options = new Options();
         Parameters parameters = task.getParameters(installationContext);
         for (Parameter parameter : parameters.getValues()) {
-            System.out.println(parameter);
+
             Option option = new Option(parameter.getName(), parameter.isHasValue(), parameter.getDescription());
             options.addOption(option);
         }
@@ -250,6 +281,7 @@ public class Start {
         return logger;
 
     }
+
     public static void info(String message) {
         if (logger != null) logger.info(message);
     }
@@ -264,6 +296,6 @@ public class Start {
     }
 
     public static void severe(String message) {
-        if (logger!=null) logger.log(Level.SEVERE, message);
+        if (logger != null) logger.log(Level.SEVERE, message);
     }
 }

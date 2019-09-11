@@ -69,8 +69,8 @@ public class Parameter {
     }
     @Override
     public String toString() {
-        return "Parameter: "+ "name: "+(name==null ? "no name is defined " :name )+" description: "+
-                (description==null ? "no descriptions is defined " :description) + " hasvalue: "+hasValue+
-                (hasValue ? " default value: "+ (defaultValue==null ? "no default value is defined" : defaultValue)+" value: "+ (value==null ?"no value is defined" :value): " This is a parameter without value" );
+        return "***** Parameter:\n "+ "name: "+(name==null ? "no name is defined \n" :name +"\n")+" description: "+
+                (description==null ? "no descriptions is defined \n " :description+"\n") + " hasvalue: "+hasValue+"\n"+
+                (hasValue ? " default value: "+ (defaultValue==null ? "no default value is defined \n" : defaultValue+"\n")+" current value: "+ (value==null ?"no value is defined\n" :value+"\n"): " This is a parameter without value\n" );
     }
 }

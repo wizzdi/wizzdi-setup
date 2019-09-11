@@ -1,17 +1,15 @@
 package com.flexicore.installer.tests;
 
 import com.flexicore.installer.model.*;
-import org.pf4j.Extension;
 
 import java.util.logging.Logger;
 
-@Extension
-public class EPX2000IInstall extends InstallationTask {
+public class ItamarParameters  extends InstallationTask{
     static Logger logger;
 
 
     static Parameter[] preDefined = {
-            //  new Parameter("example-key", "example description", true or false here (has value), "default value") //
+          //  new Parameter("example-key", "example description", true or false here (has value), "default value") //
 
     };
     @Override
@@ -45,7 +43,7 @@ public class EPX2000IInstall extends InstallationTask {
     }
     @Override
     public String getId() {
-        return "itamar-epx2000";
+        return "itamar-parameters";
     }
 
     @Override
@@ -56,5 +54,7 @@ public class EPX2000IInstall extends InstallationTask {
     public String toString() {
         return "Installation task: "+this.getId();
     }
+
+
 
 }

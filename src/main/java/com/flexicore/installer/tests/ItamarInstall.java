@@ -5,4 +5,5 @@ import org.pf4j.Extension;
 
 @Extension
 public class ItamarInstall extends InstallationTask {
+
 }
