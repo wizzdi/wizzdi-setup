@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 @Extension
-public class FlexioCoreParameters extends InstallationTask {
+public class FlexiCoreParameters extends InstallationTask {
     static Logger logger;
 
     /**

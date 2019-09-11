@@ -3,6 +3,8 @@ package com.flexicore.installer.tests;
 import com.flexicore.installer.model.*;
 import org.pf4j.Extension;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Logger;
 
 @Extension
@@ -47,7 +49,11 @@ public class EPX2000IInstall extends InstallationTask {
     public String getId() {
         return "itamar-epx2000";
     }
-
+    @Override
+    public Set<String> getPrerequisitesTask() {
+        Set<String> result = new HashSet<>();
+       return result;
+    }
     @Override
     public String getInstallerDescription() {
         return "This component is used to define the parameters for the Itamar software installation (configuration etc.)";

@@ -45,7 +45,7 @@ public class WildflyParameters extends InstallationTask {
     public Set<String> getPrerequisitesTask() {
         Set<String > result=new HashSet<>();
         result.add("common-parameters");
-
+        result.add("flexicore-install"); //this s because we need to update the standalone.xml and standalone.bat.conf standalone.conf to point here
         return result;
     }
     @Override

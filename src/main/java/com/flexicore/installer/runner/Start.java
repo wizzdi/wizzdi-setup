@@ -3,11 +3,7 @@ package com.flexicore.installer.runner;
 import com.flexicore.installer.exceptions.MissingInstallationTaskDependency;
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
-import com.flexicore.installer.tests.CommonParameters;
-import com.flexicore.installer.tests.FlexioCoreParameters;
-import com.flexicore.installer.tests.WildflyInstall;
-import com.flexicore.installer.tests.WildflyParameters;
-import com.flexicore.installer.utilities.classfinder.TestInterface;
+import com.flexicore.installer.tests.*;
 import org.apache.commons.cli.*;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -22,7 +18,6 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.logging.*;
 import java.util.stream.Collectors;
-import java.util.regex.*;
 
 
 public class Start {
@@ -51,19 +46,45 @@ public class Start {
         pluginManager.loadPlugins();
         pluginManager.startPlugins();
         Map<String, IInstallationTask> installationTasks = pluginManager.getExtensions(IInstallationTask.class).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
-        IInstallationTask iInstallationTask = new FlexioCoreParameters();
+
+
+        IInstallationTask iInstallationTask = new CommonParameters();
         installationTasks.put(iInstallationTask.getId(), iInstallationTask);
-        iInstallationTask = new CommonParameters();
+
+        iInstallationTask = new WildflyInstall();
         installationTasks.put(iInstallationTask.getId(), iInstallationTask);
+
+        iInstallationTask = new WildflyParameters();
+        installationTasks.put(iInstallationTask.getId(), iInstallationTask);
+
+        iInstallationTask = new EPX2000IInstall();
+        installationTasks.put(iInstallationTask.getId(), iInstallationTask);
+
+        iInstallationTask = new FlexicoreInstall();
+        installationTasks.put(iInstallationTask.getId(), iInstallationTask);
+
+        iInstallationTask = new FlexiCoreParameters();
+        installationTasks.put(iInstallationTask.getId(), iInstallationTask);
+
+        iInstallationTask = new ItamarInstall();
+        installationTasks.put(iInstallationTask.getId(), iInstallationTask);
+
+        iInstallationTask = new ItamarParameters();
+        installationTasks.put(iInstallationTask.getId(), iInstallationTask);
+
+
+
 
         Map<String, TaskWrapper> tasks = new HashMap<>();
 
 
         // handle parameters and command line options here. do it at the dependency order.
         TopologicalOrderIterator<String, DefaultEdge> topologicalOrderIterator = getInstallationTaskIterator(installationTasks);
+        ArrayList<IInstallationTask> orderedTasks=new ArrayList<>();
         while (topologicalOrderIterator.hasNext()) {
             String installationTaskUniqueId = topologicalOrderIterator.next();
             IInstallationTask task = installationTasks.get(installationTaskUniqueId);
+            orderedTasks.add(task);
             Options taskOptions = getOptions(task, installationContext);
             if (!updateParameters(task, installationContext, taskOptions, args, parser)) {
                 severe("Error while parsing task parameters, quitting on task: " + task.getId());
@@ -103,28 +124,27 @@ public class Start {
 
 
         //reset
-        topologicalOrderIterator = getInstallationTaskIterator(installationTasks);
+
 
         int successes = 0;
         int failures = 0;
 
-        while (topologicalOrderIterator.hasNext()) {
-            String installationTaskUniqueId = topologicalOrderIterator.next();
-            IInstallationTask installationTask = installationTasks.get(installationTaskUniqueId);
-            logger.info("Starting " + installationTask.getId());
-            InstallationResult installationResult = installationTask.install(installationContext);
-            if (installationResult.getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
-                successes++;
-            } else {
-                failures++;
-            }
+   for (IInstallationTask installationTask:orderedTasks) {
 
-            logger.info("Completed " + installationTask.getId() + " with " + installationResult);
+            logger.info("Starting " + installationTask.getId());
+           // InstallationResult installationResult = installationTask.install(installationContext);
+           // if (installationResult.getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
+                successes++;
+          //  } else {
+                failures++;
+           // }
+
+           // logger.info("Completed " + installationTask.getId() + " with " + installationResult);
         }
         if (failures == 0) {
             logger.info("Have completed successfully  " + successes + " installation tasks");
         } else {
-            logger.info("Have completed successfully  " + successes + " installation tasks , )" + failures + " installation tasks have failed");
+            logger.info("Have completed successfully  " + successes + " installation tasks , " + failures + " installation tasks have failed");
         }
 
         // stop and unload all plugins
