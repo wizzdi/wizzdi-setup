@@ -132,14 +132,14 @@ public class Start {
    for (IInstallationTask installationTask:orderedTasks) {
 
             logger.info("Starting " + installationTask.getId());
-           // InstallationResult installationResult = installationTask.install(installationContext);
-           // if (installationResult.getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
+            InstallationResult installationResult = installationTask.install(installationContext);
+            if (installationResult.getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
                 successes++;
-          //  } else {
+            } else {
                 failures++;
-           // }
+            }
 
-           // logger.info("Completed " + installationTask.getId() + " with " + installationResult);
+            logger.info("Completed " + installationTask.getId() + " with " + installationResult);
         }
         if (failures == 0) {
             logger.info("Have completed successfully  " + successes + " installation tasks");
