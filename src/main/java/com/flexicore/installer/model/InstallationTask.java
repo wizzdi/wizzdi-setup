@@ -1,19 +1,22 @@
 package com.flexicore.installer.model;
+
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.utilities.CopyFileVisitor;
 import com.flexicore.installer.utilities.StreamGobbler;
+import org.zeroturnaround.zip.ZipUtil;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalTime;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
+import java.util.zip.*;
 
 public class InstallationTask implements IInstallationTask {
 
@@ -89,11 +92,8 @@ public class InstallationTask implements IInstallationTask {
     }
 
     public boolean executeCommand(String command, String toFind, String ownerName) {
-        boolean wildflyInstall = false;
-        if (command.endsWith("wildfly-wizzdi-install.sh")) {
-            info("------------- " + command);
-            wildflyInstall = true;
-        }
+
+
         Process process = null;
 
         try {
@@ -107,10 +107,7 @@ public class InstallationTask implements IInstallationTask {
 
 
             Boolean result = contWithProcess(process, toFind, false, ownerName);
-            if (wildflyInstall) {
-                info(" result was " + result);
-                debuglines(command, false);
-            }
+
             if (!result) debuglines(command, false);
             return result;
 
@@ -257,6 +254,10 @@ public class InstallationTask implements IInstallationTask {
                 .map(Path::toFile)
                 .forEach(File::delete);
     }
+    public void deleteDirectoryStream(String path) throws IOException {
+        deleteDirectoryStream(new File(path).toPath());
+
+    }
     protected void ensureTarget(String targetDir) {
         File target = new File(targetDir);
         if (!target.exists()) {
@@ -278,10 +279,56 @@ public class InstallationTask implements IInstallationTask {
 
         return result;
     }
-    private boolean isDry() {
+    public void simpleMessage(String owner, String info, String message) {
+        switch (info) {
+            case "severe":
+                severe(message);
+                break;
+            default:
+                info(message);
+
+        }
+    }
+    /**
+      added few methods for accessing common parameters although these are not known to the Installer.
+     These parameters are common in every FC installation.
+     */
+
+    public String getTargetPath() {
+        return  getContext().getParamaters().getValue("targetpath");
+
+    }
+
+    public boolean isDry() {
         return getContext().getParamaters().getBooleanValue("dry");
     }
 
+    /**
+     * get
+     *
+     * @return
+     */
+    public String getFlexicoreHome() {
+        return  getContext().getParamaters().getValue("flexicorehome");
+
+    }
+
+    public String getWildflyHome() {
+        return  getContext().getParamaters().getValue("wildflyhome");
+
+    }
+    public String getServerPath() {
+          return getContext().getParamaters().getValue("serverpath");
+    }
+    public String getAbsoluteServerSource() {
+        return  getContext().getParamaters().getValue("sourcepath")+"/wildfly";
+
+    }
+
+    public String getInstallationPath() {
+        return  getContext().getParamaters().getValue("installlations");
+
+    }
     /**
      *
      * @param installationDir source of the copy
@@ -328,5 +375,59 @@ public class InstallationTask implements IInstallationTask {
         return true;
     }
 
+    public boolean copy(String installationDir, String targetDir,InstallationContext context) throws InterruptedException {
 
+        addMessage("application server-Sanity", "info", "starting parameters sanity check");
+        File target = new File(targetDir);
+        Path targetPath = Paths.get(targetDir);
+        Path sourcePath = Paths.get(installationDir);
+        File sourceFile = new File(installationDir);
+        if (sourceFile.exists()) {
+            if (!isDry()) {
+                if (!target.exists()) {
+                    target.mkdirs();
+                    info("Folder : " + targetPath + " was created");
+                } else {
+                    info("folder :" + targetPath + " already exists");
+                }
+                try {
+                    CopyFileVisitor copyFileVisitor = null;
+
+                    if (!isDry()) {
+                        Files.walkFileTree(sourcePath, copyFileVisitor = new CopyFileVisitor(targetPath).setInstallationTask(this).setLogger(context.getLogger()).setCopyOver(true));
+                    }
+
+
+                } catch (IOException e) {
+                    return false;
+                }
+                addMessage("application server-closing", "info", "done");
+            } else {
+                addMessage("application server-closing", "info", "done, dry run in effect");
+            }
+        } else {
+            addMessage("application server-sanity", "error", "source server files cannot be found");
+        }
+
+
+        return true;
+    }
+    public   boolean zip(String zipFolderName, String zipFileName, InstallationContext context) {
+        File zipFile=null;
+        File sourceFile=new File(zipFolderName);
+        if (sourceFile.exists()) {
+            ZipUtil.pack(new File(zipFolderName), zipFile = new File(zipFileName));
+            if (zipFile.exists()) {
+                context.getLogger().info(" Have zipped " + zipFolderName + " into: " + zipFileName);
+                return true;
+            } else {
+                context.getLogger().log(Level.SEVERE, " Have failed to zip  " + zipFolderName + " into: " + zipFileName);
+
+            }
+        }else {
+            context.getLogger().log(Level.SEVERE, " Have not found zip source folder  " + zipFolderName );
+        }
+        return false;
+
+    }
 }

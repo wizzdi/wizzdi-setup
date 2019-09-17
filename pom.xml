@@ -63,7 +63,12 @@
             <artifactId>reflections</artifactId>
             <version>0.9.11</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.zeroturnaround</groupId>
+            <artifactId>zt-zip</artifactId>
+            <version>1.13</version>
+            <type>jar</type>
+        </dependency>
 
     </dependencies>
 

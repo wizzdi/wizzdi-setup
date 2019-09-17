@@ -1,16 +1,11 @@
 package com.flexicore.installer.tests;
-
 import com.flexicore.installer.model.*;
-import com.flexicore.installer.utilities.CopyFileVisitor;
 import com.flexicore.installer.utilities.Utilities;
 import org.pf4j.Extension;
-
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -183,7 +178,7 @@ public class WildflyInstall extends InstallationTask {
 
                         } else {
                             addMessage("Wildfly installation", "info", "Target folder exists, cannot use move to install Wildfly");
-                            copy(getAbsoluteServerSource(), getTargetPath());
+                            copy(getAbsoluteServerSource(), getTargetPath(),installationContext);
                         }
                         /**
                          * edit files to reflect the target location
@@ -231,16 +226,7 @@ public class WildflyInstall extends InstallationTask {
 
     }
 
-    private void simpleMessage(String owner, String info, String message) {
-        switch (info) {
-             case "severe":
-                severe(message);
-                break;
-            default:
-                info(message);
 
-        }
-    }
 
     boolean executeCommandByRuntime(String target, String ownerName) {
         return executeCommand(target, "", ownerName);
@@ -278,84 +264,8 @@ public class WildflyInstall extends InstallationTask {
      *
      * @return
      */
-    private String getWildflySourcePath() {
-        return getContext().getParamaters().getValue("wildflysourcepath");
-    }
-
-    private String getServerPath() {
-        return getContext().getParamaters().getValue("serverpath");
-    }
-
-    /**
-     * get the target server installation , this is usually c:\server in Windows and not relevant under Linux
-     *
-     * @return
-     */
-    private String getTargetPath() {
-        return getContext().getParamaters().getValue("targetpath");
-    }
-
-    private boolean isDry() {
-        return getContext().getParamaters().getBooleanValue("dry");
-    }
-
-    /**
-     * get
-     *
-     * @return
-     */
-    private String getFlexicoreHome() {
-        return getContext().getParamaters().getValue("flexicorehome");
-    }
-
-    private String getWildflyHome() {
-        return getContext().getParamaters().getValue("wildflyhome");
-    }
-
-    private String getAbsoluteServerSource() {
-        return getContext().getParamaters().getValue("sourcepath") + "/wildfly";
-    }
-
-    private String getInstallationPath() {
-        return getContext().getParamaters().getValue("installlations");
-    }
-
-    boolean copy(String installationDir, String targetDir) throws InterruptedException {
-
-        addMessage("application server-Sanity", "info", "starting parameters sanity check");
-        File target = new File(targetDir);
-        Path targetPath = Paths.get(targetDir);
-        Path sourcePath = Paths.get(installationDir);
-        File sourceFile = new File(installationDir);
-        if (sourceFile.exists()) {
-            if (!isDry()) {
-                if (!target.exists()) {
-                    target.mkdirs();
-                    info("Folder : " + targetPath + " was created");
-                } else {
-                    info("folder :" + targetPath + " already exists");
-                }
-                try {
-                    CopyFileVisitor copyFileVisitor = null;
-
-                    if (!isDry()) {
-                        Files.walkFileTree(sourcePath, copyFileVisitor = new CopyFileVisitor(targetPath).setInstallationTask(this).setLogger(logger).setCopyOver(true));
-                    }
 
 
-                } catch (IOException e) {
-                    return false;
-                }
-                addMessage("application server-closing", "info", "done");
-            } else {
-                addMessage("application server-closing", "info", "done, dry run in effect");
-            }
-        } else {
-            addMessage("application server-sanity", "error", "source server files cannot be found");
-        }
 
-
-        return true;
-    }
 }
 

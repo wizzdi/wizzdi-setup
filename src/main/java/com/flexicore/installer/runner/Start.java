@@ -11,6 +11,7 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 import org.pf4j.DefaultPluginManager;
 import org.pf4j.PluginManager;
+import org.zeroturnaround.zip.ZipUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +31,7 @@ public class Start {
     public static void main(String[] args) throws MissingInstallationTaskDependency, ParseException {
 
         System.out.println(System.getProperty("user.dir"));
+
         Options options = initOptions();
         CommandLineParser parser = new DefaultParser();
         String[] trueArgs = getTrueArgs(args, options);
@@ -37,6 +39,8 @@ public class Start {
         CommandLine mainCmd = parser.parse(options, trueArgs, false); //will not fail if fed with plugins options.
 
         logger = initLogger("Installer", mainCmd.getOptionValue(LOG_PATH_OPT, "logs"));
+
+
         InstallationContext installationContext = new InstallationContext()
                 .setLogger(logger).setParameters(new Parameters());
         File pluginRoot = new File(mainCmd.getOptionValue(INSTALLATION_TASKS_FOLDER, "tasks"));
