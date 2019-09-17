@@ -15,7 +15,7 @@ public class FlexiCoreParameters extends InstallationTask {
      * note the use of parameters of other plug-ins
      */
     static Parameter[] preDefined = {
-            new Parameter("flexicoretarget", "target for flexicore files", true,  "&targetpath"+ "/flexicore")
+            new Parameter("flexicorehome", "target for flexicore files", true,  "&targetpath"+ "/flexicore")
     };
     @Override
     public boolean enabled() {

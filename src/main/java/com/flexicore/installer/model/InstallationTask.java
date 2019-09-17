@@ -3,10 +3,13 @@ package com.flexicore.installer.model;
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.utilities.CopyFileVisitor;
 import com.flexicore.installer.utilities.StreamGobbler;
+import org.zeroturnaround.zip.ByteSource;
+import org.zeroturnaround.zip.FileSource;
+import org.zeroturnaround.zip.ZipEntrySource;
 import org.zeroturnaround.zip.ZipUtil;
+import org.zeroturnaround.zip.commons.IOUtils;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,7 +19,6 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
-import java.util.zip.*;
 
 public class InstallationTask implements IInstallationTask {
 
@@ -412,11 +414,17 @@ public class InstallationTask implements IInstallationTask {
 
         return true;
     }
+
+    //https://github.com/zeroturnaround/zt-zip
     public   boolean zip(String zipFolderName, String zipFileName, InstallationContext context) {
         File zipFile=null;
         File sourceFile=new File(zipFolderName);
         if (sourceFile.exists()) {
-            ZipUtil.pack(new File(zipFolderName), zipFile = new File(zipFileName));
+            try {
+                ZipUtil.pack(new File(zipFolderName), zipFile = new File(zipFileName));
+            } catch (Exception e) {
+                severe("Error while zipping folder: "+zipFolderName,e);
+            }
             if (zipFile.exists()) {
                 context.getLogger().info(" Have zipped " + zipFolderName + " into: " + zipFileName);
                 return true;
@@ -429,5 +437,26 @@ public class InstallationTask implements IInstallationTask {
         }
         return false;
 
+    }
+    public boolean zipEntries (String[] fileEntries,String target,InstallationContext context) {
+        boolean result;
+        ZipEntrySource[] entries = new ZipEntrySource[fileEntries.length];
+        int i=0;
+        for (String entry:fileEntries) {
+            entries[i]=new FileSource(entry, new File(entry));
+        }
+
+        OutputStream out = null;
+        try {
+            out = new BufferedOutputStream(new FileOutputStream(new File(target)));
+            ZipUtil.addEntries(new File("/tmp/demo.zip"), entries, out);
+            result=true;
+        } catch (FileNotFoundException e) {
+            context.getLogger().log(Level.SEVERE,"error while creating stream",e);
+            result=false;
+        } finally {
+            IOUtils.closeQuietly(out);
+        }
+        return result;
     }
 }
