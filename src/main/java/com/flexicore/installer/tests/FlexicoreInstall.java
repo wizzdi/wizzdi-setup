@@ -8,7 +8,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -71,7 +73,20 @@ public class FlexicoreInstall extends InstallationTask {
 
                     zip(getFlexicoreHome() + "/entities", getFlexicoreHome() + "/entities.zip", installationContext);
                     zip(getFlexicoreHome() + "/plugins", getFlexicoreHome() + "/plugins.zip", installationContext);
-                    zip(getFlexicoreHome() + "/flexicore.config", getFlexicoreHome() + "/flexicore.config.zip", installationContext);
+                    //zip
+                    File fhome=new File(flexicoreHome);
+                    if (fhome.isDirectory()) {
+                        List<String> files=new ArrayList<>();
+                        for (File file: fhome.listFiles()) {
+                            if (!file.isDirectory()) {
+                                files.add(file.getAbsolutePath());
+                            }
+                        }
+                        if (files.size()!=0) {
+                            zipEntries(files,flexicoreHome+"/all.zip",installationContext);
+                        }
+                    }
+
                     try {
                         deleteDirectoryStream(getFlexicoreHome() + "/entities");
                         copy(flexicoreSource + "/entities", getFlexicoreHome() + "/entities", installationContext);

@@ -13,16 +13,14 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 
 public class InstallationTask implements IInstallationTask {
 
     private InstallationContext context;
+
     public static Parameters getPrivateParameters() {
         return null;
     }
@@ -40,12 +38,14 @@ public class InstallationTask implements IInstallationTask {
             return executeCommand("service  " + serviceName + " status", "active", "checking if service " + serviceName + " runs");
         }
     }
+
     public boolean setServiceToAuto(String serviceName, String ownerName) {
         if (isWIndows) {
             return executeCommand("sc config " + serviceName + " start= auto", "success", "Set Service To Auto");
         }
-        return  true;
+        return true;
     }
+
     public void addMessage(String phase, String severity, String message) {
         if (severity != "info") {
             severe(phase + "  " + message);
@@ -54,17 +54,19 @@ public class InstallationTask implements IInstallationTask {
         }
 
     }
+
     public boolean setServiceToStop(String serviceName, String ownerName) {
         if (isWIndows) {
             return executeCommand("sc stop " + serviceName, "STOP_PENDING", "Set Service To Stop " + serviceName);
-        }else {
-            return executeCommand("service  " + serviceName+ " stop", "", "Set Service To Stop " +serviceName);
+        } else {
+            return executeCommand("service  " + serviceName + " stop", "", "Set Service To Stop " + serviceName);
         }
     }
 
     public boolean setServiceToStart(String serviceName, String ownerName) {
         return executeCommand("sc start " + serviceName, "START_PENDING", "Set Service To Stop " + serviceName);
     }
+
     public boolean executeBashScript(String script, String toFind, String ownerName) {
 
         if (new File(script).exists()) {
@@ -121,13 +123,13 @@ public class InstallationTask implements IInstallationTask {
     }
 
     public void info(String message) {
-        if (context!=null) {
+        if (context != null) {
             if (context.getLogger() != null) context.getLogger().info(message);
         }
     }
 
     public void error(String message, Throwable e) {
-        if (context!=null) {
+        if (context != null) {
             if (context.getLogger() != null) context.getLogger().log(Level.SEVERE, message, e);
         }
     }
@@ -138,7 +140,7 @@ public class InstallationTask implements IInstallationTask {
     }
 
     public void severe(String message) {
-        if (context!=null) {
+        if (context != null) {
             if (context.getLogger() != null) context.getLogger().log(Level.SEVERE, message);
         }
     }
@@ -164,7 +166,6 @@ public class InstallationTask implements IInstallationTask {
 
 
     }
-
 
 
     private boolean contWithProcess(Process process, String toFind, boolean notTofind, String ownerName) {
@@ -212,8 +213,8 @@ public class InstallationTask implements IInstallationTask {
 
     @Override
     public InstallationResult install(InstallationContext installationContext) {
-            context=installationContext;
-          return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
+        context = installationContext;
+        return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
     }
 
     @Override
@@ -256,10 +257,12 @@ public class InstallationTask implements IInstallationTask {
                 .map(Path::toFile)
                 .forEach(File::delete);
     }
+
     public void deleteDirectoryStream(String path) throws IOException {
         deleteDirectoryStream(new File(path).toPath());
 
     }
+
     protected void ensureTarget(String targetDir) {
         File target = new File(targetDir);
         if (!target.exists()) {
@@ -269,7 +272,8 @@ public class InstallationTask implements IInstallationTask {
             info("folder :" + target.getAbsolutePath() + " already exists");
         }
     }
-    public  boolean move(String source, String target) {
+
+    public boolean move(String source, String target) {
         boolean result = false;
         try {
             if (isWIndows) {
@@ -281,6 +285,7 @@ public class InstallationTask implements IInstallationTask {
 
         return result;
     }
+
     public void simpleMessage(String owner, String info, String message) {
         switch (info) {
             case "severe":
@@ -291,13 +296,14 @@ public class InstallationTask implements IInstallationTask {
 
         }
     }
+
     /**
-      added few methods for accessing common parameters although these are not known to the Installer.
-     These parameters are common in every FC installation.
+     * added few methods for accessing common parameters although these are not known to the Installer.
+     * These parameters are common in every FC installation.
      */
 
     public String getTargetPath() {
-        return  getContext().getParamaters().getValue("targetpath");
+        return getContext().getParamaters().getValue("targetpath");
 
     }
 
@@ -311,31 +317,33 @@ public class InstallationTask implements IInstallationTask {
      * @return
      */
     public String getFlexicoreHome() {
-        return  getContext().getParamaters().getValue("flexicorehome");
+        return getContext().getParamaters().getValue("flexicorehome");
 
     }
 
     public String getWildflyHome() {
-        return  getContext().getParamaters().getValue("wildflyhome");
+        return getContext().getParamaters().getValue("wildflyhome");
 
     }
+
     public String getServerPath() {
-          return getContext().getParamaters().getValue("serverpath");
+        return getContext().getParamaters().getValue("serverpath");
     }
+
     public String getAbsoluteServerSource() {
-        return  getContext().getParamaters().getValue("sourcepath")+"/wildfly";
+        return getContext().getParamaters().getValue("sourcepath") + "/wildfly";
 
     }
 
     public String getInstallationPath() {
-        return  getContext().getParamaters().getValue("installlations");
+        return getContext().getParamaters().getValue("installlations");
 
     }
+
     /**
-     *
      * @param installationDir source of the copy
-     * @param targetDir target of the copy
-     * @param ownerName this is for logging purposes only
+     * @param targetDir       target of the copy
+     * @param ownerName       this is for logging purposes only
      * @return
      * @throws InterruptedException
      */
@@ -377,7 +385,7 @@ public class InstallationTask implements IInstallationTask {
         return true;
     }
 
-    public boolean copy(String installationDir, String targetDir,InstallationContext context) throws InterruptedException {
+    public boolean copy(String installationDir, String targetDir, InstallationContext context) throws InterruptedException {
 
         addMessage("application server-Sanity", "info", "starting parameters sanity check");
         File target = new File(targetDir);
@@ -416,14 +424,14 @@ public class InstallationTask implements IInstallationTask {
     }
 
     //https://github.com/zeroturnaround/zt-zip
-    public   boolean zip(String zipFolderName, String zipFileName, InstallationContext context) {
-        File zipFile=null;
-        File sourceFile=new File(zipFolderName);
+    public boolean zip(String zipFolderName, String zipFileName, InstallationContext context) {
+        File zipFile = null;
+        File sourceFile = new File(zipFolderName);
         if (sourceFile.exists()) {
             try {
                 ZipUtil.pack(new File(zipFolderName), zipFile = new File(zipFileName));
             } catch (Exception e) {
-                severe("Error while zipping folder: "+zipFolderName,e);
+                severe("Error while zipping folder: " + zipFolderName, e);
             }
             if (zipFile.exists()) {
                 context.getLogger().info(" Have zipped " + zipFolderName + " into: " + zipFileName);
@@ -432,31 +440,53 @@ public class InstallationTask implements IInstallationTask {
                 context.getLogger().log(Level.SEVERE, " Have failed to zip  " + zipFolderName + " into: " + zipFileName);
 
             }
-        }else {
-            context.getLogger().log(Level.SEVERE, " Have not found zip source folder  " + zipFolderName );
+        } else {
+            context.getLogger().log(Level.SEVERE, " Have not found zip source folder  " + zipFolderName);
         }
         return false;
 
     }
-    public boolean zipEntries (String[] fileEntries,String target,InstallationContext context) {
-        boolean result;
-        ZipEntrySource[] entries = new ZipEntrySource[fileEntries.length];
-        int i=0;
-        for (String entry:fileEntries) {
-            entries[i]=new FileSource(entry, new File(entry));
-        }
 
-        OutputStream out = null;
-        try {
-            out = new BufferedOutputStream(new FileOutputStream(new File(target)));
-            ZipUtil.addEntries(new File("/tmp/demo.zip"), entries, out);
-            result=true;
-        } catch (FileNotFoundException e) {
-            context.getLogger().log(Level.SEVERE,"error while creating stream",e);
-            result=false;
-        } finally {
-            IOUtils.closeQuietly(out);
-        }
-        return result;
+    public boolean zipEntries(List<String> fileEntries, String target, InstallationContext context) {
+        ZipEntrySource[] addedEntries = new ZipEntrySource[] {
+                new FileSource("/temp/File1.txt", new File("/temp/file1.txt")),
+                new FileSource("/temp/File2.txt", new File("/temp/file2.txt")),
+                new FileSource("/temp/File3.txt", new File("/temp/file2.txt")),
+        };
+        ZipUtil.addOrReplaceEntries(new File("/temp/demo.zip"), addedEntries);
+        int a=3;
+//        boolean result;
+//        ZipEntrySource[] entries = new ZipEntrySource[fileEntries.size()];
+//        int i = 0;
+//        boolean first = true;
+//        for (String entry : fileEntries) {
+//            if (first) {
+//                first = false;
+//                ZipUtil.packEntry(new File(entry), new File(target));
+//            } else {
+//                entries[i] = new FileSource(entry, new File(entry));
+//            }
+//        }
+//        for (ZipEntrySource source:entries) {
+//            ZipUtil.addEntry(new File(target),source,new File(target+"1"));
+//        }
+        return true;
+
+//        OutputStream out = null;
+//        try {
+//            if (entries.length != 0) {
+//                out = new BufferedOutputStream(new FileOutputStream(new File(target)));
+//                ZipUtil.addEntries(new File(target), entries, out);
+//                result = true;
+//            } else return true;
+//
+//
+//        } catch (Exception e) {
+//            context.getLogger().log(Level.SEVERE, "error while creating stream", e);
+//            result = false;
+//        } finally {
+//            IOUtils.closeQuietly(out);
+//        }
+      //  return result;
     }
 }
