@@ -8,10 +8,10 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
- * Install Itamar specific plugins and configuration files.
+ * install the standard Flexicore system (plugins, configuration, entities etc)
  */
 @Extension
-public class ItamarInstall extends InstallationTask {
+public class ShekelComponentsParameters extends InstallationTask {
     static Logger logger;
 
 
@@ -19,54 +19,84 @@ public class ItamarInstall extends InstallationTask {
             //  new Parameter("example-key", "example description", true or false here (has value), "default value") //
 
     };
+
     @Override
     public boolean enabled() {
         return true;
     }
+
+    /**
+     * parameters are best provided by a different plugin
+     *
+     * @return
+     */
     public static Parameters getPrivateParameters() {
 
         Parameters result = new Parameters();
 
         for (Parameter parameter : preDefined) {
             result.addParameter(parameter);
-            logger.info("Got a default parameter: "+ parameter.toString());
+            logger.info("Got a default parameter: " + parameter.toString());
         }
 
         return result;
 
     }
+
     @Override
     public Parameters getParameters(InstallationContext installationContext) {
 
         super.getParameters(installationContext);
-        logger=installationContext.getLogger();
-        logger.info("Getting parameters for "+this.toString());
+        logger = installationContext.getLogger();
+        logger.info("Getting parameters for " + this.toString());
         return getPrivateParameters();
     }
 
     @Override
-    public InstallationResult install (InstallationContext installationContext) {
+    public InstallationResult install(InstallationContext installationContext) {
+
+        super.install(installationContext);
+
+        try {
+
+            String flexicoreSource = getServerPath() + "/flexicore";
+            String flexicoreHome = getFlexicoreHome();
+            if (!isDry()) {
+                editFile(flexicoreHome + "/flexicore.config", null, "/home/flexicore/", flexicoreHome + "/", false, false, true);
+
+            }
+
+
+        } catch (Exception e) {
+            error("Error while configuring flexicore", e);
+            return new InstallationResult().setInstallationStatus(InstallationStatus.FAILED);
+        }
         return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
+
     }
+
     @Override
     public String getId() {
-        return "itamar-install";
+        return "flexicoreFixConfigFile";
     }
+
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
         result.add("flexicore-install");
-        result.add("itamar-parameters");
 
 
         return result;
     }
+
     @Override
     public String getInstallerDescription() {
-        return "This component is used to define the parameters for the Itamar software installation (configuration etc.)";
+        return "Fixing the flexicore.config file to have all paths corrected)";
     }
+
     @Override
     public String toString() {
-        return "Installation task: "+this.getId();
+        return "Installation task: " + this.getId();
     }
+
 }

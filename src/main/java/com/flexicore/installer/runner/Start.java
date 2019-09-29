@@ -50,9 +50,10 @@ public class Start {
         pluginManager.loadPlugins();
         pluginManager.startPlugins();
         Map<String, IInstallationTask> installationTasks = pluginManager.getExtensions(IInstallationTask.class).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
-
-
-        IInstallationTask iInstallationTask = new CommonParameters();
+        // this adds IInstallationTask tasks from the code itself for testing
+        IInstallationTask iInstallationTask = new FlexicoreFixConfigFile();
+        installationTasks.put(iInstallationTask.getId(), iInstallationTask);
+         iInstallationTask = new CommonParameters();
         installationTasks.put(iInstallationTask.getId(), iInstallationTask);
 
         iInstallationTask = new WildflyInstall();

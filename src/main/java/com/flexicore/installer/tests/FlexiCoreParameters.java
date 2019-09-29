@@ -7,15 +7,19 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
+/**
+ * Flexicore main parameters installation
+ * some of these parameters  are relevant for Windows OS only.
+ */
 @Extension
 public class FlexiCoreParameters extends InstallationTask {
     static Logger logger;
 
-    /**
-     * note the use of parameters of other plug-ins
-     */
+
     static Parameter[] preDefined = {
-            new Parameter("flexicorehome", "target for flexicore files", true,  "&targetpath"+ "/flexicore")
+            new Parameter("flexicorehome", "target for flexicore files", true,  "&targetpath"+ "/flexicore"),
+            new Parameter("deleteplugins", "delete all plugins before copying", true,  "false"),
+            new Parameter("backupprevious", "backup previous plugins", true,  "true")
     };
     @Override
     public boolean enabled() {

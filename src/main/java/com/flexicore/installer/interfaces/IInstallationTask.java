@@ -43,4 +43,10 @@ public interface IInstallationTask extends ExtensionPoint {
 
     boolean enabled ();
 
+    /**
+     * if set true, will be moved to the end of the installations list, order between plugins having cleanup=true is maintained.
+     * @return
+     */
+    boolean cleanup ();
+
 }

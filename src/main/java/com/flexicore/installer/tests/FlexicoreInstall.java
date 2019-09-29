@@ -1,16 +1,11 @@
 package com.flexicore.installer.tests;
-
 import com.flexicore.installer.model.*;
 import org.pf4j.Extension;
-import org.zeroturnaround.zip.ZipUtil;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -65,53 +60,44 @@ public class FlexicoreInstall extends InstallationTask {
         super.install(installationContext);
 
         try {
-            boolean isUpdate = new File(getFlexicoreHome()).exists();
-            String flexicoreSource = getServerPath() + "/flexicore";
             String flexicoreHome = getFlexicoreHome();
+            boolean isUpdate = new File(flexicoreHome).exists();
+            String flexicoreSource = getServerPath() + "/flexicore";
+            info("Flexicore folder exists :"+isUpdate +" at: "+flexicoreHome);
+
             if (!isDry()) {
                 if (isUpdate) {
 
-                    zip(getFlexicoreHome() + "/entities", getFlexicoreHome() + "/entities.zip", installationContext);
-                    zip(getFlexicoreHome() + "/plugins", getFlexicoreHome() + "/plugins.zip", installationContext);
-                    //zip
-                    File fhome=new File(flexicoreHome);
-                    if (fhome.isDirectory()) {
-                        List<String> files=new ArrayList<>();
-                        for (File file: fhome.listFiles()) {
-                            if (!file.isDirectory()) {
-                                files.add(file.getAbsolutePath());
-                            }
-                        }
-                        if (files.size()!=0) {
-                            zipEntries(files,flexicoreHome+"/all.zip",installationContext);
-                        }
-                    }
-
+                    zip(flexicoreHome + "/entities", flexicoreHome + "/entities.zip", installationContext);
+                    zip(flexicoreHome + "/plugins", flexicoreHome + "/plugins.zip", installationContext);
+                    zip(flexicoreHome + "/flexicore.config", flexicoreHome + "/flexicore.config.zip", installationContext);
                     try {
-                        deleteDirectoryStream(getFlexicoreHome() + "/entities");
-                        copy(flexicoreSource + "/entities", getFlexicoreHome() + "/entities", installationContext);
+                        deleteDirectoryStream(flexicoreHome + "/entities");
+                        copy(flexicoreSource + "/entities", flexicoreHome + "/entities", installationContext);
                         info("Have deleted entities");
                     } catch (IOException e) {
                         severe("Error while deleting entities ", e);
                     }
                     try {
-                        deleteDirectoryStream(getFlexicoreHome() + "/plugins");
-                        copy(flexicoreSource + "/plugins", getFlexicoreHome() + "/plugins", installationContext);
+                        deleteDirectoryStream(flexicoreHome + "/plugins");
+                        copy(flexicoreSource + "/plugins", flexicoreHome + "/plugins", installationContext);
                     } catch (IOException e) {
                         severe("Error while deleting entities ", e);
                     }
                     try {
-                        File config=new File (getFlexicoreHome()+"/flexicore.config");
+                        File config=new File (flexicoreHome+"/flexicore.config");
                         if (config.exists()) {
-                            Files.delete(new File(getFlexicoreHome() + "/flexicore.config").toPath()); //todo: is it the best approach, should we leave the previous file?
+                            Files.delete(new File(flexicoreHome + "/flexicore.config").toPath()); //todo: is it the best approach, should we leave the previous file?
                         }
-                        Path path=Files.copy(new File(flexicoreSource+"/flexicore.config").toPath(),new File(getFlexicoreHome()+"/flexicore.config").toPath());
+                        Path path=Files.copy(new File(flexicoreSource+"/flexicore.config").toPath(),new File(flexicoreHome+"/flexicore.config").toPath());
                    } catch (IOException e) {
                         severe("Error while deleting flexicore config file ", e);
                     }
                 } else {
-                    if (copy(flexicoreSource, getFlexicoreHome(), installationContext)) {
-                        info("Have successfully copied  " + flexicoreSource + " to " + getFlexicoreHome());
+
+                    if (copy(flexicoreSource, flexicoreHome, installationContext)) {
+                        info("Have successfully copied  " + flexicoreSource + " to " + flexicoreHome);
+
                     }
                 }
             }
@@ -141,7 +127,7 @@ public class FlexicoreInstall extends InstallationTask {
 
     @Override
     public String getInstallerDescription() {
-        return "This component is used to define the parameters for the Itamar software installation (configuration etc.)";
+        return " Installation for Flexicore files and plugins ";
     }
 
     @Override

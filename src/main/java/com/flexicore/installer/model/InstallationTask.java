@@ -242,6 +242,11 @@ public class InstallationTask implements IInstallationTask {
         return true;
     }
 
+    @Override
+    public boolean cleanup() {
+        return false;
+    }
+
     public InstallationContext getContext() {
         return context;
     }
@@ -325,6 +330,11 @@ public class InstallationTask implements IInstallationTask {
         return getContext().getParamaters().getValue("wildflyhome");
 
     }
+    public String getWildflySource() {
+        return getContext().getParamaters().getValue("wildflysourcepath");
+
+    }
+
 
     public String getServerPath() {
         return getContext().getParamaters().getValue("serverpath");
@@ -335,7 +345,7 @@ public class InstallationTask implements IInstallationTask {
 
     }
 
-    public String getInstallationPath() {
+    public String getInstallationsPath() {
         return getContext().getParamaters().getValue("installlations");
 
     }
@@ -447,46 +457,150 @@ public class InstallationTask implements IInstallationTask {
 
     }
 
-    public boolean zipEntries(List<String> fileEntries, String target, InstallationContext context) {
-        ZipEntrySource[] addedEntries = new ZipEntrySource[] {
-                new FileSource("/temp/File1.txt", new File("/temp/file1.txt")),
-                new FileSource("/temp/File2.txt", new File("/temp/file2.txt")),
-                new FileSource("/temp/File3.txt", new File("/temp/file2.txt")),
-        };
-        ZipUtil.addOrReplaceEntries(new File("/temp/demo.zip"), addedEntries);
-        int a=3;
-//        boolean result;
-//        ZipEntrySource[] entries = new ZipEntrySource[fileEntries.size()];
-//        int i = 0;
-//        boolean first = true;
-//        for (String entry : fileEntries) {
-//            if (first) {
-//                first = false;
-//                ZipUtil.packEntry(new File(entry), new File(target));
-//            } else {
-//                entries[i] = new FileSource(entry, new File(entry));
-//            }
-//        }
-//        for (ZipEntrySource source:entries) {
-//            ZipUtil.addEntry(new File(target),source,new File(target+"1"));
-//        }
-        return true;
+    /**
+     *
+     * @param firstFile
+     * @param secondFile
+     * @param resultFile result
+     * @return
+     */
+    public boolean mergeFiles(String firstFile, String secondFile, String resultFile,String separator) throws IOException {
+        List<String> data1=new ArrayList<>();
+        List<String> data2=new ArrayList<>();
+        InputStream is1 = null;
+        InputStream is2=null;
+        FileOutputStream fos=null;
+        boolean result=false;
+        try {
+             is1 = new FileInputStream(firstFile);
+             is2 = new FileInputStream(secondFile);
+            BufferedReader buf1 = new BufferedReader(new InputStreamReader(is1));
+            BufferedReader buf2 = new BufferedReader(new InputStreamReader(is2));
+            String line1=buf1.readLine();
 
-//        OutputStream out = null;
-//        try {
-//            if (entries.length != 0) {
-//                out = new BufferedOutputStream(new FileOutputStream(new File(target)));
-//                ZipUtil.addEntries(new File(target), entries, out);
-//                result = true;
-//            } else return true;
-//
-//
-//        } catch (Exception e) {
-//            context.getLogger().log(Level.SEVERE, "error while creating stream", e);
-//            result = false;
-//        } finally {
-//            IOUtils.closeQuietly(out);
-//        }
-      //  return result;
+            while (line1!=null) {
+                data1.add(line1);
+                line1=buf1.readLine();
+            }
+            is1.close();;
+            is1=null;
+            String line2=buf2.readLine();
+            while (line2!=null) {
+                data2.add(line2);
+                line2=buf2.readLine();
+            }
+            is2.close();
+            is2=null;
+            //remove lines in first file if a line from list 2 exists or a key from list 2 exists
+            List<String> toRemove=new ArrayList<>();
+            List<String> keysin2=new ArrayList<>();
+            for (String in2: data2) {
+                String split[]=in2.split(separator);
+                if (split.length>0) {
+                    keysin2.add(split[0]);
+                }
+            }
+            for (String in1:data1) {
+                if (data2.contains(in1)) {
+                    toRemove.add(in1);
+                }else {
+                    String[] split=in1.split(separator);
+                    if (split.length>0) {
+                        if (keysin2.contains(split[0])) toRemove.add(in1);
+                    }
+                }
+            }
+            for (String tr:toRemove) {
+                data1.remove(tr);
+            }
+            data1.addAll(data2);
+            fos = new FileOutputStream(new File(resultFile));
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
+            for (String line:data1) {
+                bw.write(line);
+                bw.newLine();
+            }
+            fos.close();
+            result=true;
+        } catch (FileNotFoundException e) {
+           severe("Error while merging files",e);
+        } catch (IOException e) {
+            severe("Error while merging files",e);
+        } finally {
+            if (is1!=null) is1.close();
+            if (is2!=null) is2.close();
+            if (fos!=null) fos.close();
+            return result;
+        }
     }
+    /**
+     * @param path
+     * @param existingString from a previous call, saves time in open/close file sequence, all stages but one in memory
+     * @param toFind
+     * @param toReplace
+     * @param warning
+     * @param reverseSlash
+     * @param close , if false returns the content as string to be passed to a next call in existingString
+     * @return
+     */
+    public String editFile(String path, String existingString, String toFind, String toReplace, boolean warning, boolean reverseSlash, boolean close) {
+        if (!new File(path).exists()) {
+            if (warning) {
+                addMessage("Edit file", "severe", "Cannot find the file: " + path + " for editing");
+            }
+            return null;
+        }
+        info("[Edit file] file " + path + " exists");
+        toReplace = toReplace.replace("\\", "/");
+        toFind = toFind.replace("\\", "/");
+        String fileAsString = existingString;
+        if (existingString == null) {
+            InputStream is;
+
+            try {
+                is = new FileInputStream(path);
+
+                BufferedReader buf = new BufferedReader(new InputStreamReader(is));
+                String line = buf.readLine();
+                StringBuilder sb = new StringBuilder();
+                while (line != null) {
+                    sb.append(line).append("\n");
+                    line = buf.readLine();
+                }
+                fileAsString = sb.toString();
+                if (fileAsString.length() == 0) {
+                    is.close();
+                    severe("[Edit file]  file was empty");
+                    return null;
+                }
+
+                if (reverseSlash) {
+                    fileAsString = fileAsString.replaceAll("/", "\\");
+                }
+                is.close();
+            } catch (IOException e) {
+                severe("Error while reading file", e);
+            }
+        }
+        if (fileAsString != null) {
+            info("[Edit file] [Edit file]  file as string is not null");
+            if (!fileAsString.contains(toFind)) {
+                info("[Edit file] [Edit file]  file as string doesn't contain: " + toFind);
+                return null;
+            }
+            fileAsString = fileAsString.replaceAll(toFind, toReplace);
+        }
+        if (close) {
+            try {
+                Files.write(Paths.get(path), fileAsString.getBytes());
+            } catch (IOException e) {
+                severe("Error while writing file", e);
+            }
+        }
+        info("[Edit file] [Edit file] ->" + fileAsString);
+        return fileAsString;
+    }
+
+
+
 }

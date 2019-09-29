@@ -23,6 +23,16 @@ public class Parameter {
         this.defaultValue = defaultValue;
     }
 
+    /**
+     * by presence only, acting as a switch
+     * @param name
+     * @param description
+     */
+    public Parameter(String name, String description) {
+        this.hasValue = false;
+        this.name = name;
+        this.description = description;
+    }
     public Parameter() {
     }
 

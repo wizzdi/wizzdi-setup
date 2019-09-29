@@ -106,6 +106,7 @@ public class WildflyInstall extends InstallationTask {
                     if (!isWIndows) {
 
                         boolean wildfly14exists = new File("/opt/wildfly-14.0.1.Final").exists();
+                        // code for upgrading Wildfly
                        if (wildfly14exists) {
                             boolean result = false;
                             info("Will now remove old wildfly installation");
@@ -118,8 +119,10 @@ public class WildflyInstall extends InstallationTask {
                         } else {
                             info("cannot find wildfly 14 on this device, not a new installation");
                         }
+                       //installation in Linux (using an installation script)
                        if (!new File("/opt/wildfly").exists()) {
-                            if (executeBashScriptLocal("wildfly-wizzdi-install.sh", "", "Wildfly install as a service")) {
+                           info("will run Linux wildfly installer from "+ getInstallationsPath()+"/wildfly-wizzdi-install.sh");
+                            if (executeBashScriptLocal(getInstallationsPath()+"/wildfly-wizzdi-install.sh", "", "Wildfly install as a service")) {
                                 simpleMessage("Wildfly installation", "info", "Have installed Wildfly ");
                                 if (executeCommand("service wildfly stop", "", "Wildfly installation")) {
                                     simpleMessage("Wildfly installation", "info", "Have stopped Wildfly service");
@@ -136,9 +139,9 @@ public class WildflyInstall extends InstallationTask {
 
                     } else {
 
-                        File movefile = new File(getTargetPath());
-
-                        if (!movefile.exists()) {
+                        File movefile = new File(getWildflyHome());
+                        boolean toMove=isMove();
+                        if (!movefile.exists() && toMove) {
                             addMessage("Wildfly installation", "info", "Clean installation , will move server files, it is faster but files from: " + getServerPath() + " will disappear");
                             ensureTarget(getTargetPath());
                             File source = new File(getServerPath());
@@ -178,7 +181,7 @@ public class WildflyInstall extends InstallationTask {
 
                         } else {
                             addMessage("Wildfly installation", "info", "Target folder exists, cannot use move to install Wildfly");
-                            copy(getAbsoluteServerSource(), getTargetPath(),installationContext);
+                            copy(getWildflySource(), getWildflyHome(),installationContext);
                         }
                         /**
                          * edit files to reflect the target location
@@ -226,7 +229,9 @@ public class WildflyInstall extends InstallationTask {
 
     }
 
-
+    public boolean isMove() {
+        return getContext().getParamaters().getBooleanValue("wildflymove");
+    }
 
     boolean executeCommandByRuntime(String target, String ownerName) {
         return executeCommand(target, "", ownerName);
