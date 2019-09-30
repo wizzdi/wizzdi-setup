@@ -16,7 +16,7 @@ public class ItamarInstall extends InstallationTask {
 
 
     static Parameter[] preDefined = {
-            //  new Parameter("example-key", "example description", true or false here (has value), "default value") //
+
 
     };
     @Override

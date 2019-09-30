@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
- * install the standard Flexicore system (plugins, configuration, entities etc)
+ * install the standard Shekel system (plugins, configuration, entities etc)
  */
 @Extension
 public class ShekelComponentsInstall extends InstallationTask {
@@ -16,7 +16,7 @@ public class ShekelComponentsInstall extends InstallationTask {
 
 
     static Parameter[] preDefined = {
-            //  new Parameter("example-key", "example description", true or false here (has value), "default value") //
+
 
     };
 

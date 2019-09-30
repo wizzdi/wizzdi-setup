@@ -17,7 +17,7 @@ public class WildflyInstall extends InstallationTask {
     public static String[] toDeleteOnUpdate = {"itamar-app/", "entities/", "plugins", "wildfly/standalone/deployments", "wildfly/standalone/log"};
     public static String[] toCopyOnUpdate = {"itamar-app", "Itamar Report", "entities", "plug-ins", "wildfly/standalone/deployments", "wildfly/standalone/log"};
     static Parameter[] preDefined = {
-            new Parameter("heapsize", "Heap size for Wildfly application server", true, "768")
+
     };
 
     @Override

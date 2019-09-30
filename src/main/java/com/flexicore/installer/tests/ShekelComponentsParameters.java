@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
- * install the standard Flexicore system (plugins, configuration, entities etc)
+ * install the standard shekel system (plugins, configuration, entities etc)
  */
 @Extension
 public class ShekelComponentsParameters extends InstallationTask {
@@ -16,7 +16,9 @@ public class ShekelComponentsParameters extends InstallationTask {
 
 
     static Parameter[] preDefined = {
-            //  new Parameter("example-key", "example description", true or false here (has value), "default value") //
+            new Parameter("itamarsource", "source of all itamar plugins and files", true,  "&serverpath"+ "/shekel"),
+            new Parameter("deleteplugins", "delete all plugins before copying", true,  "false"),
+            new Parameter("backupprevious", "backup previous plugins", true,  "true")
 
     };
 

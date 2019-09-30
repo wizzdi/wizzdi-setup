@@ -1,17 +1,24 @@
 package com.flexicore.installer.tests;
 
 import com.flexicore.installer.model.*;
+import org.pf4j.Extension;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
+/**
+ * Itamar parameters for installation
+ */
+@Extension
 public class ItamarParameters  extends InstallationTask{
     static Logger logger;
 
 
     static Parameter[] preDefined = {
-          //  new Parameter("example-key", "example description", true or false here (has value), "default value") //
+            new Parameter("itamarsource", "source of all itamar plugins and files", true,  "&serverpath"+ "/itamar"),
+            new Parameter("deleteplugins", "delete all plugins before copying", true,  "false"),
+            new Parameter("backupprevious", "backup previous plugins", true,  "true")
 
     };
     @Override
