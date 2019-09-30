@@ -1,9 +1,11 @@
 package com.flexicore.installer.tests;
 
+import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
 import org.pf4j.Extension;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -20,6 +22,15 @@ public class FlexicoreUniquenessEnforcer extends InstallationTask {
             new Parameter("ensureplugins", "ensure no plugins of the same type are installed, rules out multiple versions support", true,  "true")
 
     };
+
+    /**
+     * set here for easier testing (shorter code)
+     *
+     * @param installationTasks
+     */
+    public FlexicoreUniquenessEnforcer(Map<String, IInstallationTask> installationTasks) {
+        super(installationTasks);
+    }
 
     @Override
     public boolean enabled() {
