@@ -50,33 +50,40 @@ public class Start {
         pluginManager.loadPlugins();
         pluginManager.startPlugins();
         Map<String, IInstallationTask> installationTasks = pluginManager.getExtensions(IInstallationTask.class).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
-        // this adds IInstallationTask tasks from the code itself for testing
+
         //********** standard ***************
-        IInstallationTask iInstallationTask = new CommonParameters();
-        installationTasks.put(iInstallationTask.getId(), iInstallationTask);
+        new CommonParameters(installationTasks);
+
 
         //*********** Flexicore installation (home)
-         iInstallationTask = new FlexiCoreParameters();
-        installationTasks.put(iInstallationTask.getId(), iInstallationTask);
-        iInstallationTask = new FlexicoreInstall();
-        installationTasks.put(iInstallationTask.getId(), iInstallationTask);
-        iInstallationTask = new FlexicoreFixConfigFile();
-        installationTasks.put(iInstallationTask.getId(), iInstallationTask);
+        new FlexiCoreParameters(installationTasks);
+
+        new FlexicoreInstall(installationTasks);
+
+        new FlexicoreFixConfigFile(installationTasks);
+
 
         //***************** wildfly installation
-        iInstallationTask = new WildflyParameters();
-        installationTasks.put(iInstallationTask.getId(), iInstallationTask);
-        iInstallationTask = new WildflyInstall();
-        installationTasks.put(iInstallationTask.getId(), iInstallationTask);
+        new WildflyParameters(installationTasks);
+
+        new WildflyInstall(installationTasks);
+
         //************ flexicore deployment
-        iInstallationTask = new FlexicoreDeploymentInstall();
-        installationTasks.put(iInstallationTask.getId(), iInstallationTask);
+        new FlexicoreDeploymentInstall(installationTasks);
+
+        //*********************shekel installation
+        new ShekelComponentsParameters(installationTasks);
+        new ShekelComponentsInstall(installationTasks);
+        //********************Itamar Installation
+        new ItamarParameters(installationTasks);
+        new ItamarInstall(installationTasks);
+
         Map<String, TaskWrapper> tasks = new HashMap<>();
 
 
         // handle parameters and command line options here. do it at the dependency order.
         TopologicalOrderIterator<String, DefaultEdge> topologicalOrderIterator = getInstallationTaskIterator(installationTasks);
-        ArrayList<IInstallationTask> orderedTasks=new ArrayList<>();
+        ArrayList<IInstallationTask> orderedTasks = new ArrayList<>();
         while (topologicalOrderIterator.hasNext()) {
             String installationTaskUniqueId = topologicalOrderIterator.next();
             IInstallationTask task = installationTasks.get(installationTaskUniqueId);
@@ -99,9 +106,9 @@ public class Start {
                     formatter.printHelp("Start.bat ", taskOptions);
 
                     System.out.println("Task default parameters:");
-                   for (Parameter p :task.getParameters(installationContext).getValues()) {
-                       System.out.println(p);
-                   }
+                    for (Parameter p : task.getParameters(installationContext).getValues()) {
+                        System.out.println(p);
+                    }
 
                 }
             }
@@ -125,7 +132,7 @@ public class Start {
         int successes = 0;
         int failures = 0;
 
-   for (IInstallationTask installationTask:orderedTasks) {
+        for (IInstallationTask installationTask : orderedTasks) {
 
             logger.info("Starting " + installationTask.getId());
             InstallationResult installationResult = installationTask.install(installationContext);

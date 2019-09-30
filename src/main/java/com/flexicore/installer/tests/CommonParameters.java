@@ -1,8 +1,10 @@
 package com.flexicore.installer.tests;
+import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
 import org.pf4j.Extension;
 
 import java.io.File;
+import java.util.Map;
 import java.util.logging.Logger;
 @Extension
 public class CommonParameters extends InstallationTask  {
@@ -18,6 +20,11 @@ public class CommonParameters extends InstallationTask  {
             new Parameter("dry", "If set (used) installation will run but nothing really installed", false, "false")
 
     };
+
+    public CommonParameters(Map<String, IInstallationTask> installationTasks) {
+        super(installationTasks);
+    }
+
     @Override
     public boolean enabled() {
         return true;

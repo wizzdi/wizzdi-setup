@@ -1,10 +1,12 @@
 package com.flexicore.installer.tests;
 
+import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
 import org.pf4j.Extension;
 
 import java.io.File;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -19,6 +21,10 @@ public class WildflyParameters extends InstallationTask {
             new Parameter("wildflyhome", "where to put wildfly files", true, "&targetpath"+"/wildfly"),
             new Parameter("wildflymove", "if present will move wildfly folder from source and not copy, additional installations may fail",true,"false" )
     };
+
+    public WildflyParameters(Map<String, IInstallationTask> installationTasks) {
+        super(installationTasks);
+    }
 
     public static Parameters getPrivateParameters() {
 

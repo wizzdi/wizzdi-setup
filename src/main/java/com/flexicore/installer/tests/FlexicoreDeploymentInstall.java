@@ -1,9 +1,11 @@
 package com.flexicore.installer.tests;
 
+import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
 import org.pf4j.Extension;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -19,6 +21,10 @@ public class FlexicoreDeploymentInstall extends InstallationTask {
             //  new Parameter("example-key", "example description", true or false here (has value), "default value") //
 
     };
+
+    public FlexicoreDeploymentInstall(Map<String, IInstallationTask> installationTasks) {
+        super(installationTasks);
+    }
 
     @Override
     public boolean enabled() {

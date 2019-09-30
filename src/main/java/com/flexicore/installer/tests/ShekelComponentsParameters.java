@@ -1,9 +1,11 @@
 package com.flexicore.installer.tests;
 
+import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
 import org.pf4j.Extension;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -21,6 +23,10 @@ public class ShekelComponentsParameters extends InstallationTask {
             new Parameter("backupprevious", "backup previous plugins", true,  "true")
 
     };
+
+    public ShekelComponentsParameters(Map<String, IInstallationTask> installationTasks) {
+        super(installationTasks);
+    }
 
     @Override
     public boolean enabled() {

@@ -1,4 +1,5 @@
 package com.flexicore.installer.tests;
+import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
 import org.pf4j.Extension;
 import java.io.File;
@@ -6,6 +7,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -21,6 +23,10 @@ public class FlexicoreInstall extends InstallationTask {
             //  new Parameter("example-key", "example description", true or false here (has value), "default value") //
 
     };
+
+    public FlexicoreInstall(Map<String, IInstallationTask> installationTasks) {
+        super(installationTasks);
+    }
 
     @Override
     public boolean enabled() {

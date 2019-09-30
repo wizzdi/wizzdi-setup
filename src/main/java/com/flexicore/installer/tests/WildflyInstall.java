@@ -1,4 +1,5 @@
 package com.flexicore.installer.tests;
+import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
 import com.flexicore.installer.utilities.Utilities;
 import org.pf4j.Extension;
@@ -19,6 +20,10 @@ public class WildflyInstall extends InstallationTask {
     static Parameter[] preDefined = {
 
     };
+
+    public WildflyInstall(Map<String, IInstallationTask> installationTasks) {
+        super(installationTasks);
+    }
 
     @Override
     public Set<String> getPrerequisitesTask() {
