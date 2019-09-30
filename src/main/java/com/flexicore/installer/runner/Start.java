@@ -135,7 +135,12 @@ public class Start {
         for (IInstallationTask installationTask : orderedTasks) {
 
             logger.info("Starting " + installationTask.getId());
-            InstallationResult installationResult = installationTask.install(installationContext);
+            InstallationResult installationResult = null;
+            try {
+                installationResult = installationTask.install(installationContext);
+            } catch (Throwable throwable) {
+                severe("Have failed to install: "+installationTask.getId(),throwable);
+            }
             if (installationResult.getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
                 successes++;
             } else {

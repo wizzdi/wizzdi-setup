@@ -1,12 +1,17 @@
 package com.flexicore.installer.tests;
+
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
+import org.apache.commons.lang3.tuple.Pair;
 import org.pf4j.Extension;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -61,44 +66,43 @@ public class FlexicoreInstall extends InstallationTask {
     }
 
     @Override
-    public InstallationResult install(InstallationContext installationContext) {
-
+    public InstallationResult install(InstallationContext installationContext) throws Throwable {
         super.install(installationContext);
 
         try {
             String flexicoreHome = getFlexicoreHome();
             boolean isUpdate = new File(flexicoreHome).exists();
+            boolean backupprevious = getContext().getParamaters().getBooleanValue("backupprevious");
+            boolean deleteplugins = getContext().getParamaters().getBooleanValue("deleteplugins");
             String flexicoreSource = getServerPath() + "/flexicore";
-            info("Flexicore folder exists :"+isUpdate +" at: "+flexicoreHome);
-
+            info("Flexicore folder exists :" + isUpdate + " at: " + flexicoreHome);
             if (!isDry()) {
                 if (isUpdate) {
+                    if (backupprevious) {
+                        zipAll(flexicoreHome, getContext());
+                    }
+                    try {
+                        Pair<List<String>, List<String>> existingFiles = getComponents(flexicoreSource, null);
 
-                    zip(flexicoreHome + "/entities", flexicoreHome + "/entities.zip", installationContext);
-                    zip(flexicoreHome + "/plugins", flexicoreHome + "/plugins.zip", installationContext);
-                    zip(flexicoreHome + "/flexicore.config", flexicoreHome + "/flexicore.config.zip", installationContext);
-                    try {
-                        deleteDirectoryStream(flexicoreHome + "/entities");
-                        copy(flexicoreSource + "/entities", flexicoreHome + "/entities", installationContext);
-                        info("Have deleted entities");
-                    } catch (IOException e) {
-                        severe("Error while deleting entities ", e);
-                    }
-                    try {
-                        deleteDirectoryStream(flexicoreHome + "/plugins");
-                        copy(flexicoreSource + "/plugins", flexicoreHome + "/plugins", installationContext);
-                    } catch (IOException e) {
-                        severe("Error while deleting entities ", e);
-                    }
-                    try {
-                        File config=new File (flexicoreHome+"/flexicore.config");
-                        if (config.exists()) {
-                            Files.delete(new File(flexicoreHome + "/flexicore.config").toPath()); //todo: is it the best approach, should we leave the previous file?
+                        for (String dir : existingFiles.getLeft()) {
+                            if (deleteplugins) {
+                                deleteDirectoryStream(flexicoreHome + "/" + dir);
+                            }
+                            copy(flexicoreSource + "/" + dir, flexicoreHome + "/" + dir, installationContext);
+
                         }
-                        Path path=Files.copy(new File(flexicoreSource+"/flexicore.config").toPath(),new File(flexicoreHome+"/flexicore.config").toPath());
-                   } catch (IOException e) {
-                        severe("Error while deleting flexicore config file ", e);
+                        for (String file : existingFiles.getLeft()) {
+                            if (deleteplugins) {
+                                Files.deleteIfExists(Paths.get(flexicoreHome + "/" + file));
+                            }
+                            copy(flexicoreSource + "/" + file, flexicoreHome + "/" + file, installationContext);
+
+                        }
+
+                    } catch (IOException e) {
+                        severe("Error while deleting entities ", e);
                     }
+
                 } else {
 
                     if (copy(flexicoreSource, flexicoreHome, installationContext)) {

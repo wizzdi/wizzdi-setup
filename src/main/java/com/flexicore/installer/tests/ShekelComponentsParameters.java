@@ -61,7 +61,7 @@ public class ShekelComponentsParameters extends InstallationTask {
     }
 
     @Override
-    public InstallationResult install(InstallationContext installationContext) {
+    public InstallationResult install(InstallationContext installationContext) throws  Throwable{
 
         super.install(installationContext);
 

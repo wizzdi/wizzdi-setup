@@ -14,7 +14,7 @@ public interface IInstallationTask extends ExtensionPoint {
      * @param installationContext
      * @return
      */
-    InstallationResult install(InstallationContext installationContext);
+    InstallationResult install(InstallationContext installationContext) throws Throwable;
 
 
     /**

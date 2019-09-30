@@ -53,7 +53,7 @@ public class WildflyInstall extends InstallationTask {
     }
 
     @Override
-    public InstallationResult install(InstallationContext installationContext) {
+    public InstallationResult install(InstallationContext installationContext) throws Throwable{
         super.install(installationContext);
         try {
 

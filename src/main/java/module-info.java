@@ -8,6 +8,7 @@ module flexicore.installer {
     requires java.desktop;
     requires java.naming;
     requires zt.zip;
+    requires org.apache.commons.lang3;
     exports com.flexicore.installer.exceptions;
     exports com.flexicore.installer.model;
     exports com.flexicore.installer.runner;

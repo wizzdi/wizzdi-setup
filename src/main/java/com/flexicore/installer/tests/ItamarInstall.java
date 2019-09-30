@@ -4,6 +4,10 @@ import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
 import org.pf4j.Extension;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -52,7 +56,55 @@ public class ItamarInstall extends InstallationTask {
     }
 
     @Override
-    public InstallationResult install (InstallationContext installationContext) {
+    public InstallationResult install (InstallationContext installationContext) throws Throwable{
+        boolean itamarbackupprevious= getContext().getParamaters().getBooleanValue("itamarbackupprevious");
+        boolean itamardeleteplugins=getContext().getParamaters().getBooleanValue("itamardeleteplugins");
+        String flexicoreHome = getFlexicoreHome();
+        boolean isUpdate = new File(flexicoreHome).exists();
+        String itamarsource = getContext().getParamaters().getValue("itamarsource");
+        if (!isDry()) {
+            if (isUpdate) {
+
+                if(itamarbackupprevious) {
+                    zip(flexicoreHome + "/entities", flexicoreHome + "/entities.zip", installationContext);
+                    zip(flexicoreHome + "/plugins", flexicoreHome + "/plugins.zip", installationContext);
+                    zip(flexicoreHome + "/flexicore.config", flexicoreHome + "/flexicore.config.zip", installationContext);
+                }
+                try {
+                    if (itamardeleteplugins) {
+                        deleteDirectoryStream(flexicoreHome + "/entities");
+                    }
+                    copy(itamarsource + "/entities", flexicoreHome + "/entities", installationContext);
+                    info("Have deleted entities");
+                } catch (IOException e) {
+                    severe("Error while deleting entities ", e);
+                }
+                try {
+                    if (itamardeleteplugins) {
+                        deleteDirectoryStream(flexicoreHome + "/plugins");
+                    }
+                    copy(itamarsource + "/plugins", flexicoreHome + "/plugins", installationContext);
+                } catch (IOException e) {
+                    severe("Error while deleting entities ", e);
+                }
+                try {
+                    File config=new File (flexicoreHome+"/flexicore.config");
+                    if (config.exists()) {
+                        Files.delete(new File(flexicoreHome + "/flexicore.config").toPath()); //todo: is it the best approach, should we leave the previous file?
+                    }
+                    Path path=Files.copy(new File(itamarsource+"/flexicore.config").toPath(),new File(flexicoreHome+"/flexicore.config").toPath());
+                } catch (IOException e) {
+                    severe("Error while deleting flexicore config file ", e);
+                }
+            } else {
+
+                if (copy(itamarsource, flexicoreHome, installationContext)) {
+                    info("Have successfully copied  " + itamarsource + " to " + flexicoreHome);
+
+                }
+            }
+        }
+
         return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
     }
     @Override

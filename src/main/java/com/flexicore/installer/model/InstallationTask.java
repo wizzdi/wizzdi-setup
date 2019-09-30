@@ -3,11 +3,10 @@ package com.flexicore.installer.model;
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.utilities.CopyFileVisitor;
 import com.flexicore.installer.utilities.StreamGobbler;
-import org.zeroturnaround.zip.ByteSource;
-import org.zeroturnaround.zip.FileSource;
-import org.zeroturnaround.zip.ZipEntrySource;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.zeroturnaround.zip.ZipUtil;
-import org.zeroturnaround.zip.commons.IOUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -41,10 +40,11 @@ public class InstallationTask implements IInstallationTask {
 
     /**
      * set here for easier testing (shorter code)
+     *
      * @param installationTasks
      */
-    public InstallationTask( Map<String, IInstallationTask> installationTasks) {
-        installationTasks.put(this.getId(),this);
+    public InstallationTask(Map<String, IInstallationTask> installationTasks) {
+        installationTasks.put(this.getId(), this);
     }
 
     public boolean setServiceToAuto(String serviceName, String ownerName) {
@@ -220,7 +220,7 @@ public class InstallationTask implements IInstallationTask {
 
 
     @Override
-    public InstallationResult install(InstallationContext installationContext) {
+    public InstallationResult install(InstallationContext installationContext) throws Throwable {
         context = installationContext;
         return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
     }
@@ -338,6 +338,7 @@ public class InstallationTask implements IInstallationTask {
         return getContext().getParamaters().getValue("wildflyhome");
 
     }
+
     public String getWildflySource() {
         return getContext().getParamaters().getValue("wildflysourcepath");
 
@@ -403,6 +404,55 @@ public class InstallationTask implements IInstallationTask {
         return true;
     }
 
+    /**
+     * make a bacukp of all files in a folder.
+     *
+     * @param path
+     * @return
+     */
+    public boolean zipAll(String path, InstallationContext context) {
+        Pair<List<String>, List<String>> pair = getComponents(path, ".zip");
+        for (String file : pair.getLeft()) {
+            zip(path + "/" + file, path + "/" + file + ".zip", context);
+        }
+        for (String file : pair.getRight()) {
+            zip(path + "/" + file, path + "/" + file + ".zip", context);
+        }
+        return true;
+    }
+
+    /**
+     * returns a path (if a folder) with list of folders and files
+     *
+     * @param path
+     * @return
+     */
+    public Pair<List<String>, List<String>> getComponents(String path, String excludeTtrailer) {
+        File source = null;
+        List<String> files = new ArrayList<>();
+        List<String> folders = new ArrayList<>();
+        if ((source = new File(path)).exists()) {
+            if (source.isDirectory()) {
+                for (File file : source.listFiles()) {
+                    int index = file.getAbsolutePath().lastIndexOf("/");
+                    if (index != -1) {
+
+                        if (file.isDirectory()) {
+                            folders.add(file.getAbsolutePath().substring(index + 1));
+                        } else {
+                   
+                            if (excludeTtrailer!=null && !file.getAbsolutePath().endsWith(excludeTtrailer)) {
+                                files.add(file.getAbsolutePath().substring(index + 1));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return new ImmutablePair<>(folders, files);
+
+    }
+
     public boolean copy(String installationDir, String targetDir, InstallationContext context) throws InterruptedException {
 
         addMessage("application server-Sanity", "info", "starting parameters sanity check");
@@ -466,81 +516,82 @@ public class InstallationTask implements IInstallationTask {
     }
 
     /**
-     *
      * @param firstFile
      * @param secondFile
      * @param resultFile result
      * @return
      */
-    public boolean mergeFiles(String firstFile, String secondFile, String resultFile,String separator) throws IOException {
-        List<String> data1=new ArrayList<>();
-        List<String> data2=new ArrayList<>();
+    public boolean mergeFiles(String firstFile, String secondFile, String resultFile, String separator) throws IOException {
+        List<String> data1 = new ArrayList<>();
+        List<String> data2 = new ArrayList<>();
         InputStream is1 = null;
-        InputStream is2=null;
-        FileOutputStream fos=null;
-        boolean result=false;
+        InputStream is2 = null;
+        FileOutputStream fos = null;
+        boolean result = false;
         try {
-             is1 = new FileInputStream(firstFile);
-             is2 = new FileInputStream(secondFile);
+            is1 = new FileInputStream(firstFile);
+            is2 = new FileInputStream(secondFile);
             BufferedReader buf1 = new BufferedReader(new InputStreamReader(is1));
             BufferedReader buf2 = new BufferedReader(new InputStreamReader(is2));
-            String line1=buf1.readLine();
+            String line1 = buf1.readLine();
 
-            while (line1!=null) {
+            while (line1 != null) {
                 data1.add(line1);
-                line1=buf1.readLine();
+                line1 = buf1.readLine();
             }
-            is1.close();;
-            is1=null;
-            String line2=buf2.readLine();
-            while (line2!=null) {
+            is1.close();
+            ;
+            is1 = null;
+            String line2 = buf2.readLine();
+            while (line2 != null) {
                 data2.add(line2);
-                line2=buf2.readLine();
+                line2 = buf2.readLine();
             }
             is2.close();
-            is2=null;
+            is2 = null;
             //remove lines in first file if a line from list 2 exists or a key from list 2 exists
-            List<String> toRemove=new ArrayList<>();
-            List<String> keysin2=new ArrayList<>();
-            for (String in2: data2) {
-                String split[]=in2.split(separator);
-                if (split.length>0) {
+            List<String> toRemove = new ArrayList<>();
+            List<String> keysin2 = new ArrayList<>();
+            for (String in2 : data2) {
+                String split[] = in2.split(separator);
+                if (split.length > 0) {
                     keysin2.add(split[0]);
                 }
             }
-            for (String in1:data1) {
+            for (String in1 : data1) {
                 if (data2.contains(in1)) {
                     toRemove.add(in1);
-                }else {
-                    String[] split=in1.split(separator);
-                    if (split.length>0) {
+                } else {
+                    String[] split = in1.split(separator);
+                    if (split.length > 0) {
                         if (keysin2.contains(split[0])) toRemove.add(in1);
                     }
                 }
             }
-            for (String tr:toRemove) {
+            for (String tr : toRemove) {
                 data1.remove(tr);
             }
             data1.addAll(data2);
             fos = new FileOutputStream(new File(resultFile));
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
-            for (String line:data1) {
+            for (String line : data1) {
                 bw.write(line);
                 bw.newLine();
             }
             fos.close();
-            result=true;
+            result = true;
         } catch (FileNotFoundException e) {
-           severe("Error while merging files",e);
+            severe("Error while merging files", e);
         } catch (IOException e) {
-            severe("Error while merging files",e);
+            severe("Error while merging files", e);
         } finally {
-            if (is1!=null) is1.close();
-            if (is2!=null) is2.close();
-            if (fos!=null) fos.close();
+            if (is1 != null) is1.close();
+            if (is2 != null) is2.close();
+            if (fos != null) fos.close();
             return result;
         }
     }
+
     /**
      * @param path
      * @param existingString from a previous call, saves time in open/close file sequence, all stages but one in memory
@@ -548,7 +599,7 @@ public class InstallationTask implements IInstallationTask {
      * @param toReplace
      * @param warning
      * @param reverseSlash
-     * @param close , if false returns the content as string to be passed to a next call in existingString
+     * @param close          , if false returns the content as string to be passed to a next call in existingString
      * @return
      */
     public String editFile(String path, String existingString, String toFind, String toReplace, boolean warning, boolean reverseSlash, boolean close) {
@@ -608,7 +659,6 @@ public class InstallationTask implements IInstallationTask {
         info("[Edit file] [Edit file] ->" + fileAsString);
         return fileAsString;
     }
-
 
 
 }

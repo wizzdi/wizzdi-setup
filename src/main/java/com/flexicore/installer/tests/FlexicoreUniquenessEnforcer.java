@@ -65,7 +65,7 @@ public class FlexicoreUniquenessEnforcer extends InstallationTask {
     }
 
     @Override
-    public InstallationResult install(InstallationContext installationContext) {
+    public InstallationResult install(InstallationContext installationContext) throws Throwable {
 
         super.install(installationContext);
 
@@ -109,5 +109,8 @@ public class FlexicoreUniquenessEnforcer extends InstallationTask {
     public String toString() {
         return "Installation task: " + this.getId();
     }
-
+    @Override
+    public boolean cleanup() {
+        return true;
+    }
 }
