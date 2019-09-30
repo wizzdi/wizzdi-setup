@@ -51,35 +51,26 @@ public class Start {
         pluginManager.startPlugins();
         Map<String, IInstallationTask> installationTasks = pluginManager.getExtensions(IInstallationTask.class).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
         // this adds IInstallationTask tasks from the code itself for testing
-        IInstallationTask iInstallationTask = new FlexicoreFixConfigFile();
-        installationTasks.put(iInstallationTask.getId(), iInstallationTask);
-         iInstallationTask = new CommonParameters();
-        installationTasks.put(iInstallationTask.getId(), iInstallationTask);
-
-        iInstallationTask = new WildflyInstall();
+        //********** standard ***************
+        IInstallationTask iInstallationTask = new CommonParameters();
         installationTasks.put(iInstallationTask.getId(), iInstallationTask);
 
-        iInstallationTask = new WildflyParameters();
+        //*********** Flexicore installation (home)
+         iInstallationTask = new FlexiCoreParameters();
         installationTasks.put(iInstallationTask.getId(), iInstallationTask);
-
-        iInstallationTask = new EPX2000IInstall();
-        installationTasks.put(iInstallationTask.getId(), iInstallationTask);
-
         iInstallationTask = new FlexicoreInstall();
         installationTasks.put(iInstallationTask.getId(), iInstallationTask);
-
-        iInstallationTask = new FlexiCoreParameters();
+        iInstallationTask = new FlexicoreFixConfigFile();
         installationTasks.put(iInstallationTask.getId(), iInstallationTask);
 
-        iInstallationTask = new ItamarInstall();
+        //***************** wildfly installation
+        iInstallationTask = new WildflyParameters();
         installationTasks.put(iInstallationTask.getId(), iInstallationTask);
-
-        iInstallationTask = new ItamarParameters();
+        iInstallationTask = new WildflyInstall();
         installationTasks.put(iInstallationTask.getId(), iInstallationTask);
-
-
-
-
+        //************ flexicore deployment
+        iInstallationTask = new FlexicoreDeploymentInstall();
+        installationTasks.put(iInstallationTask.getId(), iInstallationTask);
         Map<String, TaskWrapper> tasks = new HashMap<>();
 
 

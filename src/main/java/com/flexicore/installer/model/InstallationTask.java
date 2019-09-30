@@ -39,6 +39,14 @@ public class InstallationTask implements IInstallationTask {
         }
     }
 
+    /**
+     * set here for easier testing (shorter code)
+     * @param installationTasks
+     */
+    public InstallationTask( Map<String, IInstallationTask> installationTasks) {
+        installationTasks.put(this.getId(),this);
+    }
+
     public boolean setServiceToAuto(String serviceName, String ownerName) {
         if (isWIndows) {
             return executeCommand("sc config " + serviceName + " start= auto", "success", "Set Service To Auto");
