@@ -50,6 +50,10 @@ public class Start {
         pluginManager.loadPlugins();
         pluginManager.startPlugins();
         Map<String, IInstallationTask> installationTasks = pluginManager.getExtensions(IInstallationTask.class).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
+        new FlexicoreUniquenessEnforcer(installationTasks);
+        new EPX2000Install(installationTasks);
+        new ShekelComponentsInstall(installationTasks);
+        new ShekelComponentsParameters(installationTasks);
 
         //********** standard ***************
         new CommonParameters(installationTasks);

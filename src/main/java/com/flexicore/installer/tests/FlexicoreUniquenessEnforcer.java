@@ -88,7 +88,7 @@ public class FlexicoreUniquenessEnforcer extends InstallationTask {
 
     @Override
     public String getId() {
-        return "flexicoreFixConfigFile";
+        return "flexicoreuniquenessenforcer";
     }
 
     @Override

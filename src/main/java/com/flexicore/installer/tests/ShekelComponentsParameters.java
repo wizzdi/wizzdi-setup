@@ -85,7 +85,7 @@ public class ShekelComponentsParameters extends InstallationTask {
 
     @Override
     public String getId() {
-        return "flexicoreFixConfigFile";
+        return "shekelcomponentsparameters";
     }
 
     @Override

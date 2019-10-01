@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 @Extension
-public class EPX2000IInstall extends InstallationTask {
+public class EPX2000Install extends InstallationTask {
     static Logger logger;
 
 
@@ -24,7 +24,7 @@ public class EPX2000IInstall extends InstallationTask {
      *
      * @param installationTasks
      */
-    public EPX2000IInstall(Map<String, IInstallationTask> installationTasks) {
+    public EPX2000Install(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
     }
 
