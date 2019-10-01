@@ -9,13 +9,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+/**
+ * Old Itamar software installation
+ */
 @Extension
 public class EPX2000Install extends InstallationTask {
     static Logger logger;
 
 
     static Parameter[] preDefined = {
-            //  new Parameter("example-key", "example description", true or false here (has value), "default value") //
+
 
     };
 
@@ -68,7 +71,7 @@ public class EPX2000Install extends InstallationTask {
     }
     @Override
     public String getInstallerDescription() {
-        return "This component is used to define the parameters for the Itamar software installation (configuration etc.)";
+        return "This component is used to install old Itamar EPX2000 for RHI and other calculations)";
     }
     @Override
     public String toString() {

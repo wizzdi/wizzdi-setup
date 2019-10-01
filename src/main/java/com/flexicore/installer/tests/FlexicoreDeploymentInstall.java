@@ -89,14 +89,12 @@ public class FlexicoreDeploymentInstall extends InstallationTask {
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
         result.add("wildfly-install");
-
-
         return result;
     }
 
     @Override
     public String getInstallerDescription() {
-        return "Fixing the flexicore.config file to have all paths corrected)";
+        return "Install Flexicore itself inside Wildfly";
     }
 
     @Override

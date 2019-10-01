@@ -122,7 +122,7 @@ public class ItamarInstall extends InstallationTask {
     }
     @Override
     public String getInstallerDescription() {
-        return "This component is used to define the parameters for the Itamar software installation (configuration etc.)";
+        return "This component is used to to install Itamar files";
     }
     @Override
     public String toString() {

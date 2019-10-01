@@ -10,25 +10,19 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
-make sure there are now double entries in entities and plugins
+ * fix flexicore configuration file
  */
 @Extension
-public class FlexicoreUniquenessEnforcer extends InstallationTask {
+public class Java32bitInstall extends InstallationTask {
     static Logger logger;
 
 
     static Parameter[] preDefined = {
-             new Parameter("ensureentities", "ensure now entities of the same type are installed", true,  "true"),
-            new Parameter("ensureplugins", "ensure no plugins of the same type are installed, rules out multiple versions support", true,  "true")
+            //  new Parameter("example-key", "example description", true or false here (has value), "default value") //
 
     };
 
-    /**
-     * set here for easier testing (shorter code)
-     *
-     * @param installationTasks
-     */
-    public FlexicoreUniquenessEnforcer(Map<String, IInstallationTask> installationTasks) {
+    public Java32bitInstall(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
     }
 
@@ -65,7 +59,7 @@ public class FlexicoreUniquenessEnforcer extends InstallationTask {
     }
 
     @Override
-    public InstallationResult install(InstallationContext installationContext) throws Throwable {
+    public InstallationResult install(InstallationContext installationContext) throws  Throwable{
 
         super.install(installationContext);
 
@@ -74,6 +68,7 @@ public class FlexicoreUniquenessEnforcer extends InstallationTask {
             String flexicoreSource = getServerPath() + "/flexicore";
             String flexicoreHome = getFlexicoreHome();
             if (!isDry()) {
+                editFile(flexicoreHome + "/flexicore.config", null, "/home/flexicore/", flexicoreHome + "/", false, false, true);
 
             }
 
@@ -88,29 +83,23 @@ public class FlexicoreUniquenessEnforcer extends InstallationTask {
 
     @Override
     public String getId() {
-        return "flexicoreuniquenessenforcer";
+        return "java32";
     }
 
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
-        result.add("flexicore-install");
-
-
         return result;
     }
 
     @Override
     public String getInstallerDescription() {
-        return "Make sure that there are no double components by deleting previous once. using key names and versions, will not work with multiple versions environments ";
+        return "Fixing the flexicore.config file to have all paths corrected)";
     }
 
     @Override
     public String toString() {
         return "Installation task: " + this.getId();
     }
-    @Override
-    public boolean cleanup() {
-        return true;
-    }
+
 }
