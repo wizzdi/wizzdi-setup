@@ -20,7 +20,7 @@ public class FlexiCoreParameters extends InstallationTask {
 
     static Parameter[] preDefined = {
             new Parameter("flexicorehome", "target for flexicore files", true,  "&targetpath"+ "/flexicore"),
-            new Parameter("deleteplugins", "delete all plugins before copying", true,  "false"),
+            new Parameter("deleteplugins", "delete all plugins before copying", true,  "true"),
             new Parameter("backupprevious", "backup previous plugins", true,  "true")
     };
 

@@ -1,15 +1,13 @@
 package com.flexicore.installer.tests;
-
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.pf4j.Extension;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -79,7 +77,7 @@ public class FlexicoreInstall extends InstallationTask {
             if (!isDry()) {
                 if (isUpdate) {
                     if (backupprevious) {
-                        zipAll(flexicoreHome, getContext());
+                        zipAll(flexicoreHome,flexicoreHome+"/backup.zip",getContext());
                     }
                     try {
                         Pair<List<String>, List<String>> existingFiles = getComponents(flexicoreSource, null);
@@ -91,11 +89,11 @@ public class FlexicoreInstall extends InstallationTask {
                             copy(flexicoreSource + "/" + dir, flexicoreHome + "/" + dir, installationContext);
 
                         }
-                        for (String file : existingFiles.getLeft()) {
+                        for (String file : existingFiles.getRight()) {
                             if (deleteplugins) {
                                 Files.deleteIfExists(Paths.get(flexicoreHome + "/" + file));
                             }
-                            copy(flexicoreSource + "/" + file, flexicoreHome + "/" + file, installationContext);
+                            Files.copy(Paths.get(flexicoreSource + "/" + file),Paths.get(flexicoreHome + "/" + file), StandardCopyOption.REPLACE_EXISTING,StandardCopyOption.COPY_ATTRIBUTES);
 
                         }
 
@@ -114,7 +112,7 @@ public class FlexicoreInstall extends InstallationTask {
 
 
         } catch (Exception e) {
-            error("Error while installing Wildfly", e);
+            error("Error while installing Flexicore", e);
             return new InstallationResult().setInstallationStatus(InstallationStatus.FAILED);
         }
         return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);

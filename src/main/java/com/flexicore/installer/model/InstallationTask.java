@@ -12,9 +12,11 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 public class InstallationTask implements IInstallationTask {
 
@@ -271,9 +273,14 @@ public class InstallationTask implements IInstallationTask {
                 .forEach(File::delete);
     }
 
-    public void deleteDirectoryStream(String path) throws IOException {
-        deleteDirectoryStream(new File(path).toPath());
+    public boolean deleteDirectoryStream(String path) throws IOException {
+        File file = new File(path);
+        if (file.exists()) {
+            deleteDirectoryStream(file.toPath());
+            return true;
+        }
 
+        return false;
     }
 
     protected void ensureTarget(String targetDir) {
@@ -403,21 +410,52 @@ public class InstallationTask implements IInstallationTask {
 
         return true;
     }
+ private String addToLast(String add, String path) {
+        path.replace("\\","/");
+        String [] result=path.split("/");
+        StringBuilder builder=new StringBuilder();
+        int i=0;
+        for (String component:result) {
+            builder.append(i++ == 0 ? "" : "/");
+            if (i==result.length) {
 
+               builder.append(add);
+
+               builder.append(component);
+               break;
+            }else {
+
+                builder.append(component);
+            }
+
+        }
+        return builder.toString();
+ }
     /**
      * make a bacukp of all files in a folder.
      *
      * @param path
      * @return
      */
-    public boolean zipAll(String path, InstallationContext context) {
-        Pair<List<String>, List<String>> pair = getComponents(path, ".zip");
-        for (String file : pair.getLeft()) {
-            zip(path + "/" + file, path + "/" + file + ".zip", context);
+    public boolean zipAll(String path, String zipPath, InstallationContext context) throws IOException {
+        File zipFile=new File(zipPath);
+        if (zipFile.exists()) {
+            Files.move(zipFile.toPath(),Paths.get(addToLast("old-",zipPath)), StandardCopyOption.REPLACE_EXISTING);
         }
-        for (String file : pair.getRight()) {
-            zip(path + "/" + file, path + "/" + file + ".zip", context);
+        List<File> files=new ArrayList<>();
+        if ((new File(path)).exists()) {
+           files= Files.walk(Paths.get(path))
+                    .filter(Files::isRegularFile).filter(f->!(f.getFileName().toString().endsWith("zip"))).map(f->f.toFile()).collect(Collectors.toList());
+            File[] all = new File[files.size()];
+            files.toArray(all);
+            zipFiles(all, new File(zipPath));
+            return true;
         }
+     return false;
+    }
+
+    public boolean zipFiles(File[] files, File zipFile) {
+        ZipUtil.packEntries(files, zipFile);
         return true;
     }
 
@@ -434,15 +472,20 @@ public class InstallationTask implements IInstallationTask {
         if ((source = new File(path)).exists()) {
             if (source.isDirectory()) {
                 for (File file : source.listFiles()) {
-                    int index = file.getAbsolutePath().lastIndexOf("/");
+                    int index = file.getAbsolutePath().lastIndexOf("/") != -1 ? file.getAbsolutePath().lastIndexOf("/") : file.getAbsolutePath().lastIndexOf("\\");
+
                     if (index != -1) {
 
                         if (file.isDirectory()) {
                             folders.add(file.getAbsolutePath().substring(index + 1));
                         } else {
-                   
-                            if (excludeTtrailer!=null && !file.getAbsolutePath().endsWith(excludeTtrailer)) {
+                            if (excludeTtrailer == null) {
                                 files.add(file.getAbsolutePath().substring(index + 1));
+                            } else {
+                                if (!file.getAbsolutePath().endsWith(excludeTtrailer)) {
+                                    files.add(file.getAbsolutePath().substring(index + 1));
+                                }
+
                             }
                         }
                     }

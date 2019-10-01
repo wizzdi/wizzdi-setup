@@ -84,10 +84,16 @@ public class Start {
         // handle parameters and command line options here. do it at the dependency order.
         TopologicalOrderIterator<String, DefaultEdge> topologicalOrderIterator = getInstallationTaskIterator(installationTasks);
         ArrayList<IInstallationTask> orderedTasks = new ArrayList<>();
+        ArrayList<IInstallationTask> cleanupTasks=new ArrayList<>();
         while (topologicalOrderIterator.hasNext()) {
             String installationTaskUniqueId = topologicalOrderIterator.next();
             IInstallationTask task = installationTasks.get(installationTaskUniqueId);
-            orderedTasks.add(task);
+            if (task.cleanup()) {
+                cleanupTasks.add(task);
+            }else {
+                orderedTasks.add(task);
+            }
+
             Options taskOptions = getOptions(task, installationContext);
             if (!updateParameters(task, installationContext, taskOptions, args, parser)) {
                 severe("Error while parsing task parameters, quitting on task: " + task.getId());
@@ -113,7 +119,7 @@ public class Start {
                 }
             }
         }
-
+        if (cleanupTasks.size()!=0) orderedTasks.addAll(cleanupTasks); //cleanup tasks at the end.
         if (mainCmd.hasOption(HELP)) {
             if (options.getOptions().size() != 0) {
                 System.out.println("command line options for installer");
