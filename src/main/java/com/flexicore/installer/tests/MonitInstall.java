@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
- * fix flexicore configuration file
+ * Install Monit watchdog
  */
 @Extension
 public class MonitInstall extends InstallationTask {
@@ -89,6 +89,7 @@ public class MonitInstall extends InstallationTask {
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
+        result.add("common-parameters");
         return result;
     }
 

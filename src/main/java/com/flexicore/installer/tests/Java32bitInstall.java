@@ -89,6 +89,7 @@ public class Java32bitInstall extends InstallationTask {
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
+        result.add("common-parameters");
         return result;
     }
 

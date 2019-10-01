@@ -67,6 +67,7 @@ public class EPX2000Install extends InstallationTask {
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
+        result.add("common-parameters");
        return result;
     }
     @Override

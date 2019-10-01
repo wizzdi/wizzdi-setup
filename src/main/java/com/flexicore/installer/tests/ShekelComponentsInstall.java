@@ -89,15 +89,14 @@ public class ShekelComponentsInstall extends InstallationTask {
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
-        result.add("flexicore-install");
+        result.add("shekelcomponentsparameters");
 
-
-        return result;
+       return result;
     }
 
     @Override
     public String getInstallerDescription() {
-        return "Fixing the flexicore.config file to have all paths corrected)";
+        return "Install Shekel Components)";
     }
 
     @Override

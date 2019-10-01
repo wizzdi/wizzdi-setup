@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
- * fix flexicore configuration file
+ * Install MongoDB
  */
 @Extension
 public class MongoDBInstall extends InstallationTask {
@@ -89,15 +89,13 @@ public class MongoDBInstall extends InstallationTask {
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
-        result.add("flexicore-install");
-
-
-        return result;
+        result.add("common-parameters");
+      return result;
     }
 
     @Override
     public String getInstallerDescription() {
-        return "Fixing the flexicore.config file to have all paths corrected)";
+        return "Installation of MongoDB database";
     }
 
     @Override

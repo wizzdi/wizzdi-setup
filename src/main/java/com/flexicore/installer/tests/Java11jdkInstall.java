@@ -89,6 +89,7 @@ public class Java11jdkInstall extends InstallationTask {
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
+        result.add("common-parameters");
         return result;
     }
 

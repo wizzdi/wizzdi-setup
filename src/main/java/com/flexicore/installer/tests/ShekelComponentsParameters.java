@@ -92,8 +92,6 @@ public class ShekelComponentsParameters extends InstallationTask {
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
         result.add("flexicore-install");
-
-
         return result;
     }
 

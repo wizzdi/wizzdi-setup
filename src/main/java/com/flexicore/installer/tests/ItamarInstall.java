@@ -114,10 +114,7 @@ public class ItamarInstall extends InstallationTask {
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
-        result.add("flexicore-install");
         result.add("itamar-parameters");
-
-
         return result;
     }
     @Override

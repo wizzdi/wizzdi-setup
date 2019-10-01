@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
- * fix flexicore configuration file
+ * Install PostgresSQL relational database
  */
 @Extension
 public class postgresqlInstal extends InstallationTask {
@@ -89,12 +89,13 @@ public class postgresqlInstal extends InstallationTask {
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
+        result.add("common-parameters");
         return result;
     }
 
     @Override
     public String getInstallerDescription() {
-        return "Fixing the flexicore.config file to have all paths corrected)";
+        return "Install PostgresSQL relational database";
     }
 
     @Override

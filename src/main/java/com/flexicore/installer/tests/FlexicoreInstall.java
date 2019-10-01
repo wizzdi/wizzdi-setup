@@ -128,8 +128,6 @@ public class FlexicoreInstall extends InstallationTask {
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
         result.add("flexicore-parameters");
-
-
         return result;
     }
 

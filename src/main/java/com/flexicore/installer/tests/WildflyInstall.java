@@ -28,7 +28,6 @@ public class WildflyInstall extends InstallationTask {
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
-        result.add("common-parameters");
         result.add("wildfly-parameters");
 
         return result;
