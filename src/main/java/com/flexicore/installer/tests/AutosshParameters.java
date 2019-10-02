@@ -10,25 +10,20 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
-make sure there are now double entries in entities and plugins, this is controllable by the two parameters-> ensureentities and ensureplugins
+ Parameters for AUTO SSH installation
  */
 @Extension
-public class FlexicoreUniquenessEnforcer extends InstallationTask {
+public class AutosshParameters extends InstallationTask {
     static Logger logger;
 
 
     static Parameter[] preDefined = {
-             new Parameter("ensureentities", "ensure now entities of the same type are installed", true,  "true"),
-            new Parameter("ensureplugins", "ensure no plugins of the same type are installed, rules out multiple versions support", true,  "true")
+            new Parameter("autossh-server", "Auto SSH remote server, if not specified, defaults to IOT server remote URL, the server CANNOT be changed after installation", true, "&remote-server-url"),
+            new Parameter("autossh-port", "should be a unique port on this server, the port can be changed after installation", true, "4444")
 
     };
 
-    /**
-     * set here for easier testing (shorter code)
-     *
-     * @param installationTasks
-     */
-    public FlexicoreUniquenessEnforcer(Map<String, IInstallationTask> installationTasks) {
+    public AutosshParameters(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
     }
 
@@ -65,7 +60,7 @@ public class FlexicoreUniquenessEnforcer extends InstallationTask {
     }
 
     @Override
-    public InstallationResult install(InstallationContext installationContext) throws Throwable {
+    public InstallationResult install(InstallationContext installationContext) throws  Throwable{
 
         super.install(installationContext);
 
@@ -74,6 +69,7 @@ public class FlexicoreUniquenessEnforcer extends InstallationTask {
             String flexicoreSource = getServerPath() + "/flexicore";
             String flexicoreHome = getFlexicoreHome();
             if (!isDry()) {
+                editFile(flexicoreHome + "/flexicore.config", null, "/home/flexicore/", flexicoreHome + "/", false, false, true);
 
             }
 
@@ -88,29 +84,24 @@ public class FlexicoreUniquenessEnforcer extends InstallationTask {
 
     @Override
     public String getId() {
-        return "flexicoreuniquenessenforcer";
+        return "autossh-parameters";
     }
 
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
-        result.add("flexicore-install");
-
-
-        return result;
+        result.add("installIOT");
+         return result;
     }
 
     @Override
     public String getInstallerDescription() {
-        return "Make sure that there are no double components by deleting previous once. using key names and versions, will not work with multiple versions environments ";
+        return "Parameters for IOT installation ";
     }
 
     @Override
     public String toString() {
         return "Installation task: " + this.getId();
     }
-    @Override
-    public boolean cleanup() {
-        return true;
-    }
+
 }

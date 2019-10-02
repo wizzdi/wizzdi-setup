@@ -10,25 +10,19 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
-make sure there are now double entries in entities and plugins, this is controllable by the two parameters-> ensureentities and ensureplugins
+ * Install Auto-SSH , AUTO-SSH provides access through the cloud into units behind NAT
  */
 @Extension
-public class FlexicoreUniquenessEnforcer extends InstallationTask {
+public class AutosshInstall extends InstallationTask {
     static Logger logger;
 
 
     static Parameter[] preDefined = {
-             new Parameter("ensureentities", "ensure now entities of the same type are installed", true,  "true"),
-            new Parameter("ensureplugins", "ensure no plugins of the same type are installed, rules out multiple versions support", true,  "true")
+
 
     };
 
-    /**
-     * set here for easier testing (shorter code)
-     *
-     * @param installationTasks
-     */
-    public FlexicoreUniquenessEnforcer(Map<String, IInstallationTask> installationTasks) {
+    public AutosshInstall(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
     }
 
@@ -65,7 +59,7 @@ public class FlexicoreUniquenessEnforcer extends InstallationTask {
     }
 
     @Override
-    public InstallationResult install(InstallationContext installationContext) throws Throwable {
+    public InstallationResult install(InstallationContext installationContext) throws  Throwable{
 
         super.install(installationContext);
 
@@ -74,6 +68,7 @@ public class FlexicoreUniquenessEnforcer extends InstallationTask {
             String flexicoreSource = getServerPath() + "/flexicore";
             String flexicoreHome = getFlexicoreHome();
             if (!isDry()) {
+                editFile(flexicoreHome + "/flexicore.config", null, "/home/flexicore/", flexicoreHome + "/", false, false, true);
 
             }
 
@@ -88,29 +83,24 @@ public class FlexicoreUniquenessEnforcer extends InstallationTask {
 
     @Override
     public String getId() {
-        return "flexicoreuniquenessenforcer";
+        return "autossh";
     }
 
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
-        result.add("flexicore-install");
-
-
+        result.add("autossh-parameters");
         return result;
     }
 
     @Override
     public String getInstallerDescription() {
-        return "Make sure that there are no double components by deleting previous once. using key names and versions, will not work with multiple versions environments ";
+        return "IOT installation, adding the required files  ";
     }
 
     @Override
     public String toString() {
         return "Installation task: " + this.getId();
     }
-    @Override
-    public boolean cleanup() {
-        return true;
-    }
+
 }

@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
- * fix flexicore configuration file
+ * Install IOT files and configuration
  */
 @Extension
 public class InstallIOT extends InstallationTask {
