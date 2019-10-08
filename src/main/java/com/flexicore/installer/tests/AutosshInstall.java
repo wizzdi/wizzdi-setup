@@ -59,25 +59,20 @@ public class AutosshInstall extends InstallationTask {
     }
 
     @Override
-    public InstallationResult install(InstallationContext installationContext) throws  Throwable{
+    public InstallationResult install(InstallationContext installationContext) throws Throwable {
+        InstallationResult result = null;
+        if ((result = super.install(installationContext)).equals(InstallationStatus.DRY)) return result;
+        if (!isWIndows) {
+            try {
 
-        super.install(installationContext);
-
-        try {
-
-            String flexicoreSource = getServerPath() + "/flexicore";
-            String flexicoreHome = getFlexicoreHome();
-            if (!isDry()) {
-                editFile(flexicoreHome + "/flexicore.config", null, "/home/flexicore/", flexicoreHome + "/", false, false, true);
-
+            } catch (Exception e) {
+                error("Error while configuring flexicore", e);
+                return new InstallationResult().setInstallationStatus(InstallationStatus.FAILED);
             }
-
-
-        } catch (Exception e) {
-            error("Error while configuring flexicore", e);
-            return new InstallationResult().setInstallationStatus(InstallationStatus.FAILED);
         }
+
         return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
+
 
     }
 

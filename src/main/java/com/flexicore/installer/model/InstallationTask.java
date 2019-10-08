@@ -4,10 +4,8 @@ import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.utilities.CopyFileVisitor;
 import com.flexicore.installer.utilities.StreamGobbler;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.MutablePair;
-import org.zeroturnaround.zip.ZipUtil;
 import org.apache.commons.lang3.tuple.Pair;
-
+import org.zeroturnaround.zip.ZipUtil;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,6 +36,9 @@ public class InstallationTask implements IInstallationTask {
         } else {
             return executeCommand("service  " + serviceName + " status", "active", "checking if service " + serviceName + " runs");
         }
+    }
+
+    public InstallationTask() {
     }
 
     /**
@@ -220,11 +221,19 @@ public class InstallationTask implements IInstallationTask {
         }
     }
 
-
+    public String flexicoreSource;
+    public String flexicoreHome;
     @Override
     public InstallationResult install(InstallationContext installationContext) throws Throwable {
         context = installationContext;
-        return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
+         flexicoreSource = getServerPath() + "/flexicore";
+         flexicoreHome = getFlexicoreHome();
+
+        if (isDry()) {
+            info("Dry run  of " + this.getId() + " -> " + this.getInstallerDescription() + getParameters(installationContext).toString());
+            return new InstallationResult().setInstallationStatus(InstallationStatus.DRY);
+        }
+        return new InstallationResult().setInstallationStatus(InstallationStatus.CONTINUE);
     }
 
     @Override
@@ -410,27 +419,29 @@ public class InstallationTask implements IInstallationTask {
 
         return true;
     }
- private String addToLast(String add, String path) {
-        path.replace("\\","/");
-        String [] result=path.split("/");
-        StringBuilder builder=new StringBuilder();
-        int i=0;
-        for (String component:result) {
+
+    private String addToLast(String add, String path) {
+        path.replace("\\", "/");
+        String[] result = path.split("/");
+        StringBuilder builder = new StringBuilder();
+        int i = 0;
+        for (String component : result) {
             builder.append(i++ == 0 ? "" : "/");
-            if (i==result.length) {
+            if (i == result.length) {
 
-               builder.append(add);
+                builder.append(add);
 
-               builder.append(component);
-               break;
-            }else {
+                builder.append(component);
+                break;
+            } else {
 
                 builder.append(component);
             }
 
         }
         return builder.toString();
- }
+    }
+
     /**
      * make a bacukp of all files in a folder.
      *
@@ -438,20 +449,20 @@ public class InstallationTask implements IInstallationTask {
      * @return
      */
     public boolean zipAll(String path, String zipPath, InstallationContext context) throws IOException {
-        File zipFile=new File(zipPath);
+        File zipFile = new File(zipPath);
         if (zipFile.exists()) {
-            Files.move(zipFile.toPath(),Paths.get(addToLast("old-",zipPath)), StandardCopyOption.REPLACE_EXISTING);
+            Files.move(zipFile.toPath(), Paths.get(addToLast("old-", zipPath)), StandardCopyOption.REPLACE_EXISTING);
         }
-        List<File> files=new ArrayList<>();
+        List<File> files = new ArrayList<>();
         if ((new File(path)).exists()) {
-           files= Files.walk(Paths.get(path))
-                    .filter(Files::isRegularFile).filter(f->!(f.getFileName().toString().endsWith("zip"))).map(f->f.toFile()).collect(Collectors.toList());
+            files = Files.walk(Paths.get(path))
+                    .filter(Files::isRegularFile).filter(f -> !(f.getFileName().toString().endsWith("zip"))).map(f -> f.toFile()).collect(Collectors.toList());
             File[] all = new File[files.size()];
             files.toArray(all);
             zipFiles(all, new File(zipPath));
             return true;
         }
-     return false;
+        return false;
     }
 
     public boolean zipFiles(File[] files, File zipFile) {

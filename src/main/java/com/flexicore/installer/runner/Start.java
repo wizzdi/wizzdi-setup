@@ -2,8 +2,12 @@ package com.flexicore.installer.runner;
 
 import com.flexicore.installer.exceptions.MissingInstallationTaskDependency;
 import com.flexicore.installer.interfaces.IInstallationTask;
+import com.flexicore.installer.interfaces.IUIComponent;
+
 import com.flexicore.installer.model.*;
-import com.flexicore.installer.tests.*;
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.stage.Stage;
 import org.apache.commons.cli.*;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -11,10 +15,11 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 import org.pf4j.DefaultPluginManager;
 import org.pf4j.PluginManager;
-import org.zeroturnaround.zip.ZipUtil;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.logging.*;
@@ -28,7 +33,7 @@ public class Start {
     private static final String INSTALLATION_TASKS_FOLDER = "tasks";
     private static Logger logger;
 
-    public static void main(String[] args) throws MissingInstallationTaskDependency, ParseException {
+    public static void main(String[] args) throws MissingInstallationTaskDependency, ParseException, InterruptedException {
 
         System.out.println(System.getProperty("user.dir"));
 
@@ -42,14 +47,37 @@ public class Start {
 
 
         InstallationContext installationContext = new InstallationContext()
-                .setLogger(logger).setParameters(new Parameters());
+                .setLogger(logger).setParameters(new Parameters()).setUiClose(Start::uiComponentClosed).setUiApply(Start::uiComponentApply);
         File pluginRoot = new File(mainCmd.getOptionValue(INSTALLATION_TASKS_FOLDER, "tasks"));
         logger.info("Will load tasks from " + pluginRoot.getAbsolutePath());
         PluginManager pluginManager = new DefaultPluginManager(pluginRoot.toPath());
 
         pluginManager.loadPlugins();
         pluginManager.startPlugins();
+
+        List<IUIComponent> uiComponents = pluginManager.getExtensions(IUIComponent.class);
+        for (IUIComponent component : uiComponents) {
+            component.setContext(installationContext);
+            if (component.isAutoStart()) {
+                info("Have started ");
+                Platform.startup(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            ((Application) component).start(new Stage());
+                        } catch (Exception e) {
+                            severe("Error in UI thread", e);
+                        }
+                    }
+                });
+            }
+        }
+        Thread.sleep(600000);
+
         Map<String, IInstallationTask> installationTasks = pluginManager.getExtensions(IInstallationTask.class).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
+      /*
+
+
         new FlexicoreUniquenessEnforcer(installationTasks);
         new EPX2000Install(installationTasks);
         new ShekelComponentsInstall(installationTasks);
@@ -81,20 +109,26 @@ public class Start {
         //********************Itamar Installation
         new ItamarParameters(installationTasks);
         new ItamarInstall(installationTasks);
-
+*/
         Map<String, TaskWrapper> tasks = new HashMap<>();
 
 
         // handle parameters and command line options here. do it at the dependency order.
         TopologicalOrderIterator<String, DefaultEdge> topologicalOrderIterator = getInstallationTaskIterator(installationTasks);
         ArrayList<IInstallationTask> orderedTasks = new ArrayList<>();
-        ArrayList<IInstallationTask> cleanupTasks=new ArrayList<>();
+        ArrayList<IInstallationTask> cleanupTasks = new ArrayList<>();
+        readProperties(installationContext);
         while (topologicalOrderIterator.hasNext()) {
             String installationTaskUniqueId = topologicalOrderIterator.next();
             IInstallationTask task = installationTasks.get(installationTaskUniqueId);
+            try {
+                task.install(installationContext);
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
             if (task.cleanup()) {
                 cleanupTasks.add(task);
-            }else {
+            } else {
                 orderedTasks.add(task);
             }
 
@@ -123,7 +157,7 @@ public class Start {
                 }
             }
         }
-        if (cleanupTasks.size()!=0) orderedTasks.addAll(cleanupTasks); //cleanup tasks at the end.
+        if (cleanupTasks.size() != 0) orderedTasks.addAll(cleanupTasks); //cleanup tasks at the end.
         if (mainCmd.hasOption(HELP)) {
             if (options.getOptions().size() != 0) {
                 System.out.println("command line options for installer");
@@ -149,7 +183,7 @@ public class Start {
             try {
                 installationResult = installationTask.install(installationContext);
             } catch (Throwable throwable) {
-                severe("Have failed to install: "+installationTask.getId(),throwable);
+                severe("Have failed to install: " + installationTask.getId(), throwable);
             }
             if (installationResult.getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
                 successes++;
@@ -167,6 +201,25 @@ public class Start {
 
         // stop and unload all plugins
         pluginManager.stopPlugins();
+    }
+
+    /**
+     * Look for properties file if exists override code based default properties
+     *
+     * @param installationContext
+     */
+    private static void readProperties(InstallationContext installationContext) {
+        String currentFolder = System.getProperty("user.dir");
+        info("Will look for  properties file in: " + currentFolder);
+        try (InputStream input = new FileInputStream(currentFolder + "/" + "properties")) {
+            Properties prop = new Properties();
+            // load a properties file
+            prop.load(input);
+            installationContext.setProperties(prop);
+        } catch (IOException ex) {
+            info("No properties file provided, one can be placed in the current folder: " + System.getProperty("user.dir"));
+            installationContext.setProperties(new Properties());
+        }
     }
 
     /**
@@ -203,9 +256,13 @@ public class Start {
             for (String name : taskParameters.getKeys()) {
                 Parameter parameter = taskParameters.getParameter(name);
                 if (parameter.isHasValue()) {
-                    parameter.setValue(cmd.getOptionValue(name, getCalculatedDefaultValue(parameter, installationContext))); //set correct
+                    parameter.setValue(cmd.getOptionValue(name, getCalculatedDefaultValue(parameter, installationContext))); //set correct value for parameter
                 } else {
-                    boolean test = cmd.hasOption(name);
+                    // if a parameter has no value it means that it's existence changes the parameter value to true, unless the properties file changes it or
+                    // overridden from the command line
+                    if (!cmd.hasOption(name)) {
+                        getNewParameterFromProperties(parameter, installationContext);
+                    }
                     parameter.setValue(String.valueOf(cmd.hasOption(name)));
                 }
                 installationContext.getParamaters().addParameter(parameter);
@@ -219,8 +276,31 @@ public class Start {
         return true;
     }
 
+    /**
+     * @param parameter
+     * @param installationContext
+     * @return
+     */
+    private static Parameter getNewParameterFromProperties(Parameter parameter, InstallationContext installationContext) {
+        return parameter;
+    }
+
+    /**
+     * get default value for parameter, if it has one it will be overridden by a command line option if provided.
+     *
+     * @param parameter
+     * @param installationContext
+     * @return
+     */
     private static String getCalculatedDefaultValue(Parameter parameter, InstallationContext installationContext) {
-        String result = parameter.getDefaultValue();
+        System.out.println(parameter);
+        String result = installationContext.getProperties().getProperty(parameter.getName());
+        if (result == null) {
+            result = parameter.getDefaultValue();
+        } else {
+            info("Parameter " + parameter.getName() + " default value will be taken from a properties file");
+        }
+
         if (result != null) {
             int a = result.indexOf("&");
             if (a > -1) {
@@ -335,5 +415,25 @@ public class Start {
 
     public static void severe(String message) {
         if (logger != null) logger.log(Level.SEVERE, message);
+    }
+
+    private static boolean uiComponentClosed(IUIComponent uiComponent, InstallationContext context) {
+        return true;
+    }
+
+    private static boolean uiComponentApply(IUIComponent uiComponent, InstallationContext context) {
+        return true;
+    }
+
+    @FunctionalInterface
+    public static interface UIAccessInterfaceClose {
+        boolean uiComponentClosed(IUIComponent uiComponent, InstallationContext context);
+
+    }
+
+    @FunctionalInterface
+    public static interface UIAccessInterfaceApply {
+        boolean uiComponentApply(IUIComponent uiComponent, InstallationContext context);
+
     }
 }

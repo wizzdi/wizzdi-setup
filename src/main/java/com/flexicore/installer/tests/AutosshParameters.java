@@ -3,7 +3,6 @@ package com.flexicore.installer.tests;
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
 import org.pf4j.Extension;
-
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -59,28 +58,6 @@ public class AutosshParameters extends InstallationTask {
         return getPrivateParameters();
     }
 
-    @Override
-    public InstallationResult install(InstallationContext installationContext) throws  Throwable{
-
-        super.install(installationContext);
-
-        try {
-
-            String flexicoreSource = getServerPath() + "/flexicore";
-            String flexicoreHome = getFlexicoreHome();
-            if (!isDry()) {
-                editFile(flexicoreHome + "/flexicore.config", null, "/home/flexicore/", flexicoreHome + "/", false, false, true);
-
-            }
-
-
-        } catch (Exception e) {
-            error("Error while configuring flexicore", e);
-            return new InstallationResult().setInstallationStatus(InstallationStatus.FAILED);
-        }
-        return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
-
-    }
 
     @Override
     public String getId() {
@@ -90,7 +67,7 @@ public class AutosshParameters extends InstallationTask {
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
-        result.add("installIOT");
+        result.add("installIOT"); //we want to be able to use the URL of the main IOT server, however, this can be overridden by the user.
          return result;
     }
 
