@@ -49,7 +49,12 @@ public class Start {
         InstallationContext installationContext = new InstallationContext()
                 .setLogger(logger).setParameters(new Parameters()).setUiClose(Start::uiComponentClosed).setUiApply(Start::uiComponentApply);
         File pluginRoot = new File(mainCmd.getOptionValue(INSTALLATION_TASKS_FOLDER, "tasks"));
-        logger.info("Will load tasks from " + pluginRoot.getAbsolutePath());
+        String path=pluginRoot.getAbsolutePath();
+        if (!pluginRoot.exists())  {
+            severe("cannot fine path for tasks at" +pluginRoot.getAbsolutePath()+" !!, exiting");
+            System.exit(0);
+        }
+        logger.info("Will load tasks from " + pluginRoot.getAbsolutePath()+"  exists: "+pluginRoot.exists());
         PluginManager pluginManager = new DefaultPluginManager(pluginRoot.toPath());
 
         pluginManager.loadPlugins();
