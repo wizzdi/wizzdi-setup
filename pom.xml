@@ -246,11 +246,12 @@
 
                            <modulePath>
                                <path>${project.build.directory}/modules</path>
-                               <path>${project.build.directory}/flexicore-installer-1.0.0.jar</path>
+                               <path>${project.build.directory}/${artifactId}-${version}.jar</path>
 
                            </modulePath>
                            <modules>
                                <module>flexicore.installer</module>
+
 
                            </modules>
 
