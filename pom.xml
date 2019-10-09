@@ -7,12 +7,15 @@
     <groupId>com.flexicore</groupId>
     <artifactId>flexicore-installer</artifactId>
     <version>1.0.1</version>
+
     <properties>
         <slf4j.version>1.7.26</slf4j.version>
         <log4j.version>2.12.0</log4j.version>
+        <java.main.version>11</java.main.version>
     </properties>
 
     <dependencies>
+
         <!-- https://mvnrepository.com/artifact/org.pf4j/pf4j -->
         <dependency>
             <groupId>org.pf4j</groupId>
@@ -73,26 +76,7 @@
             <version>1.13</version>
             <type>jar</type>
         </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-controls</artifactId>
-            <version>13</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-graphics</artifactId>
-            <version>13</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-base</artifactId>
-            <version>13</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-fxml</artifactId>
-            <version>13</version>
-        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -109,8 +93,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
-                    <release>13</release>
-                    <source>13</source>
+                    <release>${java.main.version}</release>
+                    <source>${java.main.version}</source>
                 </configuration>
             </plugin>
 
@@ -129,38 +113,6 @@
                             <overwriteExistingFiles>true</overwriteExistingFiles>
                             <outputDirectory>${project.build.directory}/modules</outputDirectory>
                             <modules>
-<!--
-                               // this module may need to be removed and added to by pass a bug in the plugin
-                               <module>
-                                   <artifact>
-                                       <groupId>org.openjfx</groupId>
-                                       <artifactId>javafx-base</artifactId>
-                                   </artifact>
-                                   <moduleInfo>
-                                       <name>javafx.base</name>
-                                   </moduleInfo>
-                               </module>
-                                -->
-                               <module>
-                                   <artifact>
-                                       <groupId>org.openjfx</groupId>
-                                       <artifactId>javafx-controls</artifactId>
-                                   </artifact>
-                                   <moduleInfo>
-                                       <name>javafx.controls</name>
-                                   </moduleInfo>
-                               </module>
-                               <module>
-                                   <artifact>
-                                       <groupId>org.openjfx</groupId>
-                                       <artifactId>javafx-graphics</artifactId>
-                                   </artifact>
-                                   <moduleInfo>
-                                       <name>javafx.graphics</name>
-                                   </moduleInfo>
-                               </module>
-
-
                                <module>
                                    <artifact>
                                        <groupId>commons-cli</groupId>

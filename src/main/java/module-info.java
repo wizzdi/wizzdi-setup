@@ -7,9 +7,6 @@ module flexicore.installer {
     requires java.base;
     requires java.desktop;
     requires java.naming;
-    requires javafx.base;
-    requires javafx.controls;
-    requires javafx.graphics;
     requires zt.zip;
     requires org.apache.commons.lang3;
     exports com.flexicore.installer.exceptions;

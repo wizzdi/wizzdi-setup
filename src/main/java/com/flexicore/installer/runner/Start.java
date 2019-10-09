@@ -5,9 +5,6 @@ import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.interfaces.IUIComponent;
 
 import com.flexicore.installer.model.*;
-import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.stage.Stage;
 import org.apache.commons.cli.*;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -65,16 +62,7 @@ public class Start {
             component.setContext(installationContext);
             if (component.isAutoStart()) {
                 info("Have started ");
-                Platform.startup(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            ((Application) component).start(new Stage());
-                        } catch (Exception e) {
-                            severe("Error in UI thread", e);
-                        }
-                    }
-                });
+                component.start();
             }
         }
         Thread.sleep(600000);

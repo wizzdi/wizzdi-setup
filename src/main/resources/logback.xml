@@ -22,7 +22,7 @@
     </appender>
 
 
-    <logger name="Installation" level="INFO">
+    <logger name="Installation" level="DEBUG">
         <appender-ref ref="Installation"/>
         <appender-ref ref="InstallationFILE"/>
 
