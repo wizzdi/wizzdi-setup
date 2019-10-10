@@ -5,6 +5,7 @@ import com.flexicore.installer.model.InstallationResult;
 import com.flexicore.installer.model.Parameters;
 import org.pf4j.ExtensionPoint;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 
@@ -22,7 +23,7 @@ public interface IInstallationTask extends ExtensionPoint {
      * @return
      */
     String getId();
-
+    String getName();
     /**
      * get a description of installer plug-in
      * @return
@@ -41,12 +42,16 @@ public interface IInstallationTask extends ExtensionPoint {
      */
     Parameters getParameters(InstallationContext installationContext);
 
-    boolean enabled ();
+    boolean getEnabled ();
+    void setEnabled(boolean value);
 
     /**
      * if set true, will be moved to the end of the installations list, order between plugins having cleanup=true is maintained.
      * @return
      */
     boolean cleanup ();
+    LocalDateTime getStarted();
+    LocalDateTime getEnded();
+    float getProgress();
 
 }

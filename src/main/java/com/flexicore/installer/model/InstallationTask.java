@@ -11,12 +11,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class InstallationTask implements IInstallationTask {
+    private LocalDateTime started=null;
+    private LocalDateTime ended=null;
+    private float progress;
+    private boolean enabled=true;
+
 
     private InstallationContext context;
 
@@ -242,6 +248,11 @@ public class InstallationTask implements IInstallationTask {
     }
 
     @Override
+    public String getName() {
+        return "installation task";
+    }
+
+    @Override
     public String getInstallerDescription() {
         return "No description has been provided";
     }
@@ -257,13 +268,49 @@ public class InstallationTask implements IInstallationTask {
     }
 
     @Override
-    public boolean enabled() {
-        return true;
+    public boolean getEnabled() {
+        return enabled;
     }
+
+    @Override
+    public void setEnabled(boolean value) {
+        enabled=value;
+    }
+
 
     @Override
     public boolean cleanup() {
         return false;
+    }
+
+    @Override
+    public LocalDateTime getStarted() {
+        return started;
+    }
+
+    @Override
+    public LocalDateTime getEnded() {
+        return null;
+    }
+
+    @Override
+    public float getProgress() {
+        return progress;
+    }
+
+    public InstallationTask setStarted(LocalDateTime started) {
+        this.started = started;
+        return this;
+    }
+
+    public InstallationTask setEnded(LocalDateTime ended) {
+        this.ended = ended;
+        return this;
+    }
+
+    public InstallationTask setProgress(float progress) {
+        this.progress = progress;
+        return this;
     }
 
     public InstallationContext getContext() {

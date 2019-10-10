@@ -13,7 +13,6 @@
         <log4j.version>2.12.0</log4j.version>
         <java.main.version>11</java.main.version>
     </properties>
-
     <dependencies>
 
         <!-- https://mvnrepository.com/artifact/org.pf4j/pf4j -->
@@ -268,7 +267,6 @@
                    </execution>
                </executions>
            </plugin>
-
 
 
 
