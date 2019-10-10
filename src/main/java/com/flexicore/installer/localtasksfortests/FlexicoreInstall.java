@@ -1,4 +1,4 @@
-package com.flexicore.installer.tests;
+package com.flexicore.installer.localtasksfortests;
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
 import org.apache.commons.lang3.tuple.Pair;
@@ -31,10 +31,7 @@ public class FlexicoreInstall extends InstallationTask {
         super(installationTasks);
     }
 
-    @Override
-    public boolean enabled() {
-        return true;
-    }
+
 
     /**
      * parameters are best provided by a different plugin

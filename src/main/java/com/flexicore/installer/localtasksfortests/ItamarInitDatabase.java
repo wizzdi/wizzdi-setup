@@ -1,4 +1,4 @@
-package com.flexicore.installer.tests;
+package com.flexicore.installer.localtasksfortests;
 
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
@@ -14,10 +14,10 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
- * Install Itamar specific plugins and configuration files.
+ * Install initial database Itamar
  */
 @Extension
-public class ItamarInstall extends InstallationTask {
+public class ItamarInitDatabase extends InstallationTask {
     static Logger logger;
 
 
@@ -26,14 +26,11 @@ public class ItamarInstall extends InstallationTask {
 
     };
 
-    public ItamarInstall(Map<String, IInstallationTask> installationTasks) {
+    public ItamarInitDatabase(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
     }
 
-    @Override
-    public boolean enabled() {
-        return true;
-    }
+
     public static Parameters getPrivateParameters() {
 
         Parameters result = new Parameters();
@@ -114,7 +111,8 @@ public class ItamarInstall extends InstallationTask {
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
-        result.add("itamar-parameters");
+        result.add("itamar-install");
+        result.add("postgresql");
         return result;
     }
     @Override

@@ -1,4 +1,4 @@
-package com.flexicore.installer.tests;
+package com.flexicore.installer.localtasksfortests;
 
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
@@ -57,10 +57,7 @@ public class WildflyParameters extends InstallationTask {
         result.add("flexicore-install"); //this s because we need to update the standalone.xml and standalone.bat.conf standalone.conf to point here
         return result;
     }
-    @Override
-    public boolean enabled() {
-        return true;
-    }
+
     @Override
     public String getId() {
         return "wildfly-parameters";

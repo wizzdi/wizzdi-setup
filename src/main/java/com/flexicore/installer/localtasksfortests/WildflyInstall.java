@@ -1,4 +1,4 @@
-package com.flexicore.installer.tests;
+package com.flexicore.installer.localtasksfortests;
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
 import com.flexicore.installer.utilities.Utilities;
@@ -33,10 +33,7 @@ public class WildflyInstall extends InstallationTask {
         return result;
     }
 
-    @Override
-    public boolean enabled() {
-        return true;
-    }
+
 
     public static Parameters getPrivateParameters() {
 

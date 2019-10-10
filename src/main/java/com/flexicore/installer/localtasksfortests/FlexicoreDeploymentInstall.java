@@ -1,4 +1,4 @@
-package com.flexicore.installer.tests;
+package com.flexicore.installer.localtasksfortests;
 
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
@@ -10,31 +10,23 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
- Parameters for IOT installation
+ Install the Flexicore Deployment files inside wildfly/standalone/deployments
  */
 @Extension
-public class InstallIOTParameters extends InstallationTask {
+public class FlexicoreDeploymentInstall extends InstallationTask {
     static Logger logger;
 
 
     static Parameter[] preDefined = {
-            new Parameter("activate-IOT", "if true, IOT access to remote server will be activated", true, "true"),
-            new Parameter("remote-server-url", "remote server URL, must be the URL of the remote server this unit is defined at", true, "default value"),
-            new Parameter("remote-server-port", "example description", true, "80"),
-            new Parameter("remote-server-security", "example description", true, "true"),
-            new Parameter("remote-server-username", "example description", true, "admin@flexicore.com"),
-            new Parameter("remote-server-password", "example description", true, "")
+            //  new Parameter("example-key", "example description", true or false here (has value), "default value") //
 
     };
 
-    public InstallIOTParameters(Map<String, IInstallationTask> installationTasks) {
+    public FlexicoreDeploymentInstall(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
     }
 
-    @Override
-    public boolean enabled() {
-        return true;
-    }
+
 
     /**
      * parameters are best provided by a different plugin
@@ -64,7 +56,7 @@ public class InstallIOTParameters extends InstallationTask {
     }
 
     @Override
-    public InstallationResult install(InstallationContext installationContext) throws  Throwable{
+    public InstallationResult install(InstallationContext installationContext) throws Throwable{
 
         super.install(installationContext);
 
@@ -73,13 +65,13 @@ public class InstallIOTParameters extends InstallationTask {
             String flexicoreSource = getServerPath() + "/flexicore";
             String flexicoreHome = getFlexicoreHome();
             if (!isDry()) {
-                editFile(flexicoreHome + "/flexicore.config", null, "/home/flexicore/", flexicoreHome + "/", false, false, true);
+                
 
             }
 
 
         } catch (Exception e) {
-            error("Error while configuring flexicore", e);
+            error("Error while installing flexicore deployment ", e);
             return new InstallationResult().setInstallationStatus(InstallationStatus.FAILED);
         }
         return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
@@ -88,19 +80,19 @@ public class InstallIOTParameters extends InstallationTask {
 
     @Override
     public String getId() {
-        return "installIOTParameters";
+        return "flexicoredeployment";
     }
 
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
-        result.add("flexicore-install");
-         return result;
+        result.add("wildfly-install");
+        return result;
     }
 
     @Override
     public String getInstallerDescription() {
-        return "Parameters for IOT installation ";
+        return "Install Flexicore itself inside Wildfly";
     }
 
     @Override

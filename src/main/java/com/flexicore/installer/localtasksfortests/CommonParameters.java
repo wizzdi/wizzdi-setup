@@ -1,4 +1,4 @@
-package com.flexicore.installer.tests;
+package com.flexicore.installer.localtasksfortests;
 
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
@@ -25,10 +25,7 @@ public class CommonParameters extends InstallationTask {
         super(installationTasks);
     }
 
-    @Override
-    public boolean enabled() {
-        return true;
-    }
+
 
     public static Parameters getPrivateParameters() {
 

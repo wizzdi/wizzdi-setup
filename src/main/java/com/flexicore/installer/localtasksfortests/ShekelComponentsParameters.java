@@ -1,4 +1,4 @@
-package com.flexicore.installer.tests;
+package com.flexicore.installer.localtasksfortests;
 
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
@@ -10,26 +10,25 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
- * Install IOT files and configuration
+ * install the standard shekel system (plugins, configuration, entities etc)
  */
 @Extension
-public class InstallIOT extends InstallationTask {
+public class ShekelComponentsParameters extends InstallationTask {
     static Logger logger;
 
 
     static Parameter[] preDefined = {
-            //  new Parameter("example-key", "example description", true or false here (has value), "default value") //
+            new Parameter("itamarsource", "source of all itamar plugins and files", true,  "&serverpath"+ "/shekel"),
+            new Parameter("deleteplugins", "delete all plugins before copying", true,  "false"),
+            new Parameter("backupprevious", "backup previous plugins", true,  "true")
 
     };
 
-    public InstallIOT(Map<String, IInstallationTask> installationTasks) {
+    public ShekelComponentsParameters(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
     }
 
-    @Override
-    public boolean enabled() {
-        return true;
-    }
+
 
     /**
      * parameters are best provided by a different plugin
@@ -83,7 +82,7 @@ public class InstallIOT extends InstallationTask {
 
     @Override
     public String getId() {
-        return "installIOT";
+        return "shekelcomponentsparameters";
     }
 
     @Override
@@ -95,7 +94,7 @@ public class InstallIOT extends InstallationTask {
 
     @Override
     public String getInstallerDescription() {
-        return "IOT installation, adding the required files  ";
+        return "Fixing the flexicore.config file to have all paths corrected)";
     }
 
     @Override

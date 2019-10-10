@@ -1,4 +1,4 @@
-package com.flexicore.installer.tests;
+package com.flexicore.installer.localtasksfortests;
 
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
@@ -10,26 +10,29 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
- Install the Flexicore Deployment files inside wildfly/standalone/deployments
+make sure there are now double entries in entities and plugins, this is controllable by the two parameters-> ensureentities and ensureplugins
  */
 @Extension
-public class FlexicoreDeploymentInstall extends InstallationTask {
+public class FlexicoreUniquenessEnforcer extends InstallationTask {
     static Logger logger;
 
 
     static Parameter[] preDefined = {
-            //  new Parameter("example-key", "example description", true or false here (has value), "default value") //
+             new Parameter("ensureentities", "ensure now entities of the same type are installed", true,  "true"),
+            new Parameter("ensureplugins", "ensure no plugins of the same type are installed, rules out multiple versions support", true,  "true")
 
     };
 
-    public FlexicoreDeploymentInstall(Map<String, IInstallationTask> installationTasks) {
+    /**
+     * set here for easier testing (shorter code)
+     *
+     * @param installationTasks
+     */
+    public FlexicoreUniquenessEnforcer(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
     }
 
-    @Override
-    public boolean enabled() {
-        return true;
-    }
+
 
     /**
      * parameters are best provided by a different plugin
@@ -59,7 +62,7 @@ public class FlexicoreDeploymentInstall extends InstallationTask {
     }
 
     @Override
-    public InstallationResult install(InstallationContext installationContext) throws Throwable{
+    public InstallationResult install(InstallationContext installationContext) throws Throwable {
 
         super.install(installationContext);
 
@@ -68,13 +71,12 @@ public class FlexicoreDeploymentInstall extends InstallationTask {
             String flexicoreSource = getServerPath() + "/flexicore";
             String flexicoreHome = getFlexicoreHome();
             if (!isDry()) {
-                
 
             }
 
 
         } catch (Exception e) {
-            error("Error while installing flexicore deployment ", e);
+            error("Error while configuring flexicore", e);
             return new InstallationResult().setInstallationStatus(InstallationStatus.FAILED);
         }
         return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
@@ -83,24 +85,29 @@ public class FlexicoreDeploymentInstall extends InstallationTask {
 
     @Override
     public String getId() {
-        return "flexicoredeployment";
+        return "flexicoreuniquenessenforcer";
     }
 
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
-        result.add("wildfly-install");
+        result.add("flexicore-install");
+
+
         return result;
     }
 
     @Override
     public String getInstallerDescription() {
-        return "Install Flexicore itself inside Wildfly";
+        return "Make sure that there are no double components by deleting previous once. using key names and versions, will not work with multiple versions environments ";
     }
 
     @Override
     public String toString() {
         return "Installation task: " + this.getId();
     }
-
+    @Override
+    public boolean cleanup() {
+        return true;
+    }
 }

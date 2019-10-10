@@ -1,4 +1,4 @@
-package com.flexicore.installer.tests;
+package com.flexicore.installer.localtasksfortests;
 
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
@@ -10,26 +10,28 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
- * Install Java JDK if not already installed.
+ Parameters for IOT installation
  */
 @Extension
-public class Java11jdkInstall extends InstallationTask {
+public class InstallIOTParameters extends InstallationTask {
     static Logger logger;
 
 
     static Parameter[] preDefined = {
-            //  new Parameter("example-key", "example description", true or false here (has value), "default value") //
+            new Parameter("activate-IOT", "if true, IOT access to remote server will be activated", true, "true"),
+            new Parameter("remote-server-url", "remote server URL, must be the URL of the remote server this unit is defined at", true, "default value"),
+            new Parameter("remote-server-port", "example description", true, "80"),
+            new Parameter("remote-server-security", "example description", true, "true"),
+            new Parameter("remote-server-username", "example description", true, "admin@flexicore.com"),
+            new Parameter("remote-server-password", "example description", true, "")
 
     };
 
-    public Java11jdkInstall(Map<String, IInstallationTask> installationTasks) {
+    public InstallIOTParameters(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
     }
 
-    @Override
-    public boolean enabled() {
-        return true;
-    }
+
 
     /**
      * parameters are best provided by a different plugin
@@ -83,19 +85,19 @@ public class Java11jdkInstall extends InstallationTask {
 
     @Override
     public String getId() {
-        return "openjdk";
+        return "installIOTParameters";
     }
 
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
-        result.add("common-parameters");
-        return result;
+        result.add("flexicore-install");
+         return result;
     }
 
     @Override
     public String getInstallerDescription() {
-        return "Install JDK 11 , will install latest JDK on Linux...";
+        return "Parameters for IOT installation ";
     }
 
     @Override

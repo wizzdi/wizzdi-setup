@@ -1,4 +1,4 @@
-package com.flexicore.installer.tests;
+package com.flexicore.installer.localtasksfortests;
 
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
@@ -10,26 +10,23 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
- * Install Monit watchdog
+ * install the standard Shekel system (plugins, configuration, entities etc)
  */
 @Extension
-public class MonitInstall extends InstallationTask {
+public class ShekelComponentsInstall extends InstallationTask {
     static Logger logger;
 
 
     static Parameter[] preDefined = {
-            //  new Parameter("example-key", "example description", true or false here (has value), "default value") //
+
 
     };
 
-    public MonitInstall(Map<String, IInstallationTask> installationTasks) {
+    public ShekelComponentsInstall(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
     }
 
-    @Override
-    public boolean enabled() {
-        return true;
-    }
+
 
     /**
      * parameters are best provided by a different plugin
@@ -59,7 +56,7 @@ public class MonitInstall extends InstallationTask {
     }
 
     @Override
-    public InstallationResult install(InstallationContext installationContext) throws  Throwable{
+    public InstallationResult install(InstallationContext installationContext)  throws Throwable {
 
         super.install(installationContext);
 
@@ -83,19 +80,20 @@ public class MonitInstall extends InstallationTask {
 
     @Override
     public String getId() {
-        return "monit";
+        return "shekelcomponentsinstall";
     }
 
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
-        result.add("common-parameters");
-        return result;
+        result.add("shekelcomponentsparameters");
+
+       return result;
     }
 
     @Override
     public String getInstallerDescription() {
-        return "Fixing the flexicore.config file to have all paths corrected)";
+        return "Install Shekel Components)";
     }
 
     @Override

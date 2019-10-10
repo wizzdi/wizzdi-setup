@@ -1,4 +1,4 @@
-package com.flexicore.installer.tests;
+package com.flexicore.installer.localtasksfortests;
 
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
@@ -10,10 +10,10 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
- * Install MongoDB
+ * fix flexicore configuration file
  */
 @Extension
-public class MongoDBInstall extends InstallationTask {
+public class Java32bitInstall extends InstallationTask {
     static Logger logger;
 
 
@@ -22,14 +22,11 @@ public class MongoDBInstall extends InstallationTask {
 
     };
 
-    public MongoDBInstall(Map<String, IInstallationTask> installationTasks) {
+    public Java32bitInstall(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
     }
 
-    @Override
-    public boolean enabled() {
-        return true;
-    }
+
 
     /**
      * parameters are best provided by a different plugin
@@ -83,19 +80,19 @@ public class MongoDBInstall extends InstallationTask {
 
     @Override
     public String getId() {
-        return "mongodb";
+        return "java32";
     }
 
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
         result.add("common-parameters");
-      return result;
+        return result;
     }
 
     @Override
     public String getInstallerDescription() {
-        return "Installation of MongoDB database";
+        return "Fixing the flexicore.config file to have all paths corrected)";
     }
 
     @Override

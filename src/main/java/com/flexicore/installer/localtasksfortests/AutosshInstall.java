@@ -1,39 +1,32 @@
-package com.flexicore.installer.tests;
+package com.flexicore.installer.localtasksfortests;
 
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
 import org.pf4j.Extension;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
 /**
- * fix flexicore configuration file
+ * Install Auto-SSH , AUTO-SSH provides access through the cloud into units behind NAT
  */
 @Extension
-public class FlexicoreFixConfigFile extends InstallationTask {
+public class AutosshInstall extends InstallationTask {
     static Logger logger;
 
 
     static Parameter[] preDefined = {
-            //  new Parameter("example-key", "example description", true or false here (has value), "default value") //
+
 
     };
 
-    public FlexicoreFixConfigFile(Map<String, IInstallationTask> installationTasks) {
+    public AutosshInstall(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
     }
 
-    @Override
-    public boolean enabled() {
-        return true;
-    }
+
 
     /**
      * parameters are best provided by a different plugin
@@ -63,43 +56,38 @@ public class FlexicoreFixConfigFile extends InstallationTask {
     }
 
     @Override
-    public InstallationResult install(InstallationContext installationContext) throws  Throwable{
+    public InstallationResult install(InstallationContext installationContext) throws Throwable {
+        InstallationResult result = null;
+        if ((result = super.install(installationContext)).equals(InstallationStatus.DRY)) return result;
+        if (!isWIndows) {
+            try {
 
-        super.install(installationContext);
-
-        try {
-
-            String flexicoreSource = getServerPath() + "/flexicore";
-            String flexicoreHome = getFlexicoreHome();
-            if (!isDry()) {
-                editFile(flexicoreHome + "/flexicore.config", null, "/home/flexicore/", flexicoreHome + "/", false, false, true);
-
+            } catch (Exception e) {
+                error("Error while configuring flexicore", e);
+                return new InstallationResult().setInstallationStatus(InstallationStatus.FAILED);
             }
-
-
-        } catch (Exception e) {
-            error("Error while configuring flexicore", e);
-            return new InstallationResult().setInstallationStatus(InstallationStatus.FAILED);
         }
+
         return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
+
 
     }
 
     @Override
     public String getId() {
-        return "flexicoreFixConfigFile";
+        return "autossh";
     }
 
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
-        result.add("flexicore-install");
+        result.add("autossh-parameters");
         return result;
     }
 
     @Override
     public String getInstallerDescription() {
-        return "Fixing the flexicore.config file to have all paths corrected)";
+        return "IOT installation, adding the required files  ";
     }
 
     @Override

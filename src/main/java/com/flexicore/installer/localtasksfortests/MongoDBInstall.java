@@ -1,4 +1,4 @@
-package com.flexicore.installer.tests;
+package com.flexicore.installer.localtasksfortests;
 
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
@@ -10,26 +10,22 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
- * Install Auto-SSH , AUTO-SSH provides access through the cloud into units behind NAT
+ * Install MongoDB
  */
 @Extension
-public class AutosshInstall extends InstallationTask {
+public class MongoDBInstall extends InstallationTask {
     static Logger logger;
 
 
     static Parameter[] preDefined = {
-
+            //  new Parameter("example-key", "example description", true or false here (has value), "default value") //
 
     };
 
-    public AutosshInstall(Map<String, IInstallationTask> installationTasks) {
+    public MongoDBInstall(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
     }
 
-    @Override
-    public boolean enabled() {
-        return true;
-    }
 
     /**
      * parameters are best provided by a different plugin
@@ -59,38 +55,43 @@ public class AutosshInstall extends InstallationTask {
     }
 
     @Override
-    public InstallationResult install(InstallationContext installationContext) throws Throwable {
-        InstallationResult result = null;
-        if ((result = super.install(installationContext)).equals(InstallationStatus.DRY)) return result;
-        if (!isWIndows) {
-            try {
+    public InstallationResult install(InstallationContext installationContext) throws  Throwable{
 
-            } catch (Exception e) {
-                error("Error while configuring flexicore", e);
-                return new InstallationResult().setInstallationStatus(InstallationStatus.FAILED);
+        super.install(installationContext);
+
+        try {
+
+            String flexicoreSource = getServerPath() + "/flexicore";
+            String flexicoreHome = getFlexicoreHome();
+            if (!isDry()) {
+                editFile(flexicoreHome + "/flexicore.config", null, "/home/flexicore/", flexicoreHome + "/", false, false, true);
+
             }
+
+
+        } catch (Exception e) {
+            error("Error while configuring flexicore", e);
+            return new InstallationResult().setInstallationStatus(InstallationStatus.FAILED);
         }
-
         return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
-
 
     }
 
     @Override
     public String getId() {
-        return "autossh";
+        return "mongodb";
     }
 
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
-        result.add("autossh-parameters");
-        return result;
+        result.add("common-parameters");
+      return result;
     }
 
     @Override
     public String getInstallerDescription() {
-        return "IOT installation, adding the required files  ";
+        return "Installation of MongoDB database";
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.flexicore.installer.tests;
+package com.flexicore.installer.localtasksfortests;
 
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
@@ -8,30 +8,30 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-
+//todo:fix
 /**
- * Flexicore main parameters installation
- * some of these parameters  are relevant for Windows OS only.
+ * Old Itamar software installation
  */
 @Extension
-public class FlexiCoreParameters extends InstallationTask {
+public class EPX2000Install extends InstallationTask {
     static Logger logger;
 
 
     static Parameter[] preDefined = {
-            new Parameter("flexicorehome", "target for flexicore files", true,  "&targetpath"+ "/flexicore"),
-            new Parameter("deleteplugins", "delete all plugins before copying", true,  "true"),
-            new Parameter("backupprevious", "backup previous plugins", true,  "true")
+
+
     };
 
-    public FlexiCoreParameters(Map<String, IInstallationTask> installationTasks) {
+    /**
+     * set here for easier testing (shorter code)
+     *
+     * @param installationTasks
+     */
+    public EPX2000Install(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
     }
 
-    @Override
-    public boolean enabled() {
-        return true;
-    }
+
     public static Parameters getPrivateParameters() {
 
         Parameters result = new Parameters();
@@ -59,19 +59,17 @@ public class FlexiCoreParameters extends InstallationTask {
     }
     @Override
     public String getId() {
-        return "flexicore-parameters";
+        return "itamar-epx2000";
     }
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
         result.add("common-parameters");
-
-
-        return result;
+       return result;
     }
     @Override
     public String getInstallerDescription() {
-        return "This component is used to define the parameters for the Itamar software installation (configuration etc.)";
+        return "This component is used to install old Itamar EPX2000 for RHI and other calculations)";
     }
     @Override
     public String toString() {

@@ -1,35 +1,32 @@
-package com.flexicore.installer.tests;
+package com.flexicore.installer.localtasksfortests;
 
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
 import org.pf4j.Extension;
+
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
 /**
- Parameters for AUTO SSH installation
+ * fix flexicore configuration file
  */
 @Extension
-public class AutosshParameters extends InstallationTask {
+public class FlexicoreFixConfigFile extends InstallationTask {
     static Logger logger;
 
 
     static Parameter[] preDefined = {
-            new Parameter("autossh-server", "Auto SSH remote server, if not specified, defaults to IOT server remote URL, the server CANNOT be changed after installation", true, "&remote-server-url"),
-            new Parameter("autossh-port", "should be a unique port on this server, the port can be changed after installation", true, "4444")
+            //  new Parameter("example-key", "example description", true or false here (has value), "default value") //
 
     };
 
-    public AutosshParameters(Map<String, IInstallationTask> installationTasks) {
+    public FlexicoreFixConfigFile(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
     }
 
-    @Override
-    public boolean enabled() {
-        return true;
-    }
+
 
     /**
      * parameters are best provided by a different plugin
@@ -58,22 +55,44 @@ public class AutosshParameters extends InstallationTask {
         return getPrivateParameters();
     }
 
+    @Override
+    public InstallationResult install(InstallationContext installationContext) throws  Throwable{
+
+        super.install(installationContext);
+
+        try {
+
+            String flexicoreSource = getServerPath() + "/flexicore";
+            String flexicoreHome = getFlexicoreHome();
+            if (!isDry()) {
+                editFile(flexicoreHome + "/flexicore.config", null, "/home/flexicore/", flexicoreHome + "/", false, false, true);
+
+            }
+
+
+        } catch (Exception e) {
+            error("Error while configuring flexicore", e);
+            return new InstallationResult().setInstallationStatus(InstallationStatus.FAILED);
+        }
+        return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
+
+    }
 
     @Override
     public String getId() {
-        return "autossh-parameters";
+        return "flexicoreFixConfigFile";
     }
 
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
-        result.add("installIOT"); //we want to be able to use the URL of the main IOT server, however, this can be overridden by the user.
-         return result;
+        result.add("flexicore-install");
+        return result;
     }
 
     @Override
     public String getInstallerDescription() {
-        return "Parameters for IOT installation ";
+        return "Fixing the flexicore.config file to have all paths corrected)";
     }
 
     @Override

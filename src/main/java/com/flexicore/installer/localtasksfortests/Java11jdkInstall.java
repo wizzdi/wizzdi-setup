@@ -1,4 +1,4 @@
-package com.flexicore.installer.tests;
+package com.flexicore.installer.localtasksfortests;
 
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
@@ -10,28 +10,23 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
- * install the standard shekel system (plugins, configuration, entities etc)
+ * Install Java JDK if not already installed.
  */
 @Extension
-public class ShekelComponentsParameters extends InstallationTask {
+public class Java11jdkInstall extends InstallationTask {
     static Logger logger;
 
 
     static Parameter[] preDefined = {
-            new Parameter("itamarsource", "source of all itamar plugins and files", true,  "&serverpath"+ "/shekel"),
-            new Parameter("deleteplugins", "delete all plugins before copying", true,  "false"),
-            new Parameter("backupprevious", "backup previous plugins", true,  "true")
+            //  new Parameter("example-key", "example description", true or false here (has value), "default value") //
 
     };
 
-    public ShekelComponentsParameters(Map<String, IInstallationTask> installationTasks) {
+    public Java11jdkInstall(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
     }
 
-    @Override
-    public boolean enabled() {
-        return true;
-    }
+
 
     /**
      * parameters are best provided by a different plugin
@@ -85,19 +80,19 @@ public class ShekelComponentsParameters extends InstallationTask {
 
     @Override
     public String getId() {
-        return "shekelcomponentsparameters";
+        return "openjdk";
     }
 
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
-        result.add("flexicore-install");
+        result.add("common-parameters");
         return result;
     }
 
     @Override
     public String getInstallerDescription() {
-        return "Fixing the flexicore.config file to have all paths corrected)";
+        return "Install JDK 11 , will install latest JDK on Linux...";
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.flexicore.installer.tests;
+package com.flexicore.installer.localtasksfortests;
 
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
@@ -10,10 +10,10 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
- * Install PostgresSQL relational database
+ * Install IOT files and configuration
  */
 @Extension
-public class postgresqlInstal extends InstallationTask {
+public class InstallIOT extends InstallationTask {
     static Logger logger;
 
 
@@ -22,14 +22,11 @@ public class postgresqlInstal extends InstallationTask {
 
     };
 
-    public postgresqlInstal(Map<String, IInstallationTask> installationTasks) {
+    public InstallIOT(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
     }
 
-    @Override
-    public boolean enabled() {
-        return true;
-    }
+
 
     /**
      * parameters are best provided by a different plugin
@@ -83,19 +80,19 @@ public class postgresqlInstal extends InstallationTask {
 
     @Override
     public String getId() {
-        return "postgresql";
+        return "installIOT";
     }
 
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();
-        result.add("common-parameters");
+        result.add("flexicore-install");
         return result;
     }
 
     @Override
     public String getInstallerDescription() {
-        return "Install PostgresSQL relational database";
+        return "IOT installation, adding the required files  ";
     }
 
     @Override
