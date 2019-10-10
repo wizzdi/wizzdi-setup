@@ -1,10 +1,14 @@
 package com.flexicore.installer.model;
 
+import com.flexicore.installer.interfaces.IInstallationTask;
+
 public class Parameter {
     private String name;
     private String description;
     private String defaultValue;
     private String value;
+    private IInstallationTask parentTask;
+    private ParameterSource source=ParameterSource.CODE;
     private boolean hasValue;
 
     public String getDescription() {
@@ -82,5 +86,23 @@ public class Parameter {
         return "***** Parameter:\n "+ "name: "+(name==null ? "no name is defined \n" :name +"\n")+" description: "+
                 (description==null ? "no descriptions is defined \n " :description+"\n") + " hasvalue: "+hasValue+"\n"+
                 (hasValue ? " default value: "+ (defaultValue==null ? "no default value is defined \n" : defaultValue+"\n")+" current value: "+ (value==null ?"no value is defined\n" :value+"\n"): " This is a parameter without value\n" );
+    }
+
+    public IInstallationTask getParentTask() {
+        return parentTask;
+    }
+
+    public Parameter setParentTask(IInstallationTask parentTask) {
+        this.parentTask = parentTask;
+        return this;
+    }
+
+    public ParameterSource getSource() {
+        return source;
+    }
+
+    public Parameter setSource(ParameterSource source) {
+        this.source = source;
+        return this;
     }
 }

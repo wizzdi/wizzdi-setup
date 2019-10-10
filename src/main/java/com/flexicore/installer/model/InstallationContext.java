@@ -1,5 +1,9 @@
 package com.flexicore.installer.model;
+import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.runner.Start;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 public class InstallationContext {
@@ -7,11 +11,13 @@ public class InstallationContext {
     private Logger logger;
     private Parameters parameters;
     private Properties properties;
+    private List<IInstallationTask> iInstallationTaskList=new ArrayList<>();
     private Start.UIAccessInterfaceClose uiClose;
     private Start.UIAccessInterfaceApply uiApply;
     public Logger getLogger() {
         return logger;
     }
+
 
     public Parameters getParamaters() {
         return parameters;
@@ -51,6 +57,15 @@ public class InstallationContext {
 
     public InstallationContext setUiApply(Start.UIAccessInterfaceApply uiApply) {
         this.uiApply = uiApply;
+        return this;
+    }
+
+    public List<IInstallationTask> getiInstallationTaskList() {
+        return iInstallationTaskList;
+    }
+
+    public InstallationContext setiInstallationTaskList(List<IInstallationTask> iInstallationTaskList) {
+        this.iInstallationTaskList = iInstallationTaskList;
         return this;
     }
 }

@@ -21,6 +21,7 @@ public class InstallationTask implements IInstallationTask {
     private LocalDateTime started=null;
     private LocalDateTime ended=null;
     private float progress;
+    private String name;
     private boolean enabled=true;
 
 
@@ -273,8 +274,9 @@ public class InstallationTask implements IInstallationTask {
     }
 
     @Override
-    public void setEnabled(boolean value) {
+    public IInstallationTask setEnabled(boolean value) {
         enabled=value;
+        return this;
     }
 
 
@@ -297,17 +299,23 @@ public class InstallationTask implements IInstallationTask {
     public float getProgress() {
         return progress;
     }
-
+    @Override
     public InstallationTask setStarted(LocalDateTime started) {
         this.started = started;
         return this;
     }
-
+    @Override
     public InstallationTask setEnded(LocalDateTime ended) {
         this.ended = ended;
         return this;
     }
 
+    @Override
+    public IInstallationTask setName(String name) {
+        this.name=name;
+        return null;
+    }
+    @Override
     public InstallationTask setProgress(float progress) {
         this.progress = progress;
         return this;
@@ -316,8 +324,8 @@ public class InstallationTask implements IInstallationTask {
     public InstallationContext getContext() {
         return context;
     }
-
-    public InstallationTask setContext() {
+    @Override
+    public InstallationTask setContext(InstallationContext context) {
         this.context = context;
         return this;
     }

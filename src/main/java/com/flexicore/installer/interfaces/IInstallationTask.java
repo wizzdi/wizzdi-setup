@@ -43,7 +43,7 @@ public interface IInstallationTask extends ExtensionPoint {
     Parameters getParameters(InstallationContext installationContext);
 
     boolean getEnabled ();
-    void setEnabled(boolean value);
+    IInstallationTask setEnabled(boolean value);
 
     /**
      * if set true, will be moved to the end of the installations list, order between plugins having cleanup=true is maintained.
@@ -51,7 +51,12 @@ public interface IInstallationTask extends ExtensionPoint {
      */
     boolean cleanup ();
     LocalDateTime getStarted();
+    IInstallationTask setStarted(LocalDateTime started);
     LocalDateTime getEnded();
+    IInstallationTask setEnded(LocalDateTime started);
+    IInstallationTask setName(String name);
     float getProgress();
+    IInstallationTask setProgress(float progress);
+    IInstallationTask setContext(InstallationContext context);
 
 }
