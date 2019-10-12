@@ -91,7 +91,7 @@ public class postgresqlInstal extends InstallationTask {
     }
 
     @Override
-    public String getInstallerDescription() {
+    public String getDescription() {
         return "Install PostgresSQL relational database";
     }
 

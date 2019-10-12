@@ -129,7 +129,7 @@ public class FlexicoreInstall extends InstallationTask {
     }
 
     @Override
-    public String getInstallerDescription() {
+    public String getDescription() {
         return " Installation for Flexicore files and plugins ";
     }
 

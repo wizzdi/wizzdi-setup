@@ -91,7 +91,7 @@ public class InstallIOT extends InstallationTask {
     }
 
     @Override
-    public String getInstallerDescription() {
+    public String getDescription() {
         return "IOT installation, adding the required files  ";
     }
 

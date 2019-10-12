@@ -116,7 +116,7 @@ public class ItamarInitDatabase extends InstallationTask {
         return result;
     }
     @Override
-    public String getInstallerDescription() {
+    public String getDescription() {
         return "This component is used to to install Itamar files";
     }
     @Override

@@ -90,7 +90,7 @@ public class MongoDBInstall extends InstallationTask {
     }
 
     @Override
-    public String getInstallerDescription() {
+    public String getDescription() {
         return "Installation of MongoDB database";
     }
 

@@ -67,7 +67,7 @@ public class FlexiCoreParameters extends InstallationTask {
         return result;
     }
     @Override
-    public String getInstallerDescription() {
+    public String getDescription() {
         return "This component is used to define the parameters for the Itamar software installation (configuration etc.)";
     }
     @Override

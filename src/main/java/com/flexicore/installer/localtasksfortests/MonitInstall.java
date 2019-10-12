@@ -91,7 +91,7 @@ public class MonitInstall extends InstallationTask {
     }
 
     @Override
-    public String getInstallerDescription() {
+    public String getDescription() {
         return "Fixing the flexicore.config file to have all paths corrected)";
     }
 

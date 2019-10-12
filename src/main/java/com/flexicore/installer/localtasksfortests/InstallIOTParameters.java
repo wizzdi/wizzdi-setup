@@ -96,7 +96,7 @@ public class InstallIOTParameters extends InstallationTask {
     }
 
     @Override
-    public String getInstallerDescription() {
+    public String getDescription() {
         return "Parameters for IOT installation ";
     }
 

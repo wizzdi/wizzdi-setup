@@ -255,10 +255,7 @@ public class WildflyInstall extends InstallationTask {
         return "wildfly-install";
     }
 
-    @Override
-    public String getInstallerDescription() {
-        return "This component is used to install the Wildfly Application Server from Red Hat. ";
-    }
+
 
     @Override
     public String toString() {

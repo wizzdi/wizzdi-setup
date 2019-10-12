@@ -91,7 +91,7 @@ public class Java11jdkInstall extends InstallationTask {
     }
 
     @Override
-    public String getInstallerDescription() {
+    public String getDescription() {
         return "Install JDK 11 , will install latest JDK on Linux...";
     }
 

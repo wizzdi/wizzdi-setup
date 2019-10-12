@@ -68,7 +68,7 @@ public class EPX2000Install extends InstallationTask {
        return result;
     }
     @Override
-    public String getInstallerDescription() {
+    public String getDescription() {
         return "This component is used to install old Itamar EPX2000 for RHI and other calculations)";
     }
     @Override

@@ -20,10 +20,11 @@ import java.util.stream.Collectors;
 public class InstallationTask implements IInstallationTask {
     private LocalDateTime started=null;
     private LocalDateTime ended=null;
-    private float progress;
+    private Integer progress;
     private String name;
     private boolean enabled=true;
-
+    private InstallationStatus status;
+    private String description="no description";
 
     private InstallationContext context;
 
@@ -237,7 +238,7 @@ public class InstallationTask implements IInstallationTask {
          flexicoreHome = getFlexicoreHome();
 
         if (isDry()) {
-            info("Dry run  of " + this.getId() + " -> " + this.getInstallerDescription() + getParameters(installationContext).toString());
+            info("Dry run  of " + this.getId() + " -> " + this.getDescription() + getParameters(installationContext).toString());
             return new InstallationResult().setInstallationStatus(InstallationStatus.DRY);
         }
         return new InstallationResult().setInstallationStatus(InstallationStatus.CONTINUE);
@@ -254,13 +255,23 @@ public class InstallationTask implements IInstallationTask {
     }
 
     @Override
-    public String getInstallerDescription() {
-        return "No description has been provided";
+    public IInstallationTask setDescription(String description) {
+        return this;
+    }
+
+    @Override
+    public String getDescription() {
+        return description;
     }
 
     @Override
     public Set<String> getPrerequisitesTask() {
         return Collections.emptySet();
+    }
+
+    @Override
+    public InstallationStatus getStatus() {
+        return status;
     }
 
     @Override
@@ -296,7 +307,7 @@ public class InstallationTask implements IInstallationTask {
     }
 
     @Override
-    public float getProgress() {
+    public Integer getProgress() {
         return progress;
     }
     @Override
@@ -304,6 +315,17 @@ public class InstallationTask implements IInstallationTask {
         this.started = started;
         return this;
     }
+
+    @Override
+    public IInstallationTask setProgress(Integer progress) {
+        return null;
+    }
+
+    @Override
+    public IInstallationTask setStatus(InstallationStatus status) {
+        return null;
+    }
+
     @Override
     public InstallationTask setEnded(LocalDateTime ended) {
         this.ended = ended;
@@ -313,13 +335,9 @@ public class InstallationTask implements IInstallationTask {
     @Override
     public IInstallationTask setName(String name) {
         this.name=name;
-        return null;
-    }
-    @Override
-    public InstallationTask setProgress(float progress) {
-        this.progress = progress;
         return this;
     }
+
 
     public InstallationContext getContext() {
         return context;

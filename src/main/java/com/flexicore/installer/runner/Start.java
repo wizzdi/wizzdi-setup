@@ -134,7 +134,7 @@ public class Start {
             if (mainCmd.hasOption(HELP)) {
                 if (taskOptions.getOptions().size() != 0) {
 
-                    System.out.println("command line options for: " + task.getId() + "  " + task.getInstallerDescription());
+                    System.out.println("command line options for: " + task.getId() + "  " + task.getDescription());
                     if (task.getPrerequisitesTask().size() != 0) {
                         System.out.println("Requires: " + task.getPrerequisitesTask());
                     }
@@ -261,7 +261,7 @@ public class Start {
                 installationContext.getParamaters().addParameter(parameter);
                 count++;
             }
-            info("Have added " + count + " parameters to installation task: " + task.getId() + " ->>" + task.getInstallerDescription());
+            info("Have added " + count + " parameters to installation task: " + task.getId() + " ->>" + task.getDescription());
         } catch (ParseException e) {
             logger.log(Level.SEVERE, "error while parsing command line", e);
             return false;

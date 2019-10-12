@@ -91,7 +91,7 @@ public class FlexicoreDeploymentInstall extends InstallationTask {
     }
 
     @Override
-    public String getInstallerDescription() {
+    public String getDescription() {
         return "Install Flexicore itself inside Wildfly";
     }
 

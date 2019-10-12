@@ -98,7 +98,7 @@ public class FlexicoreUniquenessEnforcer extends InstallationTask {
     }
 
     @Override
-    public String getInstallerDescription() {
+    public String getDescription() {
         return "Make sure that there are no double components by deleting previous once. using key names and versions, will not work with multiple versions environments ";
     }
 

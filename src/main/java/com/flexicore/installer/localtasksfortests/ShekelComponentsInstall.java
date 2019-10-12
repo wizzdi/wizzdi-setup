@@ -92,7 +92,7 @@ public class ShekelComponentsInstall extends InstallationTask {
     }
 
     @Override
-    public String getInstallerDescription() {
+    public String getDescription() {
         return "Install Shekel Components)";
     }
 

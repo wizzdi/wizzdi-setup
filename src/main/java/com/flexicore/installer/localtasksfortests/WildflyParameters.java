@@ -64,7 +64,7 @@ public class WildflyParameters extends InstallationTask {
     }
 
     @Override
-    public String getInstallerDescription() {
+    public String getDescription() {
         return "This component is used to define preferred paths and other common parameters better globally defined. ";
     }
 
