@@ -258,7 +258,7 @@ public class Start {
                     }
                     parameter.setValue(String.valueOf(cmd.hasOption(name)));
                 }
-                installationContext.getParamaters().addParameter(parameter);
+                installationContext.getParamaters().addParameter(parameter,null);
                 count++;
             }
             info("Have added " + count + " parameters to installation task: " + task.getId() + " ->>" + task.getDescription());

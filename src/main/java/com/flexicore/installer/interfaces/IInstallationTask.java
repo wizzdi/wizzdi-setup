@@ -15,6 +15,7 @@ public interface IInstallationTask extends ExtensionPoint {
     InstallationResult install(InstallationContext installationContext) throws Throwable;
 
     String getId();
+    IInstallationTask setId(String id);
     String getName();
 
     String getDescription();

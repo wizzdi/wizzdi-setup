@@ -22,13 +22,14 @@ public class InstallationTask implements IInstallationTask {
     private LocalDateTime ended=LocalDateTime.now();
     private Integer progress=0;
     private String name;
+    private String id;
     private boolean enabled=true;
     private InstallationStatus status=InstallationStatus.CREATED;
     private String description="no description";
 
     private InstallationContext context;
 
-    public static Parameters getPrivateParameters() {
+    public Parameters getPrivateParameters() {
         return null;
     }
 
@@ -246,7 +247,13 @@ public class InstallationTask implements IInstallationTask {
 
     @Override
     public String getId() {
-        return "no-id";
+        return id;
+    }
+
+    @Override
+    public IInstallationTask setId(String id) {
+        this.id=id;
+        return this;
     }
 
     @Override

@@ -26,12 +26,12 @@ public class WildflyParameters extends InstallationTask {
         super(installationTasks);
     }
 
-    public static Parameters getPrivateParameters() {
+    public  Parameters getPrivateParameters() {
 
         Parameters result = new Parameters();
 
         for (Parameter parameter : preDefined) {
-            result.addParameter(parameter);
+            result.addParameter(parameter,this);
             logger.info("Got a default parameter: " + parameter.toString());
         }
 

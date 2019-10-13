@@ -1,8 +1,8 @@
 package com.flexicore.installer.model;
 
-import java.util.Collection;
-import java.util.Set;
-import java.util.TreeMap;
+import com.flexicore.installer.interfaces.IInstallationTask;
+
+import java.util.*;
 
 public class Parameters {
     private TreeMap<String,Parameter> map=new TreeMap<>();
@@ -12,6 +12,7 @@ public class Parameters {
     public Collection<Parameter> getValues() {
         return map.values();
     }
+    private HashMap<IInstallationTask, List<Parameter>> bytasks;
     public Set<String> getKeys() {
         return map.keySet();
     }
@@ -21,10 +22,21 @@ public class Parameters {
         return this;
 
     }
+    public List<Parameter> byTask(IInstallationTask task) {
+        if (bytasks!=null) {
+            return bytasks.get(task);
+        }
+        return null;
+    }
 
-
-    public Parameters addParameter(Parameter parameter) {
+    public Parameters addParameter(Parameter parameter,IInstallationTask task) {
         map.put(parameter.getName(),parameter);
+        if (task!=null) {
+            if (bytasks==null) bytasks=new HashMap<>();
+            List<Parameter> list=null;
+            if ((list=bytasks.get(task))==null) bytasks.put(task,list=new ArrayList<Parameter>());
+            list.add(parameter);
+        }
         return this;
     }
     public boolean getBooleanValue(String key) {

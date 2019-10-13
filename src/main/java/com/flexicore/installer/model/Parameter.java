@@ -7,8 +7,9 @@ public class Parameter {
     private String description;
     private String defaultValue;
     private String value;
-    private IInstallationTask parentTask;
+
     private ParameterSource source=ParameterSource.CODE;
+    private ParameterType parameterType=ParameterType.StringType;
     private boolean hasValue;
 
     public String getDescription() {
@@ -88,14 +89,7 @@ public class Parameter {
                 (hasValue ? " default value: "+ (defaultValue==null ? "no default value is defined \n" : defaultValue+"\n")+" current value: "+ (value==null ?"no value is defined\n" :value+"\n"): " This is a parameter without value\n" );
     }
 
-    public IInstallationTask getParentTask() {
-        return parentTask;
-    }
 
-    public Parameter setParentTask(IInstallationTask parentTask) {
-        this.parentTask = parentTask;
-        return this;
-    }
 
     public ParameterSource getSource() {
         return source;
