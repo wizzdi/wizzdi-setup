@@ -1,5 +1,5 @@
 package com.flexicore.installer.model;
 
 public enum InstallationStatus {
-    COMPLETED,FAILED,DRY,CONTINUE
+    CREATED,COMPLETED,FAILED,DRY,CONTINUE,RUNNING
 }

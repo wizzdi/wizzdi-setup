@@ -1,10 +1,8 @@
 package com.flexicore.installer.model;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
-import static java.util.Map.Entry.comparingByKey;
-import static java.util.stream.Collectors.toMap;
+import java.util.Collection;
+import java.util.Set;
+import java.util.TreeMap;
 
 public class Parameters {
     private TreeMap<String,Parameter> map=new TreeMap<>();

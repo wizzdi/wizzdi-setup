@@ -31,10 +31,11 @@ public interface IInstallationTask extends ExtensionPoint {
     boolean cleanup ();
     LocalDateTime getStarted();
     IInstallationTask setStarted(LocalDateTime started);
+    LocalDateTime getEnded();
+    IInstallationTask setEnded(LocalDateTime ended);
     IInstallationTask setProgress(Integer progress);
     IInstallationTask setStatus(InstallationStatus status);
-    LocalDateTime getEnded();
-    IInstallationTask setEnded(LocalDateTime started);
+
     IInstallationTask setName(String name);
     Integer getProgress();
     IInstallationTask setContext(InstallationContext context);
