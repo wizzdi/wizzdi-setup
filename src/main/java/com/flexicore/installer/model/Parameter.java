@@ -7,9 +7,10 @@ public class Parameter {
     private String description;
     private String defaultValue;
     private String value;
+    private ParameterType type=ParameterType.StringType;
 
     private ParameterSource source=ParameterSource.CODE;
-    private ParameterType parameterType=ParameterType.StringType;
+
     private boolean hasValue;
 
     public String getDescription() {
@@ -97,6 +98,15 @@ public class Parameter {
 
     public Parameter setSource(ParameterSource source) {
         this.source = source;
+        return this;
+    }
+
+    public ParameterType getType() {
+        return type;
+    }
+
+    public Parameter setType(ParameterType type) {
+        this.type = type;
         return this;
     }
 }

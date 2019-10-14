@@ -1,5 +1,5 @@
 package com.flexicore.installer.model;
 
 public enum ParameterType {
-    StringType,NumberType,BooleanType,FileType,FolderType
+    StringType,NumberType,BooleanType,FileType,FolderType,ListType
 }
