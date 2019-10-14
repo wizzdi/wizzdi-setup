@@ -1,6 +1,6 @@
 package com.flexicore.installer.model;
-
-import com.flexicore.installer.interfaces.IInstallationTask;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Parameter {
     private String name;
@@ -12,6 +12,8 @@ public class Parameter {
     private ParameterSource source=ParameterSource.CODE;
 
     private boolean hasValue;
+    private boolean locked=false;
+    private List<String> listOptions=new ArrayList<>();
 
     public String getDescription() {
         return description;
@@ -107,6 +109,24 @@ public class Parameter {
 
     public Parameter setType(ParameterType type) {
         this.type = type;
+        return this;
+    }
+
+    public List<String> getListOptions() {
+        return listOptions;
+    }
+
+    public Parameter setListOptions(List<String> listOptions) {
+        this.listOptions = listOptions;
+        return this;
+    }
+
+    public boolean isLocked() {
+        return locked;
+    }
+
+    public Parameter setLocked(boolean locked) {
+        this.locked = locked;
         return this;
     }
 }
