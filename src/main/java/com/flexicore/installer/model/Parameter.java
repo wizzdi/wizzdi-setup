@@ -7,7 +7,7 @@ public class Parameter {
     private String description;
     private String defaultValue;
     private String value;
-    private ParameterType type=ParameterType.StringType;
+    private ParameterType type=ParameterType.STRING;
 
     private ParameterSource source=ParameterSource.CODE;
 

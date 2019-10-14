@@ -76,4 +76,29 @@ public class Utilities {
         Start.info("Editing file: ->" + fileAsString);
         return fileAsString;
     }
+    public static boolean isNumeric(String strNum) {
+        try {
+            double d = Double.parseDouble(strNum);
+        } catch (NumberFormatException | NullPointerException nfe) {
+            return false;
+        }
+        return true;
+    }
+    public static boolean isInteger(String strNum) {
+        try {
+            Integer d = Integer.parseInt(strNum);
+        } catch (NumberFormatException | NullPointerException nfe) {
+            return false;
+        }
+        return true;
+    }
+    public static boolean getBoolean(String strBoolean) {
+        try {
+            Boolean d = Boolean.parseBoolean(strBoolean.toLowerCase());
+            return d;
+        }catch (Exception e) {
+            return false;
+        }
+
+    }
 }
