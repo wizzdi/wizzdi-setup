@@ -7,6 +7,8 @@ public class Parameter {
     private String description;
     private String defaultValue;
     private String value;
+    private Integer minValue=0;
+    private Integer maxValue=1000;
     private ParameterType type=ParameterType.STRING;
 
     private ParameterSource source=ParameterSource.CODE;
@@ -127,6 +129,24 @@ public class Parameter {
 
     public Parameter setLocked(boolean locked) {
         this.locked = locked;
+        return this;
+    }
+
+    public Integer getMinValue() {
+        return minValue;
+    }
+
+    public Parameter setMinValue(Integer minValue) {
+        this.minValue = minValue;
+        return this;
+    }
+
+    public Integer getMaxValue() {
+        return maxValue;
+    }
+
+    public Parameter setMaxValue(Integer maxValue) {
+        this.maxValue = maxValue;
         return this;
     }
 }

@@ -101,4 +101,13 @@ public class Utilities {
         }
 
     }
+    public static Integer getInteger(String strInteger) {
+        try {
+            Integer d = Integer.parseInt(strInteger);
+            return d;
+        }catch (Exception e) {
+            return 0;
+        }
+
+    }
 }

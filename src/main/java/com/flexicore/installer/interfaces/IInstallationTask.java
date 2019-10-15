@@ -19,6 +19,7 @@ public interface IInstallationTask extends ExtensionPoint {
     String getName();
 
     String getDescription();
+    String getVersion();
     IInstallationTask setDescription(String description);
 
     Set<String> getPrerequisitesTask();

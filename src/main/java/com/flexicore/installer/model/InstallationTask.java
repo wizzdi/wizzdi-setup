@@ -23,6 +23,7 @@ public class InstallationTask implements IInstallationTask {
     private Integer progress=0;
     private String name;
     private String id;
+    private String version="1.0.0";
     private boolean enabled=true;
     private InstallationStatus status=InstallationStatus.CREATED;
     private String description="no description";
@@ -269,6 +270,11 @@ public class InstallationTask implements IInstallationTask {
     @Override
     public String getDescription() {
         return description;
+    }
+
+    @Override
+    public String getVersion() {
+        return version;
     }
 
     @Override
@@ -796,5 +802,8 @@ public class InstallationTask implements IInstallationTask {
         return fileAsString;
     }
 
-
+    public InstallationTask setVersion(String version) {
+        this.version = version;
+        return this;
+    }
 }
