@@ -6,4 +6,5 @@ public interface IUIComponent extends ExtensionPoint {
     void setContext(InstallationContext context);
     boolean isAutoStart();
     void start();
+    String getVersion();
 }
