@@ -5,6 +5,6 @@ import org.pf4j.ExtensionPoint;
 public interface IUIComponent extends ExtensionPoint {
     void setContext(InstallationContext context);
     boolean isAutoStart();
-    void start();
+    boolean start();
     String getVersion();
 }

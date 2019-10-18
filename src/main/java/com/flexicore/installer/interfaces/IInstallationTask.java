@@ -7,6 +7,7 @@ import com.flexicore.installer.model.Parameters;
 import org.pf4j.ExtensionPoint;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 
@@ -15,31 +16,47 @@ public interface IInstallationTask extends ExtensionPoint {
     InstallationResult install(InstallationContext installationContext) throws Throwable;
 
     String getId();
+
     IInstallationTask setId(String id);
+
     String getName();
 
     String getDescription();
-    String getVersion();
+
     IInstallationTask setDescription(String description);
 
+    String getVersion();
+
+    IInstallationTask setVersion(String version);
+
     Set<String> getPrerequisitesTask();
+
     InstallationStatus getStatus();
 
     Parameters getParameters(InstallationContext installationContext);
 
-    boolean getEnabled ();
+    boolean getEnabled();
+
     IInstallationTask setEnabled(boolean value);
 
-    boolean cleanup ();
+    boolean cleanup();
+
     LocalDateTime getStarted();
+
     IInstallationTask setStarted(LocalDateTime started);
+
     LocalDateTime getEnded();
+
     IInstallationTask setEnded(LocalDateTime ended);
+
     IInstallationTask setProgress(Integer progress);
+
     IInstallationTask setStatus(InstallationStatus status);
 
     IInstallationTask setName(String name);
+
     Integer getProgress();
+
     IInstallationTask setContext(InstallationContext context);
 
 }

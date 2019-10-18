@@ -1,23 +1,56 @@
 package com.flexicore.installer.model;
 import com.flexicore.installer.interfaces.IInstallationTask;
+import com.flexicore.installer.interfaces.IUIComponent;
 import com.flexicore.installer.runner.Start;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.logging.Logger;
 public class InstallationContext {
 
     private Logger logger;
     private Parameters parameters;
     private Properties properties;
-    private List<IInstallationTask> iInstallationTaskList=new ArrayList<>();
-    private Start.UIAccessInterfaceClose uiClose;
-    private Start.UIAccessInterfaceApply uiApply;
+    private HashMap<String,IInstallationTask> iInstallationTasks =new HashMap<>();
+    private HashMap<String,IInstallationTask> cleanupTasks=new HashMap<>();
+    private HashMap<String,InstallationResult> results=new HashMap<>();
+    private List<IUIComponent> iuiComponents=new ArrayList<>();
+    private Start.UIAccessInterfaceQuit uiQuit;
+    private Start.UIAccessInterfaceInstallDry uiInstallDry;
+    private Start.UIAccessInterfaceInstall uiInstall;
+    private Start.UIAccessInterfaceInstall uiPuase;
+    private Start.UIAccessInterfaceInstall uiResume;
+    private Start.UIAccessInterfaceInstall uiShowLogs;
+    private int successFullyInstalled=0;
+    private int failedToInstall=0;
     public Logger getLogger() {
         return logger;
     }
+    public void incSuccess() {
+        successFullyInstalled++;
+    }
+    public void incFailures() {
+        failedToInstall++;
+    }
+    public void addResult(IInstallationTask task,InstallationResult result) {
+        results.put(task.getId(),result);
+    }
+    public void addUIComponents(List<IUIComponent> iuiComponents) {
+       this.iuiComponents.addAll(iuiComponents);
+    }
+    public void addUIComponent(IUIComponent iuiComponent) {
+        this.iuiComponents.add(iuiComponent);
+    }
+    public Collection<InstallationResult> getResults() {
+        return results.values();
+    }
 
+    public int getSuccessFullyInstalled() {
+        return successFullyInstalled;
+    }
+
+    public int getFailedToInstall() {
+        return failedToInstall;
+    }
 
     public Parameters getParamaters() {
         return parameters;
@@ -42,32 +75,88 @@ public class InstallationContext {
         return this;
     }
 
-    public Start.UIAccessInterfaceClose getUiClose() {
-        return uiClose;
+    public Start.UIAccessInterfaceQuit getUiQuit() {
+        return uiQuit;
     }
 
-    public InstallationContext setUiClose(Start.UIAccessInterfaceClose uiClose) {
-        this.uiClose = uiClose;
+    public InstallationContext setUiQuit(Start.UIAccessInterfaceQuit uiQuit) {
+        this.uiQuit = uiQuit;
         return this;
     }
 
-    public Start.UIAccessInterfaceApply getUiApply() {
-        return uiApply;
+    public Start.UIAccessInterfaceInstallDry getUiInstallDry() {
+        return uiInstallDry;
     }
 
-    public InstallationContext setUiApply(Start.UIAccessInterfaceApply uiApply) {
-        this.uiApply = uiApply;
+    public InstallationContext setUiInstallDry(Start.UIAccessInterfaceInstallDry uiInstallDry) {
+        this.uiInstallDry = uiInstallDry;
         return this;
     }
 
-    public List<IInstallationTask> getiInstallationTaskList() {
-        return iInstallationTaskList;
+    public Start.UIAccessInterfaceInstall getUiInstall() {
+        return uiInstall;
     }
 
-    public InstallationContext setiInstallationTaskList(List<IInstallationTask> iInstallationTaskList) {
-        this.iInstallationTaskList = iInstallationTaskList;
+    public InstallationContext setUiInstall(Start.UIAccessInterfaceInstall uiInstall) {
+        this.uiInstall = uiInstall;
         return this;
     }
+
+    public Start.UIAccessInterfaceInstall getUiPuase() {
+        return uiPuase;
+    }
+
+    public InstallationContext setUiPuase(Start.UIAccessInterfaceInstall uiPuase) {
+        this.uiPuase = uiPuase;
+        return this;
+    }
+
+    public Start.UIAccessInterfaceInstall getUiResume() {
+        return uiResume;
+    }
+
+    public InstallationContext setUiResume(Start.UIAccessInterfaceInstall uiResume) {
+        this.uiResume = uiResume;
+        return this;
+    }
+
+    public Start.UIAccessInterfaceInstall getUiShowLogs() {
+        return uiShowLogs;
+    }
+
+    public InstallationContext setUiShowLogs(Start.UIAccessInterfaceInstall uiShowLogs) {
+        this.uiShowLogs = uiShowLogs;
+        return this;
+    }
+
+    public void addTask(IInstallationTask task) {
+        if (task.cleanup()) {
+            cleanupTasks.put(task.getId(),task);
+        }else {
+            iInstallationTasks.put(task.getId(), task);
+        }
+    }
+    public IInstallationTask getTask(String id) {
+        IInstallationTask task=iInstallationTasks.get(id);
+        if (task!=null) return task;
+        return cleanupTasks.get(id);
+    }
+
+    public Collection<IInstallationTask> getCleanupTasks() {
+        return cleanupTasks.values();
+    }
+    public void clear () {
+        iInstallationTasks.clear();
+        cleanupTasks.clear();
+    }
+
+
+    public Collection<IInstallationTask> getiInstallationTasks() {
+        return iInstallationTasks.values();
+    }
+
+
+
 }
 
 

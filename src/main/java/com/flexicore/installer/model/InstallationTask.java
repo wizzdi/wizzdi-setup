@@ -6,6 +6,7 @@ import com.flexicore.installer.utilities.StreamGobbler;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.zeroturnaround.zip.ZipUtil;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -233,6 +234,8 @@ public class InstallationTask implements IInstallationTask {
 
     public String flexicoreSource;
     public String flexicoreHome;
+
+
     @Override
     public InstallationResult install(InstallationContext installationContext) throws Throwable {
         context = installationContext;
@@ -801,7 +804,7 @@ public class InstallationTask implements IInstallationTask {
         info("[Edit file] [Edit file] ->" + fileAsString);
         return fileAsString;
     }
-
+    @Override
     public InstallationTask setVersion(String version) {
         this.version = version;
         return this;

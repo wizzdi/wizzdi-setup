@@ -4,6 +4,7 @@ import com.flexicore.installer.exceptions.MissingInstallationTaskDependency;
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.interfaces.IUIComponent;
 
+import com.flexicore.installer.localtasksfortests.*;
 import com.flexicore.installer.model.*;
 import org.apache.commons.cli.*;
 import org.jgrapht.Graph;
@@ -22,6 +23,8 @@ import java.util.*;
 import java.util.logging.*;
 import java.util.stream.Collectors;
 
+import static java.lang.System.exit;
+
 
 public class Start {
 
@@ -29,6 +32,7 @@ public class Start {
     private static final String LOG_PATH_OPT = "l";
     private static final String INSTALLATION_TASKS_FOLDER = "tasks";
     private static Logger logger;
+
 
     public static void main(String[] args) throws MissingInstallationTaskDependency, ParseException, InterruptedException {
 
@@ -44,85 +48,73 @@ public class Start {
 
 
         InstallationContext installationContext = new InstallationContext()
-                .setLogger(logger).setParameters(new Parameters()).setUiClose(Start::uiComponentClosed).setUiApply(Start::uiComponentApply);
+                .setLogger(logger).setParameters(new Parameters()).
+                        setUiQuit(Start::uiComponentQuit).
+                        setUiPuase(Start::uiComponentPause).
+                        setUiResume(Start::uiComponentResume).
+                        setUiInstall(Start::uiComponentInstall).
+                        setUiResume(Start::uiComponentResume).
+                        setUiInstallDry(Start::uiComponentInstallDry);
+
         File pluginRoot = new File(mainCmd.getOptionValue(INSTALLATION_TASKS_FOLDER, "tasks"));
-        String path=pluginRoot.getAbsolutePath();
-        if (!pluginRoot.exists())  {
-            severe("cannot fine path for tasks at" +pluginRoot.getAbsolutePath()+" !!, exiting");
-            System.exit(0);
+        String path = pluginRoot.getAbsolutePath();
+        if (!pluginRoot.exists()) {
+            severe("cannot fine path for tasks at" + pluginRoot.getAbsolutePath() + " !!, exiting");
+            exit(0);
         }
-        logger.info("Will load tasks from " + pluginRoot.getAbsolutePath()+"  exists: "+pluginRoot.exists());
+        logger.info("Will load tasks from " + pluginRoot.getAbsolutePath() + "  exists: " + pluginRoot.exists());
         PluginManager pluginManager = new DefaultPluginManager(pluginRoot.toPath());
 
         pluginManager.loadPlugins();
         pluginManager.startPlugins();
 
-        List<IUIComponent> uiComponents = pluginManager.getExtensions(IUIComponent.class);
-        for (IUIComponent component : uiComponents) {
-            component.setContext(installationContext);
-            if (component.isAutoStart()) {
-                info("Have started ");
-                component.start();
-            }
-        }
-        Thread.sleep(600000);
-
-        Map<String, IInstallationTask> installationTasks = pluginManager.getExtensions(IInstallationTask.class).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
-      /*
+        Map<String, IInstallationTask> DebuginstallationTasks = pluginManager.getExtensions(IInstallationTask.class).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
 
 
-        new FlexicoreUniquenessEnforcer(installationTasks);
-        new EPX2000Install(installationTasks);
-        new ShekelComponentsInstall(installationTasks);
-        new ShekelComponentsParameters(installationTasks);
+        new FlexicoreUniquenessEnforcer(DebuginstallationTasks);
+        new EPX2000Install(DebuginstallationTasks);
+        new ShekelComponentsInstall(DebuginstallationTasks);
+        new ShekelComponentsParameters(DebuginstallationTasks);
 
         //********** standard ***************
-        new CommonParameters(installationTasks);
+        new CommonParameters(DebuginstallationTasks);
 
 
         //*********** Flexicore installation (home)
-        new FlexiCoreParameters(installationTasks);
+        new FlexiCoreParameters(DebuginstallationTasks);
 
-        new FlexicoreInstall(installationTasks);
+        new FlexicoreInstall(DebuginstallationTasks);
 
-        new FlexicoreFixConfigFile(installationTasks);
+        new FlexicoreFixConfigFile(DebuginstallationTasks);
 
 
         //***************** wildfly installation
-        new WildflyParameters(installationTasks);
+        new WildflyParameters(DebuginstallationTasks);
 
-        new WildflyInstall(installationTasks);
+        new WildflyInstall(DebuginstallationTasks);
 
         //************ flexicore deployment
-        new FlexicoreDeploymentInstall(installationTasks);
+        new FlexicoreDeploymentInstall(DebuginstallationTasks);
 
         //*********************shekel installation
-        new ShekelComponentsParameters(installationTasks);
-        new ShekelComponentsInstall(installationTasks);
+        new ShekelComponentsParameters(DebuginstallationTasks);
+        new ShekelComponentsInstall(DebuginstallationTasks);
         //********************Itamar Installation
-        new ItamarParameters(installationTasks);
-        new ItamarInstall(installationTasks);
-*/
-        Map<String, TaskWrapper> tasks = new HashMap<>();
+        new ItamarParameters(DebuginstallationTasks);
+        new ItamarInstall(DebuginstallationTasks);
 
 
         // handle parameters and command line options here. do it at the dependency order.
-        TopologicalOrderIterator<String, DefaultEdge> topologicalOrderIterator = getInstallationTaskIterator(installationTasks);
-        ArrayList<IInstallationTask> orderedTasks = new ArrayList<>();
-        ArrayList<IInstallationTask> cleanupTasks = new ArrayList<>();
+        TopologicalOrderIterator<String, DefaultEdge> topologicalOrderIterator = getInstallationTaskIterator(DebuginstallationTasks);
         readProperties(installationContext);
+        installationContext.getiInstallationTasks().clear();
         while (topologicalOrderIterator.hasNext()) {
             String installationTaskUniqueId = topologicalOrderIterator.next();
-            IInstallationTask task = installationTasks.get(installationTaskUniqueId);
-            try {
-                task.install(installationContext);
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
-            }
+            IInstallationTask task = DebuginstallationTasks.get(installationTaskUniqueId);
             if (task.cleanup()) {
-                cleanupTasks.add(task);
+                installationContext.getCleanupTasks().add(task);
             } else {
-                orderedTasks.add(task);
+                installationContext.getCleanupTasks().add(task);
             }
 
             Options taskOptions = getOptions(task, installationContext);
@@ -150,50 +142,30 @@ public class Start {
                 }
             }
         }
-        if (cleanupTasks.size() != 0) orderedTasks.addAll(cleanupTasks); //cleanup tasks at the end.
-        if (mainCmd.hasOption(HELP)) {
-            if (options.getOptions().size() != 0) {
-                System.out.println("command line options for installer");
 
-                HelpFormatter formatter = new HelpFormatter();
-                formatter.printHelp("Start.bat ", options);
+        boolean stopped = false;
+        boolean uiFoundandRun = false;
+        List<IUIComponent> uiComponents = pluginManager.getExtensions(IUIComponent.class);
+        for (IUIComponent component : uiComponents) {
+            component.setContext(installationContext);
+            installationContext.addUIComponent(component);
+            if (component.isAutoStart()) {
+                info("Have started  a UI plugin");
+                if (component.start()) {
+                    uiFoundandRun = true; //will not run the installation from command line.
+                }
             }
-            return;
-
         }
-
-
-        //reset
-
-
-        int successes = 0;
-        int failures = 0;
-
-        for (IInstallationTask installationTask : orderedTasks) {
-
-            logger.info("Starting " + installationTask.getId());
-            InstallationResult installationResult = null;
-            try {
-                installationResult = installationTask.install(installationContext);
-            } catch (Throwable throwable) {
-                severe("Have failed to install: " + installationTask.getId(), throwable);
-            }
-            if (installationResult.getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
-                successes++;
-            } else {
-                failures++;
+        if (uiFoundandRun) {
+            while (!stopped) {
+                Thread.sleep(1000);
             }
 
-            logger.info("Completed " + installationTask.getId() + " with " + installationResult);
-        }
-        if (failures == 0) {
-            logger.info("Have completed successfully  " + successes + " installation tasks");
-        } else {
-            logger.info("Have completed successfully  " + successes + " installation tasks , " + failures + " installation tasks have failed");
-        }
 
-        // stop and unload all plugins
-        pluginManager.stopPlugins();
+            // stop and unload all plugins
+            pluginManager.stopPlugins();
+            exit(0);
+        }
     }
 
     /**
@@ -258,7 +230,7 @@ public class Start {
                     }
                     parameter.setValue(String.valueOf(cmd.hasOption(name)));
                 }
-                installationContext.getParamaters().addParameter(parameter,null);
+                installationContext.getParamaters().addParameter(parameter, null);
                 count++;
             }
             info("Have added " + count + " parameters to installation task: " + task.getId() + " ->>" + task.getDescription());
@@ -393,6 +365,36 @@ public class Start {
 
     }
 
+    private static boolean install(InstallationContext context) {
+        for (IInstallationTask installationTask : context.getiInstallationTasks()) {
+            installTask(installationTask, context);
+        }
+        for (IInstallationTask installationTask : context.getCleanupTasks()) {
+
+            installTask(installationTask, context);
+        }
+        return true;
+    }
+
+    private static boolean installTask(IInstallationTask installationTask, InstallationContext context) {
+        logger.info("Starting: " + installationTask.getId() + ", name is: " + installationTask.getName());
+        InstallationResult installationResult = null;
+        try {
+            installationResult = installationTask.install(context);
+        } catch (Throwable throwable) {
+            severe("Have failed to install: " + installationTask.getId(), throwable);
+        }
+        context.addResult(installationTask, installationResult);
+        logger.info("Completed " + installationTask.getId() + " with " + installationResult);
+        if (installationResult.getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
+
+            context.incSuccess();
+            return true;
+        }
+        context.incFailures();
+        return false;
+    }
+
     public static void info(String message) {
         if (logger != null) logger.info(message);
     }
@@ -410,23 +412,63 @@ public class Start {
         if (logger != null) logger.log(Level.SEVERE, message);
     }
 
-    private static boolean uiComponentClosed(IUIComponent uiComponent, InstallationContext context) {
+    private static boolean uiComponentQuit(IUIComponent uiComponent, InstallationContext context) {
+
         return true;
     }
 
-    private static boolean uiComponentApply(IUIComponent uiComponent, InstallationContext context) {
+    private static boolean uiComponentInstall(IUIComponent uiComponent, InstallationContext context) {
+        install(context);
+
         return true;
     }
+
+    private static boolean uiComponentInstallDry(IUIComponent uiComponent, InstallationContext context) {
+        return true;
+    }
+
+    private static boolean uiComponentPause(IUIComponent uiComponent, InstallationContext context) {
+        return true;
+    }
+
+    private static boolean uiComponentResume(IUIComponent uiComponent, InstallationContext context) {
+        return true;
+    }
+
+    private static boolean uiComponentShowLogs(IUIComponent uiComponent, InstallationContext context) {
+        return true;
+    }
+
+
 
     @FunctionalInterface
-    public static interface UIAccessInterfaceClose {
+    public static interface UIAccessInterfaceQuit {
         boolean uiComponentClosed(IUIComponent uiComponent, InstallationContext context);
 
     }
 
+
     @FunctionalInterface
-    public static interface UIAccessInterfaceApply {
-        boolean uiComponentApply(IUIComponent uiComponent, InstallationContext context);
+    public static interface UIAccessInterfaceInstall {
+        boolean uiComponentInstall(IUIComponent uiComponent, InstallationContext context);
 
     }
+    @FunctionalInterface
+    public static interface UIAccessInterfaceInstallDry {
+        boolean uiComponentInstallDry(IUIComponent uiComponent, InstallationContext context);
+    }
+    @FunctionalInterface
+    public static interface UIAccessInterfacePause {
+        boolean uiComponentPause(IUIComponent uiComponent, InstallationContext context);
+    }
+    @FunctionalInterface
+    public static interface UIAccessInterfaceResume {
+        boolean uiComponentResume(IUIComponent uiComponent, InstallationContext context);
+    }
+    @FunctionalInterface
+    public static interface UIAccessInterfaceShowLogs {
+        boolean uiComponentShowLogs(IUIComponent uiComponent, InstallationContext context);
+    }
 }
+
+
