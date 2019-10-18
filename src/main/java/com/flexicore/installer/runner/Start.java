@@ -32,6 +32,7 @@ public class Start {
     private static final String LOG_PATH_OPT = "l";
     private static final String INSTALLATION_TASKS_FOLDER = "tasks";
     private static Logger logger;
+    private static PluginManager pluginManager;
 
 
     public static void main(String[] args) throws MissingInstallationTaskDependency, ParseException, InterruptedException {
@@ -50,11 +51,10 @@ public class Start {
         InstallationContext installationContext = new InstallationContext()
                 .setLogger(logger).setParameters(new Parameters()).
                         setUiQuit(Start::uiComponentQuit).
-                        setUiPuase(Start::uiComponentPause).
+                        setUiPause(Start::uiComponentPause).
                         setUiResume(Start::uiComponentResume).
                         setUiInstall(Start::uiComponentInstall).
-                        setUiResume(Start::uiComponentResume).
-                        setUiInstallDry(Start::uiComponentInstallDry);
+                        setUiShowLogs(Start::uiComponentShowLogs);
 
         File pluginRoot = new File(mainCmd.getOptionValue(INSTALLATION_TASKS_FOLDER, "tasks"));
         String path = pluginRoot.getAbsolutePath();
@@ -63,7 +63,7 @@ public class Start {
             exit(0);
         }
         logger.info("Will load tasks from " + pluginRoot.getAbsolutePath() + "  exists: " + pluginRoot.exists());
-        PluginManager pluginManager = new DefaultPluginManager(pluginRoot.toPath());
+         pluginManager = new DefaultPluginManager(pluginRoot.toPath());
 
         pluginManager.loadPlugins();
         pluginManager.startPlugins();
@@ -364,7 +364,15 @@ public class Start {
         return logger;
 
     }
-
+    private static boolean doPause() {
+        return true;
+    }
+    private static boolean doResume() {
+        return true;
+    }
+    private static boolean doInstallDry() {
+        return true;
+    }
     private static boolean install(InstallationContext context) {
         for (IInstallationTask installationTask : context.getiInstallationTasks()) {
             installTask(installationTask, context);
@@ -413,32 +421,29 @@ public class Start {
     }
 
     private static boolean uiComponentQuit(IUIComponent uiComponent, InstallationContext context) {
-
+        pluginManager.stopPlugins();
+        exit(0);
         return true;
     }
 
     private static boolean uiComponentInstall(IUIComponent uiComponent, InstallationContext context) {
-        install(context);
-
-        return true;
+        return install(context);
     }
-
     private static boolean uiComponentInstallDry(IUIComponent uiComponent, InstallationContext context) {
-        return true;
+        return doInstallDry();
     }
-
     private static boolean uiComponentPause(IUIComponent uiComponent, InstallationContext context) {
-        return true;
+        return doPause();
     }
-
     private static boolean uiComponentResume(IUIComponent uiComponent, InstallationContext context) {
-        return true;
+        return doResume();
     }
-
-    private static boolean uiComponentShowLogs(IUIComponent uiComponent, InstallationContext context) {
-        return true;
+    private static String uiComponentShowLogs(IUIComponent uiComponent, InstallationContext context) {
+        return doshowLogs();
     }
-
+    private static String doshowLogs() {
+        return "";
+    }
 
 
     @FunctionalInterface
@@ -467,7 +472,7 @@ public class Start {
     }
     @FunctionalInterface
     public static interface UIAccessInterfaceShowLogs {
-        boolean uiComponentShowLogs(IUIComponent uiComponent, InstallationContext context);
+        String uiComponentShowLogs(IUIComponent uiComponent, InstallationContext context);
     }
 }
 

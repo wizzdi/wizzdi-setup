@@ -17,9 +17,9 @@ public class InstallationContext {
     private Start.UIAccessInterfaceQuit uiQuit;
     private Start.UIAccessInterfaceInstallDry uiInstallDry;
     private Start.UIAccessInterfaceInstall uiInstall;
-    private Start.UIAccessInterfaceInstall uiPuase;
-    private Start.UIAccessInterfaceInstall uiResume;
-    private Start.UIAccessInterfaceInstall uiShowLogs;
+    private Start.UIAccessInterfacePause uiPause;
+    private Start.UIAccessInterfaceResume uiResume;
+    private Start.UIAccessInterfaceShowLogs uiShowLogs;
     private int successFullyInstalled=0;
     private int failedToInstall=0;
     public Logger getLogger() {
@@ -102,29 +102,29 @@ public class InstallationContext {
         return this;
     }
 
-    public Start.UIAccessInterfaceInstall getUiPuase() {
-        return uiPuase;
+    public Start.UIAccessInterfacePause getUiPause() {
+        return uiPause;
     }
 
-    public InstallationContext setUiPuase(Start.UIAccessInterfaceInstall uiPuase) {
-        this.uiPuase = uiPuase;
+    public InstallationContext setUiPause(Start.UIAccessInterfacePause uiPause) {
+        this.uiPause = uiPause;
         return this;
     }
 
-    public Start.UIAccessInterfaceInstall getUiResume() {
+    public Start.UIAccessInterfaceResume getUiResume() {
         return uiResume;
     }
 
-    public InstallationContext setUiResume(Start.UIAccessInterfaceInstall uiResume) {
+    public InstallationContext setUiResume(Start.UIAccessInterfaceResume uiResume) {
         this.uiResume = uiResume;
         return this;
     }
 
-    public Start.UIAccessInterfaceInstall getUiShowLogs() {
+    public Start.UIAccessInterfaceShowLogs getUiShowLogs() {
         return uiShowLogs;
     }
 
-    public InstallationContext setUiShowLogs(Start.UIAccessInterfaceInstall uiShowLogs) {
+    public InstallationContext setUiShowLogs(Start.UIAccessInterfaceShowLogs uiShowLogs) {
         this.uiShowLogs = uiShowLogs;
         return this;
     }
