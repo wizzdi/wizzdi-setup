@@ -23,6 +23,7 @@ import java.util.*;
 import java.util.logging.*;
 import java.util.stream.Collectors;
 
+import static com.flexicore.installer.utilities.LoggerUtilities.initLogger;
 import static java.lang.System.exit;
 
 
@@ -46,9 +47,7 @@ public class Start {
         CommandLine mainCmd = parser.parse(options, trueArgs, false); //will not fail if fed with plugins options.
 
         logger = initLogger("Installer", mainCmd.getOptionValue(LOG_PATH_OPT, "logs"));
-
-
-        InstallationContext installationContext = new InstallationContext()
+      InstallationContext installationContext = new InstallationContext()
                 .setLogger(logger).setParameters(new Parameters()).
                         setUiQuit(Start::uiComponentQuit).
                         setUiPause(Start::uiComponentPause).
@@ -334,38 +333,7 @@ public class Start {
 
     }
 
-    public static Logger initLogger(String name, String folder) {
 
-        Logger logger = Logger.getLogger(name);
-        FileHandler
-                fh;
-        Handler[] handlers = logger.getHandlers();
-        for (Handler handler : handlers) {
-            handler.close();
-            logger.removeHandler(handler);
-        }
-
-        try {
-
-            // String time = LocalDateTime.now().toString().replace(":", "-");
-            File file;
-            if (!(file = new File(folder)).exists()) {
-                Files.createDirectories(file.toPath());
-            }
-            fh = new FileHandler(folder.isEmpty() ? name + ".log" : folder + "/" + name + ".log");
-            logger.addHandler(fh);
-            SimpleFormatter formatter = new SimpleFormatter();
-            fh.setFormatter(formatter);
-
-
-        } catch (SecurityException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return logger;
-
-    }
     private static boolean doStop() {
         logger.info("Performing installation stop");
         return true;

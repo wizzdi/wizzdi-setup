@@ -1,6 +1,8 @@
 package com.flexicore.installer.utilities;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.FileHandler;
@@ -12,36 +14,35 @@ public class LoggerUtilities {
     public static String logsFolder = null;
     private static Queue<Logger> loggers = new LinkedBlockingQueue<>();
 
-    public static Logger initLogger(String name) {
-        Logger logger = Logger.getLogger(name);
-        if (logsFolder != null) {
-            name = logsFolder + "/" + name;
-        }
+    public static Logger initLogger(String name, String folder) {
 
-        FileHandler fh;
+        Logger logger = Logger.getLogger(name);
+        FileHandler
+                fh;
+        Handler[] handlers = logger.getHandlers();
+        for (Handler handler : handlers) {
+            handler.close();
+            logger.removeHandler(handler);
+        }
 
         try {
 
-            //changed to support
-            fh = new FileHandler(name + ".log",false);
-
-
+            // String time = LocalDateTime.now().toString().replace(":", "-");
+            File file;
+            if (!(file = new File(folder)).exists()) {
+                Files.createDirectories(file.toPath());
+            }
+            fh = new FileHandler(folder.isEmpty() ? name + ".log" : folder + "/" + name + ".log");
             logger.addHandler(fh);
             SimpleFormatter formatter = new SimpleFormatter();
             fh.setFormatter(formatter);
 
 
-            logger.info("****************************Have started new logger********************************");
-            logger.setUseParentHandlers(true); //will show on terminal too.
-
-
         } catch (SecurityException e) {
-            logger.info("Permission issue when creating log file");
-
+            e.printStackTrace();
         } catch (IOException e) {
-            logger.info("IO issue when creating log file");
+            e.printStackTrace();
         }
-        loggers.add(logger);
         return logger;
 
     }
