@@ -37,6 +37,7 @@ public class LoggerUtilities {
             SimpleFormatter formatter = new SimpleFormatter();
             fh.setFormatter(formatter);
             loggers.add(logger);
+            logger.info("**********************  Have started new logger  ********************");
 
 
         } catch (SecurityException e) {

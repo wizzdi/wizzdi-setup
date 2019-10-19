@@ -4,6 +4,7 @@ import com.flexicore.installer.interfaces.IUIComponent;
 import com.flexicore.installer.runner.Start;
 
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 public class InstallationContext {
 
@@ -42,8 +43,8 @@ public class InstallationContext {
     public void addUIComponent(IUIComponent iuiComponent) {
         this.iuiComponents.add(iuiComponent);
     }
-    public Collection<InstallationResult> getResults() {
-        return results.values();
+    public HashMap<String,InstallationResult> getResults() {
+        return results;
     }
 
     public int getSuccessFullyInstalled() {
@@ -132,6 +133,9 @@ public class InstallationContext {
     }
 
     public void addTask(IInstallationTask task) {
+        if (cleanupTasks.containsKey(task.getId()) || iInstallationTasks.containsKey(task.getId())) {
+            logger.log(Level.SEVERE,"****************** Multiple task keys found for task: "+task.getId()+ "********************");
+        }
         if (task.cleanup()) {
             cleanupTasks.put(task.getId(),task);
         }else {
@@ -144,15 +148,16 @@ public class InstallationContext {
         return cleanupTasks.get(id);
     }
 
-    public Collection<IInstallationTask> getCleanupTasks() {
-        return cleanupTasks.values();
+    public HashMap<String, IInstallationTask> getCleanupTasks() {
+        return cleanupTasks;
+
     }
     public void clear () {
         iInstallationTasks.clear();
         cleanupTasks.clear();
     }
-    public Collection<IInstallationTask> getiInstallationTasks() {
-        return iInstallationTasks.values();
+    public HashMap<String,IInstallationTask> getiInstallationTasks() {
+        return iInstallationTasks;
     }
 
     public Start.UIAccessAbout getUiAbout() {

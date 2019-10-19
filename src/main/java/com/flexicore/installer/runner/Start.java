@@ -112,11 +112,7 @@ public class Start {
         while (topologicalOrderIterator.hasNext()) {
             String installationTaskUniqueId = topologicalOrderIterator.next();
             IInstallationTask task = DebuginstallationTasks.get(installationTaskUniqueId);
-            if (task.cleanup()) {
-                installationContext.getCleanupTasks().add(task);
-            } else {
-                installationContext.getCleanupTasks().add(task);
-            }
+            installationContext.addTask(task);
 
             Options taskOptions = getOptions(task, installationContext);
             if (!updateParameters(task, installationContext, taskOptions, args, parser)) {
