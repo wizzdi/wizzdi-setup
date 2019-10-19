@@ -36,6 +36,7 @@ public class LoggerUtilities {
             logger.addHandler(fh);
             SimpleFormatter formatter = new SimpleFormatter();
             fh.setFormatter(formatter);
+            loggers.add(logger);
 
 
         } catch (SecurityException e) {
