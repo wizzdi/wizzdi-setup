@@ -20,6 +20,8 @@ public class InstallationContext {
     private Start.UIAccessInterfacePause uiPause;
     private Start.UIAccessInterfaceResume uiResume;
     private Start.UIAccessInterfaceShowLogs uiShowLogs;
+    private Start.UIAccessInterfaceStop uiStopInstall;
+    private Start.UIAccessAbout uiAbout;
     private int successFullyInstalled=0;
     private int failedToInstall=0;
     public Logger getLogger() {
@@ -149,14 +151,27 @@ public class InstallationContext {
         iInstallationTasks.clear();
         cleanupTasks.clear();
     }
-
-
     public Collection<IInstallationTask> getiInstallationTasks() {
         return iInstallationTasks.values();
     }
 
+    public Start.UIAccessAbout getUiAbout() {
+        return uiAbout;
+    }
 
+    public InstallationContext setUiAbout(Start.UIAccessAbout uiAbout) {
+        this.uiAbout = uiAbout;
+        return this;
+    }
 
+    public Start.UIAccessInterfaceStop getUiStopInstall() {
+        return uiStopInstall;
+    }
+
+    public InstallationContext setUiStopInstall(Start.UIAccessInterfaceStop uiStopInstall) {
+        this.uiStopInstall = uiStopInstall;
+        return this;
+    }
 }
 
 
