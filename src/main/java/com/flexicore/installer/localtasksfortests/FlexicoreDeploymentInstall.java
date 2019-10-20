@@ -54,7 +54,10 @@ public class FlexicoreDeploymentInstall extends InstallationTask {
         logger.info("Getting parameters for " + this.toString());
         return getPrivateParameters();
     }
-
+    @Override
+    public String getName() {
+        return "Flexicore Deployment";
+    }
     @Override
     public InstallationResult install(InstallationContext installationContext) throws Throwable{
 

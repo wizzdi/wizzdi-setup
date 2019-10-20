@@ -42,6 +42,10 @@ public class FlexiCoreParameters extends InstallationTask {
 
     }
     @Override
+    public String getName() {
+        return "Flexicore Parameters";
+    }
+    @Override
     public Parameters getParameters(InstallationContext installationContext) {
 
         super.getParameters(installationContext);

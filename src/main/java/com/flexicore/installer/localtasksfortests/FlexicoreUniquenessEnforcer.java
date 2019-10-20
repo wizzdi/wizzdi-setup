@@ -51,7 +51,10 @@ public class FlexicoreUniquenessEnforcer extends InstallationTask {
         return result;
 
     }
-
+    @Override
+    public String getName() {
+        return "Flexicore plugins/entities uniqueness enforcer";
+    }
     @Override
     public Parameters getParameters(InstallationContext installationContext) {
 

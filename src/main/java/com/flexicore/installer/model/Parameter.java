@@ -32,6 +32,23 @@ public class Parameter {
         this.description = description;
         this.defaultValue = defaultValue;
     }
+    public Parameter(String name, String description, boolean hasValue, String defaultValue,ParameterType parameterType) {
+        this.type=parameterType;
+        this.hasValue = hasValue;
+        this.name = name;
+        this.description = description;
+        this.defaultValue = defaultValue;
+
+    }
+    public Parameter(String name, String description, boolean hasValue, String defaultValue,ParameterType parameterType, ParameterSource parameterSource) {
+        this.type=parameterType;
+        this.hasValue = hasValue;
+        this.name = name;
+        this.description = description;
+        this.defaultValue = defaultValue;
+        this.source=parameterSource;
+
+    }
 
     /**
      * by presence only, acting as a switch

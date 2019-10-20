@@ -134,6 +134,7 @@ public class Start {
                     System.out.println("Task default parameters:");
                     for (Parameter p : task.getParameters(installationContext).getValues()) {
                         System.out.println(p);
+
                     }
 
                 }
@@ -227,7 +228,7 @@ public class Start {
                     }
                     parameter.setValue(String.valueOf(cmd.hasOption(name)));
                 }
-                installationContext.getParamaters().addParameter(parameter, null);
+                installationContext.getParamaters().addParameter(parameter, task);
                 count++;
             }
             info("Have added " + count + " parameters to installation task: " + task.getId() + " ->>" + task.getDescription());

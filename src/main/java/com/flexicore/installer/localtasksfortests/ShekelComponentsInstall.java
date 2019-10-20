@@ -82,7 +82,10 @@ public class ShekelComponentsInstall extends InstallationTask {
     public String getId() {
         return "shekelcomponentsinstall";
     }
-
+    @Override
+    public String getName() {
+        return "Shekel components installer";
+    }
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();

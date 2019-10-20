@@ -2,7 +2,6 @@ package com.flexicore.installer.model;
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.interfaces.IUIComponent;
 import com.flexicore.installer.runner.Start;
-
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -11,9 +10,9 @@ public class InstallationContext {
     private Logger logger;
     private Parameters parameters;
     private Properties properties;
-    private HashMap<String,IInstallationTask> iInstallationTasks =new HashMap<>();
-    private HashMap<String,IInstallationTask> cleanupTasks=new HashMap<>();
-    private HashMap<String,InstallationResult> results=new HashMap<>();
+    private LinkedHashMap<String,IInstallationTask> iInstallationTasks =new LinkedHashMap<>();
+    private LinkedHashMap<String,IInstallationTask> cleanupTasks=new LinkedHashMap<>();
+    private LinkedHashMap<String,InstallationResult> results=new LinkedHashMap<>();
     private List<IUIComponent> iuiComponents=new ArrayList<>();
     private Start.UIAccessInterfaceQuit uiQuit;
     private Start.UIAccessInterfaceInstallDry uiInstallDry;

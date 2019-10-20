@@ -77,7 +77,10 @@ public class Java11jdkInstall extends InstallationTask {
         return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
 
     }
-
+    @Override
+    public String getName() {
+        return "JDK 11 installer";
+    }
     @Override
     public String getId() {
         return "openjdk";

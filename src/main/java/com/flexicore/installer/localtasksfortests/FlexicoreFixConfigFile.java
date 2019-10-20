@@ -77,7 +77,10 @@ public class FlexicoreFixConfigFile extends InstallationTask {
         return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
 
     }
-
+    @Override
+    public String getName() {
+        return "Adjust flexicore.config";
+    }
     @Override
     public String getId() {
         return "flexicoreFixConfigFile";

@@ -54,7 +54,10 @@ public class AutosshInstall extends InstallationTask {
         logger.info("Getting parameters for " + this.toString());
         return getPrivateParameters();
     }
-
+    @Override
+    public String getName() {
+        return "Autossh";
+    }
     @Override
     public InstallationResult install(InstallationContext installationContext) throws Throwable {
         InstallationResult result = null;

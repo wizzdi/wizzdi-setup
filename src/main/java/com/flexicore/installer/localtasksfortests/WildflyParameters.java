@@ -57,7 +57,9 @@ public class WildflyParameters extends InstallationTask {
         result.add("flexicore-install"); //this s because we need to update the standalone.xml and standalone.bat.conf standalone.conf to point here
         return result;
     }
-
+    public String getName() {
+        return "Wildfly application server installer, parameters";
+    }
     @Override
     public String getId() {
         return "wildfly-parameters";

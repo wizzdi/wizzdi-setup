@@ -248,7 +248,9 @@ public class WildflyInstall extends InstallationTask {
         logger.info("Getting parameters for " + this.toString());
         return getPrivateParameters();
     }
-
+    public String getName() {
+        return "Wildfly application server installer";
+    }
 
     @Override
     public String getId() {

@@ -21,7 +21,10 @@ public class MonitInstall extends InstallationTask {
             //  new Parameter("example-key", "example description", true or false here (has value), "default value") //
 
     };
-
+    @Override
+    public String getName() {
+        return "Monit installer";
+    }
     public MonitInstall(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
     }

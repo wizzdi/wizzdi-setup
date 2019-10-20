@@ -77,7 +77,10 @@ public class postgresqlInstal extends InstallationTask {
         return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
 
     }
-
+    @Override
+    public String getName() {
+        return "Postgresql installer";
+    }
     @Override
     public String getId() {
         return "postgresql";

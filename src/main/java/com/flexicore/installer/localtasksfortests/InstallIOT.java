@@ -45,7 +45,10 @@ public class InstallIOT extends InstallationTask {
         return result;
 
     }
-
+    @Override
+    public String getName() {
+        return "IOT installer";
+    }
     @Override
     public Parameters getParameters(InstallationContext installationContext) {
 

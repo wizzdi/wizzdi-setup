@@ -49,7 +49,10 @@ public class ItamarParameters  extends InstallationTask{
         logger.info("Getting parameters for "+this.toString());
         return getPrivateParameters();
     }
-
+    @Override
+    public String getName() {
+        return "Itamar installer parameters";
+    }
     @Override
     public InstallationResult install (InstallationContext installationContext) {
         return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);

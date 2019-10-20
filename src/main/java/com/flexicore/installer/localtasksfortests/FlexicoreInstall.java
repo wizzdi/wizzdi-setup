@@ -50,7 +50,10 @@ public class FlexicoreInstall extends InstallationTask {
         return result;
 
     }
-
+    @Override
+    public String getName() {
+        return "Flexicore";
+    }
     @Override
     public Parameters getParameters(InstallationContext installationContext) {
 

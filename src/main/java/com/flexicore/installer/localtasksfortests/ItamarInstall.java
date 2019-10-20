@@ -44,6 +44,10 @@ public class ItamarInstall extends InstallationTask {
 
     }
     @Override
+    public String getName() {
+        return "Itamar installer";
+    }
+    @Override
     public Parameters getParameters(InstallationContext installationContext) {
 
         super.getParameters(installationContext);

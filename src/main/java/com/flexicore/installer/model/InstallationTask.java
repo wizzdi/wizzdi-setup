@@ -22,7 +22,7 @@ public class InstallationTask implements IInstallationTask {
     private LocalDateTime started=LocalDateTime.now();
     private LocalDateTime ended=LocalDateTime.now();
     private Integer progress=0;
-    private String name;
+    private String name="Unnamed task";
     private String id;
     private String version="1.0.0";
     private boolean enabled=true;

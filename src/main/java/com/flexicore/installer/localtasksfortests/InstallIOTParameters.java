@@ -31,7 +31,10 @@ public class InstallIOTParameters extends InstallationTask {
         super(installationTasks);
     }
 
-
+    @Override
+    public String getName() {
+        return "IOT installation parameters";
+    }
 
     /**
      * parameters are best provided by a different plugin

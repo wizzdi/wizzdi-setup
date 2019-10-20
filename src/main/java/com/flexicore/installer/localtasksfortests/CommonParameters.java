@@ -13,10 +13,10 @@ public class CommonParameters extends InstallationTask {
     static String parentFolder = "/temp";//new File(currentFolder).getParent();
 
     static Parameter[] preDefined = {
-            new Parameter("targetpath", "the target path to install this installation into", true, "/temp/target"),
-            new Parameter("serverpath", "where to get this installation files from (not alien components)", true, parentFolder + "/resources/server"),
-            new Parameter("instllationspath", "where to find alien components installation files, for example Java installation. This is more relevant for Windows", true, parentFolder + "/resources/installations"),
-            new Parameter("dry", "If set (used) installation will run but nothing really installed", false, "false")
+            new Parameter("targetpath", "the target path to install this installation into", true, "/temp/target",ParameterType.FILE),
+            new Parameter("serverpath", "where to get this installation files from (not alien components)", true, parentFolder + "/resources/server",ParameterType.FILE),
+            new Parameter("instllationspath", "where to find alien components installation files, for example Java installation. This is more relevant for Windows", true, parentFolder + "/resources/installations",ParameterType.FILE),
+            new Parameter("dry", "If set (used) installation will run but nothing really installed", false, "false",ParameterType.BOOLEAN)
 
 
      };
@@ -48,7 +48,10 @@ public class CommonParameters extends InstallationTask {
         logger.info("Getting parameters for " + this.toString());
         return getPrivateParameters();
     }
-
+    @Override
+    public String getName() {
+        return "Common parameters";
+    }
     @Override
     public InstallationResult install(InstallationContext installationContext) {
         return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);

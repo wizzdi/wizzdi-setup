@@ -82,7 +82,10 @@ public class Java32bitInstall extends InstallationTask {
     public String getId() {
         return "java32";
     }
-
+    @Override
+    public String getName() {
+        return "JDK 8, 32 bits installer";
+    }
     @Override
     public Set<String> getPrerequisitesTask() {
         Set<String> result = new HashSet<>();

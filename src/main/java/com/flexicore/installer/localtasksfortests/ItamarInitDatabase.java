@@ -29,7 +29,10 @@ public class ItamarInitDatabase extends InstallationTask {
     public ItamarInitDatabase(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
     }
-
+    @Override
+    public String getName() {
+        return "Create seed data in database";
+    }
 
     public  Parameters getPrivateParameters() {
 

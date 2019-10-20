@@ -30,7 +30,10 @@ public class EPX2000Install extends InstallationTask {
     public EPX2000Install(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
     }
-
+    @Override
+    public String getName() {
+        return "EPX2000 Installation";
+    }
 
     public  Parameters getPrivateParameters() {
 

@@ -25,7 +25,10 @@ public class MongoDBInstall extends InstallationTask {
     public MongoDBInstall(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
     }
-
+    @Override
+    public String getName() {
+        return "MongoDB installer";
+    }
 
     /**
      * parameters are best provided by a different plugin
