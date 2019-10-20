@@ -30,6 +30,7 @@ public class InstallationTask implements IInstallationTask {
     private String description="no description";
 
     private InstallationContext context;
+    private int order=-1;
 
     public Parameters getPrivateParameters() {
         return null;
@@ -248,6 +249,18 @@ public class InstallationTask implements IInstallationTask {
         }
         return new InstallationResult().setInstallationStatus(InstallationStatus.CONTINUE);
     }
+
+    @Override
+    public int getOrder() {
+        return order;
+    }
+
+    @Override
+    public IInstallationTask setOrder(int order) {
+        this.order=order;
+        return this;
+    }
+
 
     @Override
     public String getId() {

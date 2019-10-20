@@ -7,14 +7,14 @@ import com.flexicore.installer.model.Parameters;
 import org.pf4j.ExtensionPoint;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Set;
 
 
 public interface IInstallationTask extends ExtensionPoint {
 
     InstallationResult install(InstallationContext installationContext) throws Throwable;
-
+    int getOrder();
+    IInstallationTask setOrder(int order);
     String getId();
 
     IInstallationTask setId(String id);
