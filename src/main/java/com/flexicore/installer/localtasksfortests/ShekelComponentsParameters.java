@@ -18,9 +18,9 @@ public class ShekelComponentsParameters extends InstallationTask {
 
 
     static Parameter[] preDefined = {
-            new Parameter("shekesource", "source of all itamar plugins and files", true,  "&serverpath"+ "/shekel"),
-            new Parameter("shekeldeleteplugins", "delete all plugins before copying", true,  "false"),
-            new Parameter("shekelbackupprevious", "backup previous plugins", true,  "true")
+            new Parameter("shekesource", "source of all itamar plugins and files", true,  "&serverpath"+ "/shekel",ParameterType.FOLDER),
+            new Parameter("shekeldeleteplugins", "delete all plugins before copying", true,  "false",ParameterType.BOOLEAN),
+            new Parameter("shekelbackupprevious", "backup previous plugins", true,  "true",ParameterType.BOOLEAN)
 
     };
 

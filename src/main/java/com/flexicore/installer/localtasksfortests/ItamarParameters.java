@@ -18,9 +18,9 @@ public class ItamarParameters  extends InstallationTask{
 
 
     static Parameter[] preDefined = {
-            new Parameter("itamarsource", "source of all itamar plugins and files", true,  "&serverpath"+ "/itamar"),
-            new Parameter("itamardeleteplugins", "delete all plugins before copying, if set to false the FlexicoreUniquenessEnforcer must be run", true,  "false"),
-            new Parameter("itamarbackupprevious", "backup previous plugins", true,  "true")
+            new Parameter("itamarsource", "source of all itamar plugins and files", true,  "&serverpath"+ "/itamar",ParameterType.FOLDER),
+            new Parameter("itamardeleteplugins", "delete all plugins before copying, if set to false the FlexicoreUniquenessEnforcer must be run", true,  "false",ParameterType.BOOLEAN),
+            new Parameter("itamarbackupprevious", "backup previous plugins", true,  "true",ParameterType.BOOLEAN)
 
     };
 

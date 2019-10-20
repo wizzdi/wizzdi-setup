@@ -18,8 +18,8 @@ public class FlexicoreUniquenessEnforcer extends InstallationTask {
 
 
     static Parameter[] preDefined = {
-             new Parameter("ensureentities", "ensure now entities of the same type are installed", true,  "true"),
-            new Parameter("ensureplugins", "ensure no plugins of the same type are installed, rules out multiple versions support", true,  "true")
+             new Parameter("ensureentities", "ensure now entities of the same type are installed", true,  "true",ParameterType.BOOLEAN),
+            new Parameter("ensureplugins", "ensure no plugins of the same type are installed, rules out multiple versions support", true,  "true",ParameterType.BOOLEAN)
 
     };
 

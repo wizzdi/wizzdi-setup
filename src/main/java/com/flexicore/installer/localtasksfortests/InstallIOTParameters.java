@@ -18,10 +18,10 @@ public class InstallIOTParameters extends InstallationTask {
 
 
     static Parameter[] preDefined = {
-            new Parameter("activate-IOT", "if true, IOT access to remote server will be activated", true, "true"),
+            new Parameter("activate-IOT", "if true, IOT access to remote server will be activated", true, "true",ParameterType.BOOLEAN),
             new Parameter("remote-server-url", "remote server URL, must be the URL of the remote server this unit is defined at", true, "default value"),
-            new Parameter("remote-server-port", "example description", true, "80"),
-            new Parameter("remote-server-security", "example description", true, "true"),
+            new Parameter("remote-server-port", "example description", true, "80",ParameterType.NUMBER),
+            new Parameter("remote-server-security", "example description", true, "true",ParameterType.BOOLEAN),
             new Parameter("remote-server-username", "example description", true, "admin@flexicore.com"),
             new Parameter("remote-server-password", "example description", true, "")
 

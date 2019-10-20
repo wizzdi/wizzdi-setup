@@ -19,9 +19,9 @@ public class FlexiCoreParameters extends InstallationTask {
 
 
     static Parameter[] preDefined = {
-            new Parameter("flexicorehome", "target for flexicore files", true,  "&targetpath"+ "/flexicore"),
-            new Parameter("deleteplugins", "delete all plugins before copying", true,  "true"),
-            new Parameter("backupprevious", "backup previous plugins", true,  "true")
+            new Parameter("flexicorehome", "target for flexicore files", true,  "&targetpath"+ "/flexicore",ParameterType.FOLDER),
+            new Parameter("deleteplugins", "delete all plugins before copying", true,  "true",ParameterType.BOOLEAN),
+            new Parameter("backupprevious", "backup previous plugins", true,  "true",ParameterType.BOOLEAN)
     };
 
     public FlexiCoreParameters(Map<String, IInstallationTask> installationTasks) {
