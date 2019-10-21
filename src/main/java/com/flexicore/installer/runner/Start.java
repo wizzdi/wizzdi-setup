@@ -47,7 +47,7 @@ public class Start {
         CommandLine mainCmd = parser.parse(options, trueArgs, false); //will not fail if fed with plugins options.
 
         logger = initLogger("Installer", mainCmd.getOptionValue(LOG_PATH_OPT, "logs"));
-      InstallationContext installationContext = new InstallationContext()
+        InstallationContext installationContext = new InstallationContext()
                 .setLogger(logger).setParameters(new Parameters()).
                         setUiQuit(Start::uiComponentQuit).
                         setUiPause(Start::uiComponentPause).
@@ -109,9 +109,11 @@ public class Start {
         TopologicalOrderIterator<String, DefaultEdge> topologicalOrderIterator = getInstallationTaskIterator(DebuginstallationTasks);
         readProperties(installationContext);
         installationContext.getiInstallationTasks().clear();
+        int order = 1;
         while (topologicalOrderIterator.hasNext()) {
             String installationTaskUniqueId = topologicalOrderIterator.next();
             IInstallationTask task = DebuginstallationTasks.get(installationTaskUniqueId);
+            task.setOrder(order++);
             installationContext.addTask(task);
 
             Options taskOptions = getOptions(task, installationContext);
@@ -223,10 +225,15 @@ public class Start {
                 } else {
                     // if a parameter has no value it means that it's existence changes the parameter value to true, unless the properties file changes it or
                     // overridden from the command line
+
                     if (!cmd.hasOption(name)) {
-                        getNewParameterFromProperties(parameter, installationContext);
+                        if (!getNewParameterFromProperties(parameter, installationContext)) {
+                            parameter.setValue(String.valueOf(cmd.hasOption(name))); // will set the value of the parameter requiring no value to false as properties file hasn't changed it
+                        }
+                    }else {
+                        parameter.setValue(String.valueOf(cmd.hasOption(name))); // this is for non value switches indicated in command line
                     }
-                    parameter.setValue(String.valueOf(cmd.hasOption(name)));
+
                 }
                 installationContext.getParamaters().addParameter(parameter, task);
                 count++;
@@ -244,8 +251,13 @@ public class Start {
      * @param installationContext
      * @return
      */
-    private static Parameter getNewParameterFromProperties(Parameter parameter, InstallationContext installationContext) {
-        return parameter;
+    private static boolean getNewParameterFromProperties(Parameter parameter, InstallationContext installationContext) {
+        String result = installationContext.getProperties().getProperty(parameter.getName());
+        if (result != null) {
+            parameter.setValue(result);
+            return true; //was changed.
+        }
+        return false;
     }
 
     /**
@@ -256,7 +268,7 @@ public class Start {
      * @return
      */
     private static String getCalculatedDefaultValue(Parameter parameter, InstallationContext installationContext) {
-        System.out.println(parameter);
+
         String result = installationContext.getProperties().getProperty(parameter.getName());
         if (result == null) {
             result = parameter.getDefaultValue();
@@ -416,6 +428,7 @@ public class Start {
     private static boolean uiComponentPause(IUIComponent uiComponent, InstallationContext context) {
         return doPause();
     }
+
     private static boolean UIAccessInterfaceStop(IUIComponent uiComponent, InstallationContext context) {
         return doStop();
     }
@@ -461,10 +474,12 @@ public class Start {
     public static interface UIAccessInterfaceInstallDry {
         boolean uiComponentInstallDry(IUIComponent uiComponent, InstallationContext context);
     }
+
     @FunctionalInterface
     public static interface UIAccessInterfaceStop {
         boolean uiComponentStop(IUIComponent uiComponent, InstallationContext context);
     }
+
     @FunctionalInterface
     public static interface UIAccessInterfacePause {
         boolean uiComponentPause(IUIComponent uiComponent, InstallationContext context);

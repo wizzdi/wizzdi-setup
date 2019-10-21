@@ -18,7 +18,7 @@ public class WildflyParameters extends InstallationTask {
     static Parameter[] preDefined = {
             new Parameter("heapsize", "Heap size for Wildfly application server", true, "768",ParameterType.NUMBER),
             new Parameter("wildflysourcepath", "where to get wildfly files", true, "&serverpath"+"/wildfly",ParameterType.FOLDER),
-            new Parameter("wildflyhome", "where to put wildfly files", true, "&targetpath"+"/wildfly",ParameterType.BOOLEAN),
+            new Parameter("wildflyhome", "where to put wildfly files", true, "&targetpath"+"/wildfly",ParameterType.FOLDER),
             new Parameter("wildflymove", "if present will move wildfly folder from source and not copy, additional installations may fail",true,"false",ParameterType.BOOLEAN )
     };
 
