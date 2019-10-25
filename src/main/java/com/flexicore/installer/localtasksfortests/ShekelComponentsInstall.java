@@ -77,7 +77,10 @@ public class ShekelComponentsInstall extends InstallationTask {
         return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
 
     }
-
+    @Override
+    public OperatingSystem[] getOperatingSystems() {
+        return new OperatingSystem[]{OperatingSystem.Linux};
+    }
     @Override
     public String getId() {
         return "shekelcomponentsinstall";

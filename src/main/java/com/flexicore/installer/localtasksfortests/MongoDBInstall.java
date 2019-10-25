@@ -21,7 +21,10 @@ public class MongoDBInstall extends InstallationTask {
             //  new Parameter("example-key", "example description", true or false here (has value), "default value") //
 
     };
-
+    @Override
+    public OperatingSystem[] getOperatingSystems() {
+        return new OperatingSystem[]{OperatingSystem.Linux,OperatingSystem.Windows};
+    }
     public MongoDBInstall(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
     }

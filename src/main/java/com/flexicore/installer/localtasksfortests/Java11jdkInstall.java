@@ -78,6 +78,10 @@ public class Java11jdkInstall extends InstallationTask {
 
     }
     @Override
+    public OperatingSystem[] getOperatingSystems() {
+        return new OperatingSystem[]{OperatingSystem.Linux,OperatingSystem.Windows};
+    }
+    @Override
     public String getName() {
         return "JDK 11 installer";
     }

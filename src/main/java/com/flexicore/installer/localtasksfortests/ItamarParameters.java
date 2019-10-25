@@ -23,7 +23,10 @@ public class ItamarParameters  extends InstallationTask{
             new Parameter("itamarbackupprevious", "backup previous plugins", true,  "true",ParameterType.BOOLEAN)
 
     };
-
+    @Override
+    public OperatingSystem[] getOperatingSystems() {
+        return new OperatingSystem[]{OperatingSystem.Windows};
+    }
     public ItamarParameters(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
     }

@@ -51,6 +51,10 @@ public class FlexicoreInstall extends InstallationTask {
 
     }
     @Override
+    public OperatingSystem[] getOperatingSystems() {
+        return new OperatingSystem[]{OperatingSystem.Linux,OperatingSystem.Windows};
+    }
+    @Override
     public String getName() {
         return "Flexicore";
     }

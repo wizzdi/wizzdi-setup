@@ -78,6 +78,10 @@ public class FlexicoreFixConfigFile extends InstallationTask {
 
     }
     @Override
+    public OperatingSystem[] getOperatingSystems() {
+        return new OperatingSystem[]{OperatingSystem.Linux,OperatingSystem.Windows};
+    }
+    @Override
     public String getName() {
         return "Adjust flexicore.config";
     }

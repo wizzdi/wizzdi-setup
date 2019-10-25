@@ -77,7 +77,10 @@ public class Java32bitInstall extends InstallationTask {
         return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
 
     }
-
+    @Override
+    public OperatingSystem[] getOperatingSystems() {
+        return new OperatingSystem[]{OperatingSystem.Windows};
+    }
     @Override
     public String getId() {
         return "java32";

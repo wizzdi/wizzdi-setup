@@ -21,7 +21,10 @@ public class EPX2000Install extends InstallationTask {
 
 
     };
-
+    @Override
+    public OperatingSystem[] getOperatingSystems() {
+        return new OperatingSystem[]{OperatingSystem.Windows};
+    }
     /**
      * set here for easier testing (shorter code)
      *

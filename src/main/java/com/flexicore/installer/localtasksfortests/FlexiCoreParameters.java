@@ -23,7 +23,10 @@ public class FlexiCoreParameters extends InstallationTask {
             new Parameter("deleteplugins", "delete all plugins before copying", true,  "true",ParameterType.BOOLEAN),
             new Parameter("backupprevious", "backup previous plugins", true,  "true",ParameterType.BOOLEAN)
     };
-
+    @Override
+    public OperatingSystem[] getOperatingSystems() {
+        return new OperatingSystem[]{OperatingSystem.Linux,OperatingSystem.Windows};
+    }
     public FlexiCoreParameters(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
     }

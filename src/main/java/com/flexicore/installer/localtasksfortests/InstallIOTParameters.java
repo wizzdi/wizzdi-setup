@@ -30,7 +30,10 @@ public class InstallIOTParameters extends InstallationTask {
     public InstallIOTParameters(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
     }
-
+    @Override
+    public OperatingSystem[] getOperatingSystems() {
+        return new OperatingSystem[]{OperatingSystem.Linux,OperatingSystem.Windows};
+    }
     @Override
     public String getName() {
         return "IOT installation parameters";

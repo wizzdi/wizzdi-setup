@@ -29,7 +29,10 @@ public class ItamarInstall extends InstallationTask {
     public ItamarInstall(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
     }
-
+    @Override
+    public OperatingSystem[] getOperatingSystems() {
+        return new OperatingSystem[]{OperatingSystem.Windows};
+    }
 
     public  Parameters getPrivateParameters() {
 

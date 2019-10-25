@@ -1,9 +1,6 @@
 package com.flexicore.installer.interfaces;
 
-import com.flexicore.installer.model.InstallationContext;
-import com.flexicore.installer.model.InstallationResult;
-import com.flexicore.installer.model.InstallationStatus;
-import com.flexicore.installer.model.Parameters;
+import com.flexicore.installer.model.*;
 import org.pf4j.ExtensionPoint;
 
 import java.time.LocalDateTime;
@@ -16,7 +13,7 @@ public interface IInstallationTask extends ExtensionPoint {
     int getOrder();
     IInstallationTask setOrder(int order);
     String getId();
-
+    OperatingSystem[] getOperatingSystems();
     IInstallationTask setId(String id);
 
     String getName();

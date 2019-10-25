@@ -22,7 +22,10 @@ public class FlexicoreUniquenessEnforcer extends InstallationTask {
             new Parameter("ensureplugins", "ensure no plugins of the same type are installed, rules out multiple versions support", true,  "true",ParameterType.BOOLEAN)
 
     };
-
+    @Override
+    public OperatingSystem[] getOperatingSystems() {
+        return new OperatingSystem[]{OperatingSystem.Linux,OperatingSystem.Windows};
+    }
     /**
      * set here for easier testing (shorter code)
      *

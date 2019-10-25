@@ -45,7 +45,10 @@ public class AutosshInstall extends InstallationTask {
         return result;
 
     }
-
+    @Override
+    public OperatingSystem[] getOperatingSystems() {
+        return new OperatingSystem[]{OperatingSystem.Linux};
+    }
     @Override
     public Parameters getParameters(InstallationContext installationContext) {
 
@@ -62,7 +65,7 @@ public class AutosshInstall extends InstallationTask {
     public InstallationResult install(InstallationContext installationContext) throws Throwable {
         InstallationResult result = null;
         if ((result = super.install(installationContext)).equals(InstallationStatus.DRY)) return result;
-        if (!isWIndows) {
+        if (!isWindows) {
             try {
 
             } catch (Exception e) {

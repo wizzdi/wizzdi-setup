@@ -112,6 +112,7 @@ public class Start {
         while (topologicalOrderIterator.hasNext()) {
             String installationTaskUniqueId = topologicalOrderIterator.next();
             IInstallationTask task = DebuginstallationTasks.get(installationTaskUniqueId);
+
             task.setOrder(order++);
             installationContext.addTask(task);
 

@@ -104,7 +104,7 @@ public class WildflyInstall extends InstallationTask {
                 } else {
                     //service not running
 
-                    if (!isWIndows) {
+                    if (!isWindows) {
 
                         boolean wildfly14exists = new File("/opt/wildfly-14.0.1.Final").exists();
                         // code for upgrading Wildfly
@@ -187,7 +187,7 @@ public class WildflyInstall extends InstallationTask {
                         /**
                          * edit files to reflect the target location
                          */
-                        if (isWIndows) {
+                        if (isWindows) {
                             Utilities.editFile(getWildflyHome() + "/bin/standalone.conf.bat", "", "/home/flexicore", getFlexicoreHome(), true, false, true);
                             Utilities.editFile(getFlexicoreHome() + "/flexicore.config", "", "/home/flexicore", getFlexicoreHome(), true, false, true);
                             Utilities.editFile(getWildflyHome() + "/standalone/configuration/standalone.xml", "", "/home/flexicore", getFlexicoreHome(), false, false, true);

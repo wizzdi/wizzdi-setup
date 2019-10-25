@@ -45,7 +45,10 @@ public class FlexicoreDeploymentInstall extends InstallationTask {
         return result;
 
     }
-
+    @Override
+    public OperatingSystem[] getOperatingSystems() {
+        return new OperatingSystem[]{OperatingSystem.Linux,OperatingSystem.Windows};
+    }
     @Override
     public Parameters getParameters(InstallationContext installationContext) {
 

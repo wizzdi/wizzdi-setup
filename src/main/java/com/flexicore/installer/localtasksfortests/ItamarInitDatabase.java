@@ -25,7 +25,10 @@ public class ItamarInitDatabase extends InstallationTask {
 
 
     };
-
+    @Override
+    public OperatingSystem[] getOperatingSystems() {
+        return new OperatingSystem[]{OperatingSystem.Windows};
+    }
     public ItamarInitDatabase(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
     }

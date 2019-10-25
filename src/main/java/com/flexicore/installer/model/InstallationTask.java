@@ -3,6 +3,7 @@ package com.flexicore.installer.model;
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.utilities.CopyFileVisitor;
 import com.flexicore.installer.utilities.StreamGobbler;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.zeroturnaround.zip.ZipUtil;
@@ -36,13 +37,21 @@ public class InstallationTask implements IInstallationTask {
         return null;
     }
 
-    final public static boolean isWIndows = (System.getProperty("os.name")).toLowerCase().contains("windows");
+
+   final public static boolean isWindows= SystemUtils.IS_OS_WINDOWS;
+    final public static boolean isLinux= SystemUtils.IS_OS_LINUX;
+    final public static boolean isMac= SystemUtils.IS_OS_MAC;
     Queue<String> lines = new ConcurrentLinkedQueue<String>();
     Queue<String> errorLines = new ConcurrentLinkedQueue<String>();
-
+    public OperatingSystem getOs() {
+        if (isWindows) return  OperatingSystem.Windows;
+        if (isLinux) return  OperatingSystem.Linux;
+        if (isMac) return  OperatingSystem.OSX;
+        return OperatingSystem.Linux;
+    }
 
     public boolean testServiceRunning(String serviceName, String ownerName) {
-        if (isWIndows) {
+        if (isWindows) {
 
             return executeCommand("sc query " + serviceName, "RUNNING", "checking if service " + serviceName + " runs");
         } else {
@@ -63,7 +72,7 @@ public class InstallationTask implements IInstallationTask {
     }
 
     public boolean setServiceToAuto(String serviceName, String ownerName) {
-        if (isWIndows) {
+        if (isWindows) {
             return executeCommand("sc config " + serviceName + " start= auto", "success", "Set Service To Auto");
         }
         return true;
@@ -79,7 +88,7 @@ public class InstallationTask implements IInstallationTask {
     }
 
     public boolean setServiceToStop(String serviceName, String ownerName) {
-        if (isWIndows) {
+        if (isWindows) {
             return executeCommand("sc stop " + serviceName, "STOP_PENDING", "Set Service To Stop " + serviceName);
         } else {
             return executeCommand("service  " + serviceName + " stop", "", "Set Service To Stop " + serviceName);
@@ -124,7 +133,7 @@ public class InstallationTask implements IInstallationTask {
         Process process = null;
 
         try {
-            if (!isWIndows) {
+            if (!isWindows) {
                 String[] cmd = {"/bin/bash", "-c", "echo \"" + context.getParamaters().getValue("sudopassword") + "\" | sudo -S " + command};
 
                 process = Runtime.getRuntime().exec(cmd);
@@ -211,7 +220,7 @@ public class InstallationTask implements IInstallationTask {
             lines.clear();
             lines.addAll(outputGobbler.getLines()); //for debugging purposes
             debuglines(ownerName, false);
-            if (!isWIndows && exitVal == 4) {
+            if (!isWindows && exitVal == 4) {
                 return false; //seems to be the response when looking for a non-existent service. TODO:make sure that this is the case
             } else {
                 if (exitVal == 1603) {
@@ -265,6 +274,11 @@ public class InstallationTask implements IInstallationTask {
     @Override
     public String getId() {
         return id;
+    }
+
+    @Override
+    public OperatingSystem[] getOperatingSystems() {
+        return new OperatingSystem[]{OperatingSystem.Linux, OperatingSystem.Windows};
     }
 
     @Override
@@ -409,7 +423,7 @@ public class InstallationTask implements IInstallationTask {
     public boolean move(String source, String target) {
         boolean result = false;
         try {
-            if (isWIndows) {
+            if (isWindows) {
                 result = executeCommandByBuilder(new String[]{"cmd", "/C", "move", source, target}, "", false, "move server sources");
             }
         } catch (IOException e) {

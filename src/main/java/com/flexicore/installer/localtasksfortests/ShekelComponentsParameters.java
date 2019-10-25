@@ -28,7 +28,10 @@ public class ShekelComponentsParameters extends InstallationTask {
         super(installationTasks);
     }
 
-
+    @Override
+    public OperatingSystem[] getOperatingSystems() {
+        return new OperatingSystem[]{OperatingSystem.Linux};
+    }
 
     /**
      * parameters are best provided by a different plugin

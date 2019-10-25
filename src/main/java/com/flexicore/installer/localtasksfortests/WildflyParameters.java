@@ -25,7 +25,10 @@ public class WildflyParameters extends InstallationTask {
     public WildflyParameters(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
     }
-
+    @Override
+    public OperatingSystem[] getOperatingSystems() {
+        return new OperatingSystem[]{OperatingSystem.Linux,OperatingSystem.Windows};
+    }
     public  Parameters getPrivateParameters() {
 
         Parameters result = new Parameters();
