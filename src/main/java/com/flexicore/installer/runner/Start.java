@@ -3,7 +3,6 @@ package com.flexicore.installer.runner;
 import com.flexicore.installer.exceptions.MissingInstallationTaskDependency;
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.interfaces.IUIComponent;
-
 import com.flexicore.installer.localtasksfortests.*;
 import com.flexicore.installer.model.*;
 import org.apache.commons.cli.*;
@@ -18,9 +17,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.util.*;
-import java.util.logging.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static com.flexicore.installer.utilities.LoggerUtilities.initLogger;
@@ -212,6 +211,19 @@ public class Start {
         return result;
     }
 
+    /**
+     * Adjust parameters to reflect values in this order of priority (from highest to lowest)
+     * 1 external UI if exists (not in this function)
+     * 2 command line parameters
+     * 3 properties file (should be in the current folder
+     * 4 code based default values.
+     * @param task
+     * @param installationContext
+     * @param taskOptions
+     * @param args
+     * @param parser
+     * @return
+     */
     private static boolean updateParameters(IInstallationTask task, InstallationContext installationContext, Options taskOptions, String[] args, CommandLineParser parser) {
         try {
             String[] trueArgs = getTrueArgs(args, taskOptions);
@@ -222,6 +234,7 @@ public class Start {
                 Parameter parameter = taskParameters.getParameter(name);
                 if (parameter.isHasValue()) {
                     parameter.setValue(cmd.getOptionValue(name, getCalculatedDefaultValue(parameter, installationContext))); //set correct value for parameter
+                    parameter.setSource(cmd.hasOption(name ) ?ParameterSource.COMMANDLINE : parameter.getSource());
                 } else {
                     // if a parameter has no value it means that it's existence changes the parameter value to true, unless the properties file changes it or
                     // overridden from the command line
@@ -229,8 +242,9 @@ public class Start {
                     if (!cmd.hasOption(name)) {
                         if (!getNewParameterFromProperties(parameter, installationContext)) {
                             parameter.setValue(String.valueOf(cmd.hasOption(name))); // will set the value of the parameter requiring no value to false as properties file hasn't changed it
-                        }
-                    }else {
+                        }else parameter.setSource(ParameterSource.PROPERTIES_FILE);
+                    } else {
+                        parameter.setSource(ParameterSource.COMMANDLINE);
                         parameter.setValue(String.valueOf(cmd.hasOption(name))); // this is for non value switches indicated in command line
                     }
 
@@ -272,28 +286,27 @@ public class Start {
         String result = installationContext.getProperties().getProperty(parameter.getName());
         if (result == null) {
             result = parameter.getDefaultValue();
-        } else {
-            info("Parameter " + parameter.getName() + " default value will be taken from a properties file");
+            return result;
         }
+        parameter.setSource(ParameterSource.PROPERTIES_FILE);
+        info("Parameter " + parameter.getName() + " default value will be taken from a properties file");
+        int a = result.indexOf("&");
+        if (a > -1) {
+            int index = a + 2;
+            String temp = null;
+            int i = 1;
+            while (index < result.length()) {
+                if (!result.substring(a + i++, index++).matches("[a-zA-Z0-9]+")) break;
 
-        if (result != null) {
-            int a = result.indexOf("&");
-            if (a > -1) {
-                int index = a + 2;
-                String temp = null;
-                int i = 1;
-                while (index < result.length()) {
-                    if (!result.substring(a + i++, index++).matches("[a-zA-Z0-9]+")) break;
+            }
 
-                }
-
-                String toReplace = result.substring(a, index - 2);
-                String newString = installationContext.getParamaters().getValue(toReplace.substring(1));
-                if (newString != null) {
-                    result = result.replace(result.substring(a, index - 2), newString);
-                }
+            String toReplace = result.substring(a, index - 2);
+            String newString = installationContext.getParamaters().getValue(toReplace.substring(1));
+            if (newString != null) {
+                result = result.replace(result.substring(a, index - 2), newString);
             }
         }
+
         return result;
     }
 

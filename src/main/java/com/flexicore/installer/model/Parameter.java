@@ -7,6 +7,11 @@ public class Parameter {
     private String description;
     private String defaultValue;
     private String value;
+
+
+
+    private String originalValue =null;
+    private ParameterSource originalSource=null;
     private Integer minValue=0;
     private Integer maxValue=1000;
     private ParameterType type=ParameterType.STRING;
@@ -166,4 +171,35 @@ public class Parameter {
         this.maxValue = maxValue;
         return this;
     }
-}
+    public boolean storeValue() {
+        if (originalValue ==null) {
+            originalValue =value;
+            originalSource=source;
+            return true;
+        }
+        return false;
+    }
+    public boolean restoreValue() {
+        if (originalValue !=null) {
+            value= originalValue;
+            source=originalSource;
+            return true;
+        }
+        return false;
+    }
+    public String getOriginalValue() {
+        return originalValue;
+    }
+
+    public Parameter setOriginalValue(String originalValue) {
+        this.originalValue = originalValue;
+        return this;
+    }
+    public ParameterSource getOriginalSource() {
+        return originalSource;
+    }
+
+    public Parameter setOriginalSource(ParameterSource originalSource) {
+        this.originalSource = originalSource;
+        return this;
+    }}
