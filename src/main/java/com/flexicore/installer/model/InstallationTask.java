@@ -43,7 +43,8 @@ public class InstallationTask implements IInstallationTask {
     final public static boolean isMac= SystemUtils.IS_OS_MAC;
     Queue<String> lines = new ConcurrentLinkedQueue<String>();
     Queue<String> errorLines = new ConcurrentLinkedQueue<String>();
-    public OperatingSystem getOs() {
+    @Override
+    public OperatingSystem getCurrentOperatingSystem() {
         if (isWindows) return  OperatingSystem.Windows;
         if (isLinux) return  OperatingSystem.Linux;
         if (isMac) return  OperatingSystem.OSX;

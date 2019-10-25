@@ -112,7 +112,14 @@ public class Start {
         while (topologicalOrderIterator.hasNext()) {
             String installationTaskUniqueId = topologicalOrderIterator.next();
             IInstallationTask task = DebuginstallationTasks.get(installationTaskUniqueId);
-
+            boolean found=false;
+            for (OperatingSystem os: task.getOperatingSystems()) {
+                if (os.equals(task.getCurrentOperatingSystem())) {
+                    found=true;
+                    break;
+                }
+            }
+            if (!found) continue;
             task.setOrder(order++);
             installationContext.addTask(task);
 

@@ -14,6 +14,7 @@ public interface IInstallationTask extends ExtensionPoint {
     IInstallationTask setOrder(int order);
     String getId();
     OperatingSystem[] getOperatingSystems();
+    OperatingSystem getCurrentOperatingSystem();
     IInstallationTask setId(String id);
 
     String getName();
