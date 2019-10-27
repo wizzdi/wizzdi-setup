@@ -112,10 +112,10 @@ public class Start {
         while (topologicalOrderIterator.hasNext()) {
             String installationTaskUniqueId = topologicalOrderIterator.next();
             IInstallationTask task = DebuginstallationTasks.get(installationTaskUniqueId);
-            boolean found=false;
-            for (OperatingSystem os: task.getOperatingSystems()) {
+            boolean found = false;
+            for (OperatingSystem os : task.getOperatingSystems()) {
                 if (os.equals(task.getCurrentOperatingSystem())) {
-                    found=true;
+                    found = true;
                     break;
                 }
             }
@@ -225,6 +225,7 @@ public class Start {
      * 2 command line parameters
      * 3 properties file (should be in the current folder
      * 4 code based default values.
+     *
      * @param task
      * @param installationContext
      * @param taskOptions
@@ -242,7 +243,7 @@ public class Start {
                 Parameter parameter = taskParameters.getParameter(name);
                 if (parameter.isHasValue()) {
                     parameter.setValue(cmd.getOptionValue(name, getCalculatedDefaultValue(parameter, installationContext))); //set correct value for parameter
-                    parameter.setSource(cmd.hasOption(name ) ?ParameterSource.COMMANDLINE : parameter.getSource());
+                    parameter.setSource(cmd.hasOption(name) ? ParameterSource.COMMANDLINE : parameter.getSource());
                 } else {
                     // if a parameter has no value it means that it's existence changes the parameter value to true, unless the properties file changes it or
                     // overridden from the command line
@@ -250,7 +251,7 @@ public class Start {
                     if (!cmd.hasOption(name)) {
                         if (!getNewParameterFromProperties(parameter, installationContext)) {
                             parameter.setValue(String.valueOf(cmd.hasOption(name))); // will set the value of the parameter requiring no value to false as properties file hasn't changed it
-                        }else parameter.setSource(ParameterSource.PROPERTIES_FILE);
+                        } else parameter.setSource(ParameterSource.PROPERTIES_FILE);
                     } else {
                         parameter.setSource(ParameterSource.COMMANDLINE);
                         parameter.setValue(String.valueOf(cmd.hasOption(name))); // this is for non value switches indicated in command line
@@ -294,10 +295,22 @@ public class Start {
         String result = installationContext.getProperties().getProperty(parameter.getName());
         if (result == null) {
             result = parameter.getDefaultValue();
-            return result;
+
         }
-        parameter.setSource(ParameterSource.PROPERTIES_FILE);
-        info("Parameter " + parameter.getName() + " default value will be taken from a properties file");
+        else {
+            parameter.setSource(ParameterSource.PROPERTIES_FILE);
+            info("Parameter " + parameter.getName() + " default value will be taken from a properties file");
+        }
+        if (result.contains("&")) {
+            parameter.setNonTranslatedValue(result);
+            parameter.setSandSymbolPresent(true);
+            result = getReplaced(installationContext, result,parameter);
+        }
+
+        return result;
+    }
+
+    public static String getReplaced(InstallationContext installationContext, String result, Parameter parameter) {
         int a = result.indexOf("&");
         if (a > -1) {
             int index = a + 2;
@@ -311,10 +324,10 @@ public class Start {
             String toReplace = result.substring(a, index - 2);
             String newString = installationContext.getParamaters().getValue(toReplace.substring(1));
             if (newString != null) {
+                parameter.setReferencedParameter(toReplace.substring(1));
                 result = result.replace(result.substring(a, index - 2), newString);
             }
         }
-
         return result;
     }
 
@@ -386,13 +399,14 @@ public class Start {
 
     private static boolean install(InstallationContext context) {
         logger.info("Performing installation ");
-//        for (IInstallationTask installationTask : context.getiInstallationTasks()) {
-//            installTask(installationTask, context);
-//        }
-//        for (IInstallationTask installationTask : context.getCleanupTasks()) {
-//
-//            installTask(installationTask, context);
-//        }
+        for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
+            info("will now install ");
+            installTask(installationTask, context);
+        }
+        for (IInstallationTask installationTask : context.getCleanupTasks().values()) {
+
+            installTask(installationTask, context);
+        }
         return true;
     }
 

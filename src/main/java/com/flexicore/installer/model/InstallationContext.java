@@ -1,6 +1,7 @@
 package com.flexicore.installer.model;
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.interfaces.IUIComponent;
+import com.flexicore.installer.interfaces.ProgressConsumer;
 import com.flexicore.installer.runner.Start;
 import java.util.*;
 import java.util.logging.Level;
@@ -22,6 +23,7 @@ public class InstallationContext {
     private Start.UIAccessInterfaceShowLogs uiShowLogs;
     private Start.UIAccessInterfaceStop uiStopInstall;
     private Start.UIAccessAbout uiAbout;
+    private ProgressConsumer consumer;
     private int successFullyInstalled=0;
     private int failedToInstall=0;
     public Logger getLogger() {
@@ -174,6 +176,15 @@ public class InstallationContext {
 
     public InstallationContext setUiStopInstall(Start.UIAccessInterfaceStop uiStopInstall) {
         this.uiStopInstall = uiStopInstall;
+        return this;
+    }
+
+    public ProgressConsumer getConsumer() {
+        return consumer;
+    }
+
+    public InstallationContext setConsumer(ProgressConsumer consumer) {
+        this.consumer = consumer;
         return this;
     }
 }

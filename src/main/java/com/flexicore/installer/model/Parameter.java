@@ -7,7 +7,8 @@ public class Parameter {
     private String description;
     private String defaultValue;
     private String value;
-
+    private String nonTranslatedValue;
+    private String referencedParameter;
 
 
     private String originalValue =null;
@@ -17,7 +18,7 @@ public class Parameter {
     private ParameterType type=ParameterType.STRING;
 
     private ParameterSource source=ParameterSource.CODE;
-
+    private boolean sandSymbolPresent=false;
     private boolean hasValue;
     private boolean locked=false;
     private List<String> listOptions=new ArrayList<>();
@@ -202,4 +203,33 @@ public class Parameter {
     public Parameter setOriginalSource(ParameterSource originalSource) {
         this.originalSource = originalSource;
         return this;
-    }}
+    }
+
+    public String getNonTranslatedValue() {
+        return nonTranslatedValue;
+    }
+
+    public Parameter setNonTranslatedValue(String nonTranslatedValue) {
+        this.nonTranslatedValue = nonTranslatedValue;
+        return this;
+    }
+
+    public boolean isSandSymbolPresent() {
+        return sandSymbolPresent;
+    }
+
+    public Parameter setSandSymbolPresent(boolean sandSymbolPresent) {
+        this.sandSymbolPresent = sandSymbolPresent;
+        return this;
+    }
+
+    public String getReferencedParameter() {
+        return referencedParameter;
+    }
+
+    public Parameter setReferencedParameter(String referencedParameter) {
+        this.referencedParameter = referencedParameter;
+        return this;
+    }
+}
+
