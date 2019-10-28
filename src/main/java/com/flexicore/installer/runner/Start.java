@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -396,18 +397,30 @@ public class Start {
         logger.info("Performing install dry");
         return true;
     }
-
+    private static boolean installRunning=false;
     private static boolean install(InstallationContext context) {
-        logger.info("Performing installation ");
-        for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
-            info("will now install ");
-            installTask(installationTask, context);
-        }
-        for (IInstallationTask installationTask : context.getCleanupTasks().values()) {
+        if (!installRunning) {
+            installRunning=true;
+            Thread thread = new Thread(() -> {
+                logger.info("Performing installation ");
+                for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
+                    info("will now install "+installationTask.getName()+" id: "+installationTask.getId());
+                    installationTask.setProgress(10).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now());
+                    context.getConsumer().updateProgress(installationTask, context);
+                    // installTask(installationTask, context);
+                }
+                for (IInstallationTask installationTask : context.getCleanupTasks().values()) {
+                    installationTask.setProgress(70).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now());
+                    //  installTask(installationTask, context);
+                }
 
-            installTask(installationTask, context);
+            });
+            thread.start();
+            installRunning=false;
+        }else {
+            return true;
         }
-        return true;
+       return false;
     }
 
     private static boolean installTask(IInstallationTask installationTask, InstallationContext context) {

@@ -9,10 +9,11 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.zeroturnaround.zip.ZipUtil;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
+import java.nio.file.attribute.GroupPrincipal;
+import java.nio.file.attribute.PosixFileAttributeView;
+import java.nio.file.attribute.UserPrincipal;
+import java.nio.file.attribute.UserPrincipalLookupService;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -124,8 +125,8 @@ public class InstallationTask implements IInstallationTask {
     }
 
     public boolean executeBashScriptLocal(String name, String toFind, String ownerName) {
-        String dir = System.getProperty("user.dir");
-        return executeBashScript(dir + "/" + name, toFind, ownerName);
+
+        return executeBashScript(getScriptsPath() + "/" + name, toFind, ownerName);
     }
 
     public boolean executeCommand(String command, String toFind, String ownerName) {
@@ -493,6 +494,10 @@ public class InstallationTask implements IInstallationTask {
         return getContext().getParamaters().getValue("installlations");
 
     }
+    public String getScriptsPath() {
+        return getContext().getParamaters().getValue("scriptspath");
+
+    }
 
     /**
      * @param installationDir source of the copy
@@ -836,5 +841,85 @@ public class InstallationTask implements IInstallationTask {
     public InstallationTask setVersion(String version) {
         this.version = version;
         return this;
+    }
+    public boolean setOwner(String userName, String groupName, Path path) {
+        UserPrincipalLookupService lookupService =
+                FileSystems.getDefault().getUserPrincipalLookupService();
+        UserPrincipal user = null;
+        try {
+
+
+            user = lookupService.lookupPrincipalByName(userName);
+       } catch (IOException e) {
+           severe("Cannot find user named: "+userName,e);
+       }
+        try {
+
+            GroupPrincipal group = lookupService.lookupPrincipalByGroupName(groupName);
+            if (group!=null && user!=null) {
+                Files.getFileAttributeView(path, PosixFileAttributeView.class, LinkOption.NOFOLLOW_LINKS).setGroup(group);
+                Files.setOwner(path, user);
+                info("Have set owner of path: "+path+" to group: "+groupName+" user: "+userName);
+                return true;
+            }
+        } catch (IOException e) {
+            severe("Cannot find group named: "+groupName,e);
+        }
+
+        return false;
+    }
+    public boolean startEnableService(String serviceName) {
+        if (executeCommand("systemctl daemon-reload", "", "Reloading services")) {
+            simpleMessage("auto ssh", "info", "reloading system services daemon");
+            if (executeCommand("systemctl enable "+serviceName, "", " enabling "+serviceName)) {
+                simpleMessage("service "+serviceName, "info", "enabled service");
+                if (testServiceRunning(serviceName, "installing "+serviceName)) {
+                    executeCommand("service "+serviceName+"stop", "", " stopping "+serviceName);
+                }
+                if (executeCommand("service "+serviceName+" start", "", " starting "+serviceName)) {
+                    simpleMessage(serviceName, "info", "have started service "+serviceName);
+                    if (testServiceRunning(serviceName, serviceName+" installation")) {
+                        simpleMessage(serviceName, "info", serviceName+" started");
+                        return true;
+                    } else {
+                        simpleMessage(serviceName, "severe", serviceName+" service is not running");
+                    }
+
+                } else {
+                    simpleMessage(serviceName, "severe", serviceName+" starting service ");
+                }
+            } else {
+                simpleMessage(serviceName, "severe", serviceName+"enabling service failed");
+            }
+        } else {
+            simpleMessage(serviceName, "severe", serviceName+" cannot reload daemon");
+        }
+        return false;
+    }
+
+    /**
+     *
+     * @param pathtoMSI full path to msi
+     * @param options any of: [/quiet][/passive][/q{n|b|r|f}]
+     * @return
+     */
+    public boolean installMSI (String pathtoMSI, String ... options) {
+        if (isWindows) {
+            Runtime rf = Runtime.getRuntime();
+            StringBuilder builder=new StringBuilder();
+            for (String option: options) {
+                builder.append(option );
+                builder.append(" ");
+            }
+            try {
+                Process pf = rf.exec("msiexec /i \"\\"+pathtoMSI+"\""+ " "+builder.toString());
+                return  true;
+
+            } catch (IOException e) {
+                severe("Exception while running MSI ");
+
+            }
+        }
+        return false;
     }
 }
