@@ -1,9 +1,7 @@
 package com.flexicore.installer.localtasksfortests;
-
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
 import org.pf4j.Extension;
-
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -61,7 +59,10 @@ public class EPX2000Install extends InstallationTask {
 
     @Override
     public InstallationResult install (InstallationContext installationContext) {
-        return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
+      if (   executeCommand(getInstallationsPath()+"/EP2000installation/setup.exe","","EPX2000 installation") ) {
+          return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
+      }
+        return new InstallationResult().setInstallationStatus(InstallationStatus.FAILED);
     }
     @Override
     public String getId() {

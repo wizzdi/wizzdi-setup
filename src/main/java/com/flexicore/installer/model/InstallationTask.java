@@ -395,14 +395,21 @@ public class InstallationTask implements IInstallationTask {
         return this;
     }
 
-    public void deleteDirectoryStream(Path path) throws IOException {
+    public static void deleteDirectoryStream(Path path) throws IOException {
         Files.walk(path)
                 .sorted(Comparator.reverseOrder())
                 .map(Path::toFile)
                 .forEach(File::delete);
     }
+    public void setOwnerFolder(Path path,String userName, String group) throws IOException {
+       List<Path>  list=Files.walk(path).collect(Collectors.toList());
+       for (Path thePath:list) {
+           setOwner(userName,group,thePath);
+       }
 
-    public boolean deleteDirectoryStream(String path) throws IOException {
+    }
+
+    public static boolean deleteDirectoryStream(String path) throws IOException {
         File file = new File(path);
         if (file.exists()) {
             deleteDirectoryStream(file.toPath());
@@ -411,7 +418,18 @@ public class InstallationTask implements IInstallationTask {
 
         return false;
     }
+    public static void touch(File file) throws IOException{
+        long timestamp = System.currentTimeMillis();
+        touch(file, timestamp);
+    }
 
+    public static void touch(File file, long timestamp) throws IOException{
+        if (!file.exists()) {
+            new FileOutputStream(file).close();
+        }
+
+        file.setLastModified(timestamp);
+    }
     protected void ensureTarget(String targetDir) {
         File target = new File(targetDir);
         if (!target.exists()) {
@@ -843,31 +861,50 @@ public class InstallationTask implements IInstallationTask {
         return this;
     }
     public boolean setOwner(String userName, String groupName, Path path) {
+        Pair<GroupPrincipal,UserPrincipal> pair=getGroupUser(groupName,userName);
+        if (pair!=null) {
+            try {
+                if (setOwner(path, pair.getRight(), pair.getLeft())) {
+                    info("Have set owner of path: " + path + " to group: " + groupName + " user: " + userName);
+                    return true;
+                }
+            } catch (IOException e) {
+                severe("Have failed to set owner",e);
+            }
+        }
+        return false;
+    }
+    public Pair<GroupPrincipal,UserPrincipal> getGroupUser( String groupName,String userName) {
         UserPrincipalLookupService lookupService =
                 FileSystems.getDefault().getUserPrincipalLookupService();
         UserPrincipal user = null;
         try {
-
-
             user = lookupService.lookupPrincipalByName(userName);
-       } catch (IOException e) {
-           severe("Cannot find user named: "+userName,e);
-       }
+        } catch (IOException e) {
+            severe("Cannot find user named: "+userName,e);
+        }
         try {
 
             GroupPrincipal group = lookupService.lookupPrincipalByGroupName(groupName);
-            if (group!=null && user!=null) {
-                Files.getFileAttributeView(path, PosixFileAttributeView.class, LinkOption.NOFOLLOW_LINKS).setGroup(group);
-                Files.setOwner(path, user);
-                info("Have set owner of path: "+path+" to group: "+groupName+" user: "+userName);
-                return true;
-            }
+            Pair<GroupPrincipal,UserPrincipal> result=new ImmutablePair<>(group,user);
+            return result;
+
         } catch (IOException e) {
             severe("Cannot find group named: "+groupName,e);
         }
+        return null;
 
+    }
+    private boolean setOwner(Path path, UserPrincipal user, GroupPrincipal group) throws IOException {
+
+        if (group!=null && user!=null) {
+            Files.getFileAttributeView(path, PosixFileAttributeView.class, LinkOption.NOFOLLOW_LINKS).setGroup(group);
+            Files.setOwner(path, user);
+            return true;
+        }
         return false;
     }
+
     public boolean startEnableService(String serviceName) {
         if (executeCommand("systemctl daemon-reload", "", "Reloading services")) {
             simpleMessage("auto ssh", "info", "reloading system services daemon");
