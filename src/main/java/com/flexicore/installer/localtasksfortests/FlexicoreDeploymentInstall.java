@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 /**
  * Install the Flexicore Deployment files inside wildfly/standalone/deployments
  * 29-oct-2019
+ * todo: check setowner on Windows.
  */
 @Extension
 public class FlexicoreDeploymentInstall extends InstallationTask {

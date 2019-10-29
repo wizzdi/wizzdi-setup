@@ -10,7 +10,8 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
- * fix flexicore configuration file
+ * fix flexicore configuration file to match tru locations.
+ * 29-oct-2019
  */
 @Extension
 public class FlexicoreFixConfigFile extends InstallationTask {
@@ -62,7 +63,7 @@ public class FlexicoreFixConfigFile extends InstallationTask {
 
         try {
 
-            String flexicoreSource = getServerPath() + "/flexicore";
+
             String flexicoreHome = getFlexicoreHome();
             if (!isDry()) {
                 editFile(flexicoreHome + "/flexicore.config", null, "/home/flexicore/", flexicoreHome + "/", false, false, true);
