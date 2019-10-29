@@ -18,7 +18,7 @@ import java.util.logging.Logger;
  * install the standard Flexicore system (plugins, configuration, entities etc)
  */
 @Extension
-public class FlexicoreInstall extends InstallationTask {
+public class FlexicoreComponentsInstall extends InstallationTask {
     static Logger logger;
 
 
@@ -27,7 +27,7 @@ public class FlexicoreInstall extends InstallationTask {
 
     };
 
-    public FlexicoreInstall(Map<String, IInstallationTask> installationTasks) {
+    public FlexicoreComponentsInstall(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
     }
 
@@ -81,7 +81,8 @@ public class FlexicoreInstall extends InstallationTask {
             if (!isDry()) {
                 if (isUpdate) {
                     if (backupprevious) {
-                        zipAll(flexicoreHome,flexicoreHome+"/backup.zip",getContext());
+                        zipAll(flexicoreHome+"/plugins",flexicoreHome+"/pluginsbackup.zip",getContext());
+                        zipAll(flexicoreHome+"/entities",flexicoreHome+"/entitiesbackup.zip",getContext());
                     }
                     try {
                         Pair<List<String>, List<String>> existingFiles = getComponents(flexicoreSource, null);
@@ -112,6 +113,9 @@ public class FlexicoreInstall extends InstallationTask {
 
                     }
                 }
+                return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
+            }else {
+                return new InstallationResult().setInstallationStatus(InstallationStatus.ISDRY);
             }
 
 
@@ -119,7 +123,7 @@ public class FlexicoreInstall extends InstallationTask {
             error("Error while installing Flexicore", e);
             return new InstallationResult().setInstallationStatus(InstallationStatus.FAILED);
         }
-        return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
+
 
     }
 

@@ -7,6 +7,7 @@ module flexicore.installer {
     requires java.base;
     requires java.desktop;
     requires java.naming;
+    requires  jsch;
     requires zt.zip;
     requires org.apache.commons.lang3;
     requires jdk.unsupported;
@@ -16,8 +17,5 @@ module flexicore.installer {
     exports com.flexicore.installer.localtasksfortests;
     exports com.flexicore.installer.runner;
     exports com.flexicore.installer.interfaces;
-
-
-
 
 }

@@ -4,13 +4,18 @@ import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
 import org.pf4j.Extension;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
 make sure there are now double entries in entities and plugins, this is controllable by the two parameters-> ensureentities and ensureplugins
+
  */
 @Extension
 public class FlexicoreUniquenessEnforcer extends InstallationTask {
@@ -74,9 +79,15 @@ public class FlexicoreUniquenessEnforcer extends InstallationTask {
 
         try {
 
-            String flexicoreSource = getServerPath() + "/flexicore";
+
             String flexicoreHome = getFlexicoreHome();
+
             if (!isDry()) {
+
+               int total= ensureUnique(Paths.get(flexicoreHome+"/plugins"));
+               info("Have removed "+total+" duplicate plugins");
+               total= ensureUnique(Paths.get(flexicoreHome+"/entities"));
+                info("Have removed "+total+" duplicate entities");
 
             }
 
@@ -87,6 +98,48 @@ public class FlexicoreUniquenessEnforcer extends InstallationTask {
         }
         return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
 
+    }
+
+    private int ensureUnique(Path parentPath) throws IOException {
+        List<Path> list=Files.walk(parentPath).collect(Collectors.toList());
+        HashMap<String,List<Path>> all=new HashMap<>();
+        for(Path path:list) {
+           String base= removeVersion(path.toString());
+            List<Path> pathList = all.get(base);
+           if (pathList==null) {
+                pathList=new ArrayList<>();
+                all.put(base,pathList);
+           }
+           pathList.add(path);
+        }
+        for (List<Path> pathList:all.values()) {
+            List<Path> toremove=new ArrayList<>();
+            if (pathList.size()>1) {
+
+                Collections.sort(pathList);
+
+                for (Path path:pathList) {
+                    if (!pathList.get(pathList.size()-1).equals(path)) {
+                        //keep the latest version
+                        toremove.add(path);
+                    }
+                }
+            }
+            for (Path path:toremove) {
+                info("Have deleted version: "+path);
+                Files.deleteIfExists(path);
+            }
+            return toremove.size();
+        }
+        return 0;
+    }
+
+    private String removeVersion(String name) {
+        int index=name.lastIndexOf("-");
+        if (isNumeric(name.substring(index+1,index+2))) {
+            return name.substring(0, index);
+        }
+        return  name;
     }
 
     @Override

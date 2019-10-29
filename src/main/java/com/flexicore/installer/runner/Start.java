@@ -84,7 +84,7 @@ public class Start {
         //*********** Flexicore installation (home)
         new FlexiCoreParameters(DebuginstallationTasks);
 
-        new FlexicoreInstall(DebuginstallationTasks);
+        new FlexicoreComponentsInstall(DebuginstallationTasks);
 
         new FlexicoreFixConfigFile(DebuginstallationTasks);
 

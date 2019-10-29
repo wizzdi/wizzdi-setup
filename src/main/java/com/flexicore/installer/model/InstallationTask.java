@@ -21,34 +21,35 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class InstallationTask implements IInstallationTask {
-    private LocalDateTime started=LocalDateTime.now();
-    private LocalDateTime ended=LocalDateTime.now();
-    private Integer progress=0;
-    private String name="Unnamed task";
+    private LocalDateTime started = LocalDateTime.now();
+    private LocalDateTime ended = LocalDateTime.now();
+    private Integer progress = 0;
+    private String name = "Unnamed task";
     private String id;
-    private String version="1.0.0";
-    private boolean enabled=true;
-    private InstallationStatus status=InstallationStatus.CREATED;
-    private String description="no description";
+    private String version = "1.0.0";
+    private boolean enabled = true;
+    private InstallationStatus status = InstallationStatus.CREATED;
+    private String description = "no description";
 
     private InstallationContext context;
-    private int order=-1;
+    private int order = -1;
 
     public Parameters getPrivateParameters() {
         return null;
     }
 
 
-   final public static boolean isWindows= SystemUtils.IS_OS_WINDOWS;
-    final public static boolean isLinux= SystemUtils.IS_OS_LINUX;
-    final public static boolean isMac= SystemUtils.IS_OS_MAC;
+    final public static boolean isWindows = SystemUtils.IS_OS_WINDOWS;
+    final public static boolean isLinux = SystemUtils.IS_OS_LINUX;
+    final public static boolean isMac = SystemUtils.IS_OS_MAC;
     Queue<String> lines = new ConcurrentLinkedQueue<String>();
     Queue<String> errorLines = new ConcurrentLinkedQueue<String>();
+
     @Override
     public OperatingSystem getCurrentOperatingSystem() {
-        if (isWindows) return  OperatingSystem.Windows;
-        if (isLinux) return  OperatingSystem.Linux;
-        if (isMac) return  OperatingSystem.OSX;
+        if (isWindows) return OperatingSystem.Windows;
+        if (isLinux) return OperatingSystem.Linux;
+        if (isMac) return OperatingSystem.OSX;
         return OperatingSystem.Linux;
     }
 
@@ -251,14 +252,18 @@ public class InstallationTask implements IInstallationTask {
     @Override
     public InstallationResult install(InstallationContext installationContext) throws Throwable {
         context = installationContext;
-         flexicoreSource = getServerPath() + "/flexicore";
-         flexicoreHome = getFlexicoreHome();
+        flexicoreSource = getServerPath() + "/flexicore";
+        flexicoreHome = getFlexicoreHome();
 
         if (isDry()) {
             info("Dry run  of " + this.getId() + " -> " + this.getDescription() + getParameters(installationContext).toString());
-            return new InstallationResult().setInstallationStatus(InstallationStatus.DRY);
+            return new InstallationResult().setInstallationStatus(InstallationStatus.ISDRY);
         }
         return new InstallationResult().setInstallationStatus(InstallationStatus.CONTINUE);
+    }
+
+    public static boolean isNumeric(String strNum) {
+        return strNum.matches("-?\\d+(\\.\\d+)?");
     }
 
     @Override
@@ -268,7 +273,7 @@ public class InstallationTask implements IInstallationTask {
 
     @Override
     public IInstallationTask setOrder(int order) {
-        this.order=order;
+        this.order = order;
         return this;
     }
 
@@ -285,7 +290,7 @@ public class InstallationTask implements IInstallationTask {
 
     @Override
     public IInstallationTask setId(String id) {
-        this.id=id;
+        this.id = id;
         return this;
     }
 
@@ -331,7 +336,7 @@ public class InstallationTask implements IInstallationTask {
 
     @Override
     public IInstallationTask setEnabled(boolean value) {
-        enabled=value;
+        enabled = value;
         return this;
     }
 
@@ -355,6 +360,7 @@ public class InstallationTask implements IInstallationTask {
     public Integer getProgress() {
         return progress;
     }
+
     @Override
     public InstallationTask setStarted(LocalDateTime started) {
         this.started = started;
@@ -363,13 +369,13 @@ public class InstallationTask implements IInstallationTask {
 
     @Override
     public IInstallationTask setProgress(Integer progress) {
-        this.progress=progress;
+        this.progress = progress;
         return this;
     }
 
     @Override
     public IInstallationTask setStatus(InstallationStatus status) {
-        this.status=status;
+        this.status = status;
         return this;
     }
 
@@ -381,7 +387,7 @@ public class InstallationTask implements IInstallationTask {
 
     @Override
     public IInstallationTask setName(String name) {
-        this.name=name;
+        this.name = name;
         return this;
     }
 
@@ -389,6 +395,7 @@ public class InstallationTask implements IInstallationTask {
     public InstallationContext getContext() {
         return context;
     }
+
     @Override
     public InstallationTask setContext(InstallationContext context) {
         this.context = context;
@@ -401,11 +408,12 @@ public class InstallationTask implements IInstallationTask {
                 .map(Path::toFile)
                 .forEach(File::delete);
     }
-    public void setOwnerFolder(Path path,String userName, String group) throws IOException {
-       List<Path>  list=Files.walk(path).collect(Collectors.toList());
-       for (Path thePath:list) {
-           setOwner(userName,group,thePath);
-       }
+
+    public void setOwnerFolder(Path path, String userName, String group) throws IOException {
+        List<Path> list = Files.walk(path).collect(Collectors.toList());
+        for (Path thePath : list) {
+            setOwner(userName, group, thePath);
+        }
 
     }
 
@@ -418,18 +426,20 @@ public class InstallationTask implements IInstallationTask {
 
         return false;
     }
-    public static void touch(File file) throws IOException{
+
+    public static void touch(File file) throws IOException {
         long timestamp = System.currentTimeMillis();
         touch(file, timestamp);
     }
 
-    public static void touch(File file, long timestamp) throws IOException{
+    public static void touch(File file, long timestamp) throws IOException {
         if (!file.exists()) {
             new FileOutputStream(file).close();
         }
 
         file.setLastModified(timestamp);
     }
+
     protected void ensureTarget(String targetDir) {
         File target = new File(targetDir);
         if (!target.exists()) {
@@ -512,6 +522,7 @@ public class InstallationTask implements IInstallationTask {
         return getContext().getParamaters().getValue("installlations");
 
     }
+
     public String getScriptsPath() {
         return getContext().getParamaters().getValue("scriptspath");
 
@@ -855,49 +866,53 @@ public class InstallationTask implements IInstallationTask {
         info("[Edit file] [Edit file] ->" + fileAsString);
         return fileAsString;
     }
+
     @Override
     public InstallationTask setVersion(String version) {
         this.version = version;
         return this;
     }
+
     public boolean setOwner(String userName, String groupName, Path path) {
-        Pair<GroupPrincipal,UserPrincipal> pair=getGroupUser(groupName,userName);
-        if (pair!=null) {
+        Pair<GroupPrincipal, UserPrincipal> pair = getGroupUser(groupName, userName);
+        if (pair != null) {
             try {
                 if (setOwner(path, pair.getRight(), pair.getLeft())) {
                     info("Have set owner of path: " + path + " to group: " + groupName + " user: " + userName);
                     return true;
                 }
             } catch (IOException e) {
-                severe("Have failed to set owner",e);
+                severe("Have failed to set owner", e);
             }
         }
         return false;
     }
-    public Pair<GroupPrincipal,UserPrincipal> getGroupUser( String groupName,String userName) {
+
+    public Pair<GroupPrincipal, UserPrincipal> getGroupUser(String groupName, String userName) {
         UserPrincipalLookupService lookupService =
                 FileSystems.getDefault().getUserPrincipalLookupService();
         UserPrincipal user = null;
         try {
             user = lookupService.lookupPrincipalByName(userName);
         } catch (IOException e) {
-            severe("Cannot find user named: "+userName,e);
+            severe("Cannot find user named: " + userName, e);
         }
         try {
 
             GroupPrincipal group = lookupService.lookupPrincipalByGroupName(groupName);
-            Pair<GroupPrincipal,UserPrincipal> result=new ImmutablePair<>(group,user);
+            Pair<GroupPrincipal, UserPrincipal> result = new ImmutablePair<>(group, user);
             return result;
 
         } catch (IOException e) {
-            severe("Cannot find group named: "+groupName,e);
+            severe("Cannot find group named: " + groupName, e);
         }
         return null;
 
     }
+
     private boolean setOwner(Path path, UserPrincipal user, GroupPrincipal group) throws IOException {
 
-        if (group!=null && user!=null) {
+        if (group != null && user != null) {
             Files.getFileAttributeView(path, PosixFileAttributeView.class, LinkOption.NOFOLLOW_LINKS).setGroup(group);
             Files.setOwner(path, user);
             return true;
@@ -908,49 +923,48 @@ public class InstallationTask implements IInstallationTask {
     public boolean startEnableService(String serviceName) {
         if (executeCommand("systemctl daemon-reload", "", "Reloading services")) {
             simpleMessage("auto ssh", "info", "reloading system services daemon");
-            if (executeCommand("systemctl enable "+serviceName, "", " enabling "+serviceName)) {
-                simpleMessage("service "+serviceName, "info", "enabled service");
-                if (testServiceRunning(serviceName, "installing "+serviceName)) {
-                    executeCommand("service "+serviceName+"stop", "", " stopping "+serviceName);
+            if (executeCommand("systemctl enable " + serviceName, "", " enabling " + serviceName)) {
+                simpleMessage("service " + serviceName, "info", "enabled service");
+                if (testServiceRunning(serviceName, "installing " + serviceName)) {
+                    executeCommand("service " + serviceName + "stop", "", " stopping " + serviceName);
                 }
-                if (executeCommand("service "+serviceName+" start", "", " starting "+serviceName)) {
-                    simpleMessage(serviceName, "info", "have started service "+serviceName);
-                    if (testServiceRunning(serviceName, serviceName+" installation")) {
-                        simpleMessage(serviceName, "info", serviceName+" started");
+                if (executeCommand("service " + serviceName + " start", "", " starting " + serviceName)) {
+                    simpleMessage(serviceName, "info", "have started service " + serviceName);
+                    if (testServiceRunning(serviceName, serviceName + " installation")) {
+                        simpleMessage(serviceName, "info", serviceName + " started");
                         return true;
                     } else {
-                        simpleMessage(serviceName, "severe", serviceName+" service is not running");
+                        simpleMessage(serviceName, "severe", serviceName + " service is not running");
                     }
 
                 } else {
-                    simpleMessage(serviceName, "severe", serviceName+" starting service ");
+                    simpleMessage(serviceName, "severe", serviceName + " starting service ");
                 }
             } else {
-                simpleMessage(serviceName, "severe", serviceName+"enabling service failed");
+                simpleMessage(serviceName, "severe", serviceName + "enabling service failed");
             }
         } else {
-            simpleMessage(serviceName, "severe", serviceName+" cannot reload daemon");
+            simpleMessage(serviceName, "severe", serviceName + " cannot reload daemon");
         }
         return false;
     }
 
     /**
-     *
      * @param pathtoMSI full path to msi
-     * @param options any of: [/quiet][/passive][/q{n|b|r|f}]
+     * @param options   any of: [/quiet][/passive][/q{n|b|r|f}]
      * @return
      */
-    public boolean installMSI (String pathtoMSI, String ... options) {
+    public boolean installMSI(String pathtoMSI, String... options) {
         if (isWindows) {
             Runtime rf = Runtime.getRuntime();
-            StringBuilder builder=new StringBuilder();
-            for (String option: options) {
-                builder.append(option );
+            StringBuilder builder = new StringBuilder();
+            for (String option : options) {
+                builder.append(option);
                 builder.append(" ");
             }
             try {
-                Process pf = rf.exec("msiexec /i \"\\"+pathtoMSI+"\""+ " "+builder.toString());
-                return  true;
+                Process pf = rf.exec("msiexec /i \"\\" + pathtoMSI + "\"" + " " + builder.toString());
+                return true;
 
             } catch (IOException e) {
                 severe("Exception while running MSI ");

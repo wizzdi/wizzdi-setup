@@ -4,6 +4,8 @@ import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
 import org.pf4j.Extension;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -72,7 +74,7 @@ public class InstallIOT extends InstallationTask {
             String flexicoreSource = getServerPath() + "/flexicore";
             String flexicoreHome = getFlexicoreHome();
             if (!isDry()) {
-                editFile(flexicoreHome + "/flexicore.config", null, "/home/flexicore/", flexicoreHome + "/", false, false, true);
+                Files.copy(Paths.get(flexicoreSource+"/iot/remoteServer.jaon"),Paths.get(flexicoreHome+"/remoteServer.json"));
 
             }
 
