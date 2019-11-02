@@ -21,7 +21,9 @@ public class FlexiCoreParameters extends InstallationTask {
     static Parameter[] preDefined = {
             new Parameter("flexicorehome", "target for flexicore files", true,  "&targetpath"+ "/flexicore",ParameterType.FOLDER),
             new Parameter("deleteplugins", "delete all plugins before copying", true,  "true",ParameterType.BOOLEAN),
-            new Parameter("backupprevious", "backup previous plugins", true,  "true",ParameterType.BOOLEAN)
+            new Parameter("backupprevious", "backup previous plugins", true,  "true",ParameterType.BOOLEAN),
+            new Parameter("JWTSecondsValid", "Number of seconds to path before JWT password renewal is required", true,  "2592000",ParameterType.NUMBER),
+
     };
     @Override
     public OperatingSystem[] getOperatingSystems() {

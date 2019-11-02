@@ -33,6 +33,14 @@ public interface IInstallationTask extends ExtensionPoint {
 
     Parameters getParameters(InstallationContext installationContext);
 
+    /**
+     * once parameters are finally determined, before install, will check how parameter X of plugin Y may change the values
+     * of parameter M in plugin N, for example change http to https.
+     * @param installationContext
+     * @return
+     */
+    int mergeParameters(InstallationContext installationContext);
+
     boolean getEnabled();
 
     IInstallationTask setEnabled(boolean value);

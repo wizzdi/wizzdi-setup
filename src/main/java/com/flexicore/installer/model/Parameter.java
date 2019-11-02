@@ -1,4 +1,6 @@
 package com.flexicore.installer.model;
+import org.apache.commons.validator.routines.UrlValidator;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +25,12 @@ public class Parameter {
     private boolean locked=false;
     private List<String> listOptions=new ArrayList<>();
 
+
+    /**
+     * list of methods to process when using one parameter to change another one
+     */
+    private List<Parameter.TransformParameter> transformParameters=new ArrayList<>();
+    private Parameter.parameterValidator parameterValidator;
     public String getDescription() {
         return description;
     }
@@ -45,14 +53,34 @@ public class Parameter {
         this.description = description;
         this.defaultValue = defaultValue;
 
+
     }
-    public Parameter(String name, String description, boolean hasValue, String defaultValue,ParameterType parameterType, ParameterSource parameterSource) {
+    public Parameter(String name, String description, boolean hasValue, String defaultValue,ParameterType parameterType,List<String> options) {
+        this.type=parameterType;
+        this.hasValue = hasValue;
+        this.name = name;
+        this.description = description;
+        this.defaultValue = defaultValue;
+        this.listOptions=options;
+
+    }
+    public Parameter(String name, String description, boolean hasValue, String defaultValue, ParameterType parameterType, ParameterSource parameterSource, Parameter.parameterValidator validator) {
         this.type=parameterType;
         this.hasValue = hasValue;
         this.name = name;
         this.description = description;
         this.defaultValue = defaultValue;
         this.source=parameterSource;
+        this.parameterValidator=validator;
+
+    }
+    public Parameter(String name, String description, boolean hasValue, String defaultValue, ParameterType parameterType,Parameter.parameterValidator validator) {
+        this.type=parameterType;
+        this.hasValue = hasValue;
+        this.name = name;
+        this.description = description;
+        this.defaultValue = defaultValue;
+        this.parameterValidator=validator;
 
     }
 
@@ -230,6 +258,47 @@ public class Parameter {
     public Parameter setReferencedParameter(String referencedParameter) {
         this.referencedParameter = referencedParameter;
         return this;
+    }
+    public void addTransform(Parameter.TransformParameter transform) {
+        transformParameters.add(transform);
+    }
+    public void clearTransforms() {
+        transformParameters.clear();
+    }
+
+    public static boolean validateEmail(Parameter parameter, ValidationMessage validationMessage) {
+        return true;
+    }
+
+    @FunctionalInterface
+    public  static interface TransformParameter {
+        String transform(Parameter effected,Parameter effecting);
+    }
+    @FunctionalInterface
+    public  static interface parameterValidator {
+        boolean validate(Parameter toValid,ValidationMessage message);
+    }
+
+    public Parameter.parameterValidator getParameterValidator() {
+        return parameterValidator;
+    }
+
+    public Parameter setParameterValidator(Parameter.parameterValidator parameterValidator) {
+        this.parameterValidator = parameterValidator;
+        return this;
+    }
+    public boolean validate(ValidationMessage validationMessage) {
+        if (parameterValidator!=null) {
+           return parameterValidator.validate(this,validationMessage);
+        }
+        return true;
+    }
+    public static boolean validateURL(Parameter parameter, ValidationMessage validationMessage) {
+        String[] schemes = {"http", "https"};
+        UrlValidator urlValidator = new UrlValidator(schemes);
+        boolean result = urlValidator.isValid(parameter.getValue());
+        if (!result) validationMessage.setMessage("URL is not a valid URL");
+        return result;
     }
 }
 

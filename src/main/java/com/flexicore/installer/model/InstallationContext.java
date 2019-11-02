@@ -59,7 +59,10 @@ public class InstallationContext {
     public Parameters getParamaters() {
         return parameters;
     }
+    public Parameter getParameter(String key) {
 
+        return parameters.getParameter(key);
+    }
     public <T extends InstallationContext> T setLogger(Logger logger) {
         this.logger = logger;
         return (T) this;

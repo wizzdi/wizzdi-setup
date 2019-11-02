@@ -1,11 +1,13 @@
 package com.flexicore.installer.model;
 
 import com.flexicore.installer.interfaces.IInstallationTask;
+import com.flexicore.installer.interfaces.IUIComponent;
 import com.flexicore.installer.utilities.CopyFileVisitor;
 import com.flexicore.installer.utilities.StreamGobbler;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.validator.routines.UrlValidator;
 import org.zeroturnaround.zip.ZipUtil;
 
 import java.io.*;
@@ -327,6 +329,11 @@ public class InstallationTask implements IInstallationTask {
     @Override
     public Parameters getParameters(InstallationContext installationContext) {
         return new Parameters();
+    }
+
+    @Override
+    public int mergeParameters(InstallationContext installationContext) {
+        return 0;
     }
 
     @Override
@@ -800,6 +807,32 @@ public class InstallationTask implements IInstallationTask {
     }
 
     /**
+     * assumes that configuration files are built with the name of the parameter as the placeholder for the value, simplifies code
+     *
+     * @param path
+     * @param id
+     * @return
+     */
+    public boolean editFile(String path, String id) {
+        IInstallationTask task = null;
+        try {
+
+            Collection<Parameter> parameters = (task = getContext().getiInstallationTasks().get(id)).getParameters(getContext()).getValues();
+            String previousContent = "";
+            int i = parameters.size();
+            for (Parameter parameter : parameters) {
+                previousContent = editFile(path, previousContent, parameter.getName(), parameter.getValue(), false, false, --i == 0);
+
+            }
+        } catch (Exception e) {
+            if (task == null) {
+                severe("Could not find a task with id: " + id);
+            }
+        }
+        return true;
+    }
+
+    /**
      * @param path
      * @param existingString from a previous call, saves time in open/close file sequence, all stages but one in memory
      * @param toFind
@@ -973,4 +1006,6 @@ public class InstallationTask implements IInstallationTask {
         }
         return false;
     }
+
+
 }

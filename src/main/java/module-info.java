@@ -11,6 +11,7 @@ module flexicore.installer {
     requires zt.zip;
     requires org.apache.commons.lang3;
     requires jdk.unsupported;
+    requires commons.validator;
     exports com.flexicore.installer.exceptions;
     exports com.flexicore.installer.model;
     exports com.flexicore.installer.utilities;
