@@ -44,6 +44,9 @@
             <artifactId>commons-cli</artifactId>
             <version>1.4</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-collections4 -->
+
+
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
@@ -91,6 +94,30 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.9</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/commons-logging/commons-logging -->
+
+        <dependency>
+            <groupId>commons-digester</groupId>
+            <artifactId>commons-digester</artifactId>
+            <version>2.1</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/commons-beanutils/commons-beanutils -->
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+            <version>1.9.4</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>3.2.2</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/commons-logging/commons-logging -->
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>1.1.1</version>
+        </dependency>
 
     </dependencies>
 
@@ -121,173 +148,233 @@
                             <overwriteExistingFiles>true</overwriteExistingFiles>
                             <outputDirectory>${project.build.directory}/modules</outputDirectory>
                             <modules>
-                               <module>
-                                   <artifact>
-                                       <groupId>commons-cli</groupId>
-                                       <artifactId>commons-cli</artifactId>
-                                   </artifact>
-                                   <moduleInfo>
-                                       <name>commons.cli</name>
-                                   </moduleInfo>
-                               </module>
-                               <module>
-                                   <artifact>
-                                       <groupId>org.apache.commons</groupId>
-                                       <artifactId>commons-lang3</artifactId>
-                                   </artifact>
-                                   <moduleInfo>
-                                       <name>org.apache.commons.lang3</name>
-                                   </moduleInfo>
+                                <module>
+                                    <artifact>
+                                        <groupId>commons-cli</groupId>
+                                        <artifactId>commons-cli</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>commons.cli</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>commons-digester</groupId>
+                                        <artifactId>commons-digester</artifactId>
+                                        <version>2.1</version>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>commons.digester</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>commons-beanutils</groupId>
+                                        <artifactId>commons-beanutils</artifactId>
+                                        <version>1.9.4</version>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>commons.beanutils</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.apache.commons</groupId>
+                                        <artifactId>commons-collections</artifactId>
+                                        <version>3.2.2</version>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>commons.collections</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>commons-logging</groupId>
+                                        <artifactId>commons-logging</artifactId>
+                                        <version>
+                                            1.1.1
+                                        </version>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>commons.logging</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>commons-validator</groupId>
+                                        <artifactId>commons-validator</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>commons.validator</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>com.jcraft</groupId>
+                                        <artifactId>jsch</artifactId>
+                                        <version>0.1.55</version>
 
-                               </module>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>jsch</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.apache.commons</groupId>
+                                        <artifactId>commons-lang3</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>org.apache.commons.lang3</name>
+                                    </moduleInfo>
 
-                               <module>
-                                   <artifact>
-                                       <groupId>org.apache.commons</groupId>
-                                       <artifactId>commons-lang3</artifactId>
-                                   </artifact>
-                                   <moduleInfo>
-                                       <name>org.apache.commons.lang3</name>
-                                   </moduleInfo>
-                               </module>
-                               <module>
-                                   <artifact>
-                                       <groupId>org.jgrapht</groupId>
-                                       <artifactId>jgrapht-core</artifactId>
-                                   </artifact>
-                                   <moduleInfo>
-                                       <name>org.jgrapht.core</name>
-                                   </moduleInfo>
+                                </module>
 
-                               </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.apache.commons</groupId>
+                                        <artifactId>commons-lang3</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>org.apache.commons.lang3</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.jgrapht</groupId>
+                                        <artifactId>jgrapht-core</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>org.jgrapht.core</name>
+                                    </moduleInfo>
 
-                               <module>
-                                   <artifact>
-                                       <groupId>org.jheaps</groupId>
-                                       <artifactId>jheaps</artifactId>
-                                   </artifact>
-                                   <moduleInfo>
-                                       <name>org.jheaps</name>
-                                   </moduleInfo>
+                                </module>
 
-                               </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.jheaps</groupId>
+                                        <artifactId>jheaps</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>org.jheaps</name>
+                                    </moduleInfo>
 
-                               <module>
-                                   <artifact>
-                                       <groupId>org.slf4j</groupId>
-                                       <artifactId>slf4j-api</artifactId>
-                                   </artifact>
-                                   <moduleInfoSource>
-                                       module slf4j.api {
-                                       exports org.slf4j;
-                                       }
-                                   </moduleInfoSource>
+                                </module>
 
-                               </module>
-                               <module>
-                                   <artifact>
-                                       <groupId>org.zeroturnaround</groupId>
-                                       <artifactId>zt-zip</artifactId>
-                                   </artifact>
-                                   <moduleInfo>
-                                       <name>zt.zip</name>
-                                   </moduleInfo>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.slf4j</groupId>
+                                        <artifactId>slf4j-api</artifactId>
+                                    </artifact>
+                                    <moduleInfoSource>
+                                        module slf4j.api {
+                                        exports org.slf4j;
+                                        }
+                                    </moduleInfoSource>
 
-                               </module>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.zeroturnaround</groupId>
+                                        <artifactId>zt-zip</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>zt.zip</name>
+                                    </moduleInfo>
 
-                               <module>
-                                   <artifact>
-                                       <groupId>org.ow2.asm</groupId>
-                                       <artifactId>asm</artifactId>
-                                   </artifact>
-                                   <moduleInfoSource>
-                                       module org.objectweb.asm {
-                                       }
-                                   </moduleInfoSource>
+                                </module>
 
-                               </module>
-                               <module>
-                                   <artifact>
-                                       <groupId>com.github.zafarkhaja</groupId>
-                                       <artifactId>java-semver</artifactId>
-                                   </artifact>
-                                   <moduleInfo>
-                                       <name>java.semver</name>
-                                   </moduleInfo>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.ow2.asm</groupId>
+                                        <artifactId>asm</artifactId>
+                                    </artifact>
+                                    <moduleInfoSource>
+                                        module org.objectweb.asm {
+                                        }
+                                    </moduleInfoSource>
 
-                               </module>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>com.github.zafarkhaja</groupId>
+                                        <artifactId>java-semver</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>java.semver</name>
+                                    </moduleInfo>
 
-
-                               <module>
-                                   <artifact>
-                                       <groupId>org.pf4j</groupId>
-                                       <artifactId>pf4j</artifactId>
-                                   </artifact>
-                                   <moduleInfoSource>
-                                       module org.pf4j {
-                                       }
-                                   </moduleInfoSource>
-
-                               </module>
-
-
-
-                           </modules>
+                                </module>
 
 
-                       </configuration>
-                   </execution>
-               </executions>
-           </plugin>
-           <plugin>
-               <groupId>org.moditect</groupId>
-               <artifactId>moditect-maven-plugin</artifactId>
-               <version>1.0.0.Beta2</version>
-               <executions>
-                   <execution>
-                       <id>create-runtime-image</id>
-                       <phase>package</phase>
-                       <goals>
-                           <goal>create-runtime-image</goal>
-                       </goals>
-                       <configuration>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.pf4j</groupId>
+                                        <artifactId>pf4j</artifactId>
+                                    </artifact>
+                                    <moduleInfoSource>
+                                        module org.pf4j {
+                                        }
+                                    </moduleInfoSource>
 
-                           <modulePath>
-                               <path>${project.build.directory}/modules</path>
-                               <path>${project.build.directory}/${artifactId}-${version}.jar</path>
-
-                           </modulePath>
-                           <modules>
-                               <module>flexicore.installer</module>
+                                </module>
 
 
-                           </modules>
-
-                           <launcher>
-                               <name>Start</name>
-                               <module>flexicore.installer/com.flexicore.installer.runner.Start</module>
-
-                           </launcher>
-                           <outputDirectory>
-                               ${project.build.directory}/jlink-image
-                           </outputDirectory>
-
-                       </configuration>
-                   </execution>
-               </executions>
-           </plugin>
+                            </modules>
 
 
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.moditect</groupId>
+                <artifactId>moditect-maven-plugin</artifactId>
+                <version>1.0.0.Beta2</version>
+                <executions>
+                    <execution>
+                        <id>create-runtime-image</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>create-runtime-image</goal>
+                        </goals>
+                        <configuration>
 
-       </plugins>
-       <resources>
-           <resource>
-               <directory>src/main/resources</directory>
-               <filtering>true</filtering>
+                            <modulePath>
+                                <path>${project.build.directory}/modules</path>
+                                <path>${project.build.directory}/${artifactId}-${version}.jar</path>
 
-           </resource>
-       </resources>
-   </build>
+                            </modulePath>
+                            <modules>
+                                <module>flexicore.installer</module>
+
+
+                            </modules>
+
+                            <launcher>
+                                <name>Start</name>
+                                <module>flexicore.installer/com.flexicore.installer.runner.Start</module>
+
+                            </launcher>
+                            <outputDirectory>
+                                ${project.build.directory}/jlink-image
+                            </outputDirectory>
+
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+
+        </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+
+            </resource>
+        </resources>
+    </build>
 
 
 </project>

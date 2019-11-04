@@ -74,7 +74,7 @@ public class AutosshInstall extends InstallationTask {
     @Override
     public InstallationResult install(InstallationContext installationContext) throws Throwable {
         InstallationResult result = null;
-        if ((result = super.install(installationContext)).equals(InstallationStatus.DRY)) return result;
+        if ((result = super.install(installationContext)).equals(InstallationStatus.ISDRY)) return result;
 
             try {
                 boolean executescriptresult = executeBashScriptLocal(MAKEPASSWORDSCRIPTFILE, "", "make ssh password"); // return values seems wrong, ignore
