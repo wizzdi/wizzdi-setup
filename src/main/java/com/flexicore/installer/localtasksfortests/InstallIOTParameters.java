@@ -73,7 +73,9 @@ public class InstallIOTParameters extends InstallationTask {
             new Parameter("remote-server-web-service-url", "remote server web service URL, must be the URL of the remote server this unit is defined at", true, "default value",ParameterType.URL,Parameter::validateURL),
             new Parameter("remote-server-port", "remote server port, normally 80", true, "80",ParameterType.NUMBER),
             new Parameter("remote-server-ssl", "remote server SSL support", true, "SSL",ParameterType.LIST, sslOptions),
-            new Parameter("remote-server-username", "remote server username used to access the cloud", true, "admin@flexicore.com",ParameterType.EMAIL,Parameter::validateEmail),
+            new Parameter("remote-server-username",
+                    "remote server username used to access the cloud", true, "admin@flexicore.com",
+                    ParameterType.EMAIL,Parameter::validateEmail),
             new Parameter("remote-server-password", "remote server password used to access the cloud", true, "",ParameterType.PASSWORD),
             new Parameter("remoteServer-configuration-file-source", "locate the remoteServer.json (name can be different) source file", true, "&serverpath/iot/remoteServer.json",ParameterType.FILE),
 
@@ -173,7 +175,7 @@ public class InstallIOTParameters extends InstallationTask {
     public String toString() {
         return "Installation task: " + this.getId();
     }
-    public static boolean validateSSLOptions(Parameter parameter, ValidationMessage validationMessage) {
+    public static boolean validateSSLOptions(Parameter parameter, Object newValue,ValidationMessage validationMessage) {
       return true;
     }
 }

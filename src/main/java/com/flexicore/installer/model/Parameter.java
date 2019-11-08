@@ -1,4 +1,5 @@
 package com.flexicore.installer.model;
+import org.apache.commons.validator.routines.EmailValidator;
 import org.apache.commons.validator.routines.UrlValidator;
 
 import java.util.ArrayList;
@@ -266,8 +267,13 @@ public class Parameter {
         transformParameters.clear();
     }
 
-    public static boolean validateEmail(Parameter parameter, ValidationMessage validationMessage) {
-        return true;
+    public static boolean validateEmail(Parameter parameter, Object newValue,ValidationMessage validationMessage) {
+        String email=newValue.toString();
+        email = email.trim();
+        EmailValidator eValidator = EmailValidator.getInstance();
+        if (eValidator.isValid(email)) return true;
+        if (validationMessage!=null) validationMessage.setMessage(email+" is not a valid email");
+        return false;
     }
 
     @FunctionalInterface
@@ -276,7 +282,7 @@ public class Parameter {
     }
     @FunctionalInterface
     public  static interface parameterValidator {
-        boolean validate(Parameter toValid,ValidationMessage message);
+        boolean validate(Parameter toValid,Object newValue,ValidationMessage message);
     }
 
     public Parameter.parameterValidator getParameterValidator() {
@@ -287,16 +293,16 @@ public class Parameter {
         this.parameterValidator = parameterValidator;
         return this;
     }
-    public boolean validate(ValidationMessage validationMessage) {
+    public boolean validate(Object newValue,ValidationMessage validationMessage) {
         if (parameterValidator!=null) {
-           return parameterValidator.validate(this,validationMessage);
+           return parameterValidator.validate(this,newValue,validationMessage);
         }
         return true;
     }
-    public static boolean validateURL(Parameter parameter, ValidationMessage validationMessage) {
+    public static boolean validateURL(Parameter parameter,Object newValue, ValidationMessage validationMessage) {
         String[] schemes = {"http", "https"};
         UrlValidator urlValidator = new UrlValidator(schemes);
-        boolean result = urlValidator.isValid(parameter.getValue());
+        boolean result = urlValidator.isValid(newValue.toString());
         if (!result) validationMessage.setMessage("URL is not a valid URL");
         return result;
     }

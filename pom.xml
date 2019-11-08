@@ -298,7 +298,7 @@
                                 <path>${project.build.directory}/${artifactId}-${version}.jar</path>
 
                             </modulePath>
-                            <baseJdk>version=11,vendor=openjdk,platform=arm_64</baseJdk>
+
 
                             <modules>
                                 <module>flexicore.installer</module>

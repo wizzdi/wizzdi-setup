@@ -3,6 +3,10 @@ package com.flexicore.installer.localtasksfortests;
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
 import org.pf4j.Extension;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -11,6 +15,7 @@ public class CommonParameters extends InstallationTask {
     static Logger logger;
     static String currentFolder = System.getProperty("user.dir");
     static String parentFolder = "/temp";//new File(currentFolder).getParent();
+    static List<String> sslOptions =new ArrayList<>();
 
     static Parameter[] preDefined = {
             new Parameter("targetpath", "the target path to install this installation into", true, "/temp/target",ParameterType.FOLDER),
@@ -18,10 +23,26 @@ public class CommonParameters extends InstallationTask {
             new Parameter("instllationspath", "where to find alien components installation files, for example Java installation. This is more relevant for Windows", true, parentFolder + "/resources/installations",ParameterType.FOLDER),
             new Parameter("scriptspath", "where to find operating system scripts", true, parentFolder + "/scripts",ParameterType.FOLDER),
 
-            new Parameter("dry", "If set (used) installation will run but nothing really installed", false, "false",ParameterType.BOOLEAN)
+            new Parameter("dry", "If set (used) installation will run but nothing really installed", false, "false",ParameterType.BOOLEAN),
+
+            new Parameter("remote_server_name", "Name of the remote server", true, "",ParameterType.STRING),
+            new Parameter("remote_server_description", "Description of the remote server", true, "",ParameterType.STRING),
+            new Parameter("activate_IOT", "if true, IOT access to remote server will be activated", true, "false",ParameterType.BOOLEAN),
+            new Parameter("remote_server_externalid", "The unique remote server external id", true, "",ParameterType.STRING),
+            new Parameter("remote_server_url", "remote server URL, must be the URL of the remote server this unit is defined at", true,
+                    "",ParameterType.URL,Parameter::validateURL),
+            new Parameter("remote_server_web_service_url", "remote server web service URL, must be the URL of the remote server this unit is defined at", true, "default value",ParameterType.URL,Parameter::validateURL),
+            new Parameter("remote_server_port", "remote server port, normally 80", true, "80",ParameterType.NUMBER),
+            new Parameter("remote_server_ssl", "remote server SSL support", true, "SSL",ParameterType.LIST, sslOptions),
+            new Parameter("remote_server_username",
+                    "remote server username used to access the cloud", true, "admin@flexicore.com",
+                    ParameterType.EMAIL,Parameter::validateEmail),
+            new Parameter("remote_server_password", "remote server password used to access the cloud", true, "",ParameterType.PASSWORD),
+            new Parameter("remoteServer_configuration_file_source", "locate the remoteServer.json (name can be different) source file", true, "&serverpath/iot/remoteServer.json",ParameterType.FILE),
 
 
-     };
+
+    };
 
     public CommonParameters(Map<String, IInstallationTask> installationTasks) {
         super(installationTasks);
@@ -30,7 +51,7 @@ public class CommonParameters extends InstallationTask {
 
 
     public  Parameters getPrivateParameters() {
-
+        initValues();
         Parameters result = new Parameters();
 
         for (Parameter parameter : preDefined) {
@@ -40,6 +61,11 @@ public class CommonParameters extends InstallationTask {
 
         return result;
 
+    }
+
+    private void initValues() {
+        String[] list={"ssl","nossl","test"};
+        sslOptions.addAll(Arrays.asList(list));
     }
 
     @Override
