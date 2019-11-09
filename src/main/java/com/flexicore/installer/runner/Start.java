@@ -150,9 +150,10 @@ public class Start {
                 }
             }
         }
-
+        installationContext.getParamaters().sort();
         boolean stopped = false;
         boolean uiFoundandRun = false;
+
         List<IUIComponent> uiComponents = pluginManager.getExtensions(IUIComponent.class);
         for (IUIComponent component : uiComponents) {
             component.setContext(installationContext);

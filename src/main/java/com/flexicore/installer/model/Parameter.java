@@ -12,6 +12,7 @@ public class Parameter {
     private String value;
     private String nonTranslatedValue;
     private String referencedParameter;
+    private int ordinal=-1;
 
 
     private String originalValue =null;
@@ -82,6 +83,16 @@ public class Parameter {
         this.description = description;
         this.defaultValue = defaultValue;
         this.parameterValidator=validator;
+
+    }
+    public Parameter(String name, String description, boolean hasValue, String defaultValue, ParameterType parameterType,Parameter.parameterValidator validator,int ordinal) {
+        this.type=parameterType;
+        this.hasValue = hasValue;
+        this.name = name;
+        this.description = description;
+        this.defaultValue = defaultValue;
+        this.parameterValidator=validator;
+        this.ordinal=ordinal;
 
     }
 
@@ -305,6 +316,23 @@ public class Parameter {
         boolean result = urlValidator.isValid(newValue.toString());
         if (!result) validationMessage.setMessage("URL is not a valid URL");
         return result;
+    }
+    public static boolean validateExistingFolder(Parameter parameter,Object newValue, ValidationMessage validationMessage) {
+        return true;
+    }
+    public static boolean validateExistingFile(Parameter parameter,Object newValue, ValidationMessage validationMessage) {
+        return true;
+    }
+    public static boolean validatePort(Parameter parameter,Object newValue, ValidationMessage validationMessage) {
+        return true;
+    }
+    public int getOrdinal() {
+        return ordinal;
+    }
+
+    public Parameter setOrdinal(int ordinal) {
+        this.ordinal = ordinal;
+        return this;
     }
 }
 

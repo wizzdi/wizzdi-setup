@@ -1,13 +1,11 @@
 package com.flexicore.installer.model;
 
 import com.flexicore.installer.interfaces.IInstallationTask;
-import com.flexicore.installer.interfaces.IUIComponent;
 import com.flexicore.installer.utilities.CopyFileVisitor;
 import com.flexicore.installer.utilities.StreamGobbler;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.validator.routines.UrlValidator;
 import org.zeroturnaround.zip.ZipUtil;
 
 import java.io.*;
