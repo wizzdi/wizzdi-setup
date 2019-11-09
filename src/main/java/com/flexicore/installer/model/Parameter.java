@@ -2,6 +2,7 @@ package com.flexicore.installer.model;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.apache.commons.validator.routines.UrlValidator;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -318,12 +319,32 @@ public class Parameter {
         return result;
     }
     public static boolean validateExistingFolder(Parameter parameter,Object newValue, ValidationMessage validationMessage) {
+        File file=new File(newValue.toString());
+        if (!file.exists()) {
+            validationMessage.setMessage("Cannot locate folder: "+newValue);
+            return false;
+        }
         return true;
     }
     public static boolean validateExistingFile(Parameter parameter,Object newValue, ValidationMessage validationMessage) {
+        File file=new File(newValue.toString());
+        if (!file.exists()) {
+            validationMessage.setMessage("Cannot locate file: "+newValue);
+            return false;
+        }
         return true;
     }
     public static boolean validatePort(Parameter parameter,Object newValue, ValidationMessage validationMessage) {
+        try {
+            int p= Integer.parseInt(newValue.toString());
+            if (p!=80 && ( p>8085 || p<8079 )) {
+                validationMessage.setMessage("Port must be either 80 or between 8080 and 8085 \n, provided value is "+p);
+                return false;
+            }
+        }catch ( Exception e) {
+            validationMessage.setMessage("Port must be either 80 or between 8080 and 8085 \n, provided value is: "+newValue.toString());
+            return false;
+        }
         return true;
     }
     public int getOrdinal() {

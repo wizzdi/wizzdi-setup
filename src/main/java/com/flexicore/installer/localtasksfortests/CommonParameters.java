@@ -24,7 +24,7 @@ public class CommonParameters extends InstallationTask {
             new Parameter("scriptspath", "where to find operating system scripts", true, parentFolder + "/scripts",ParameterType.FOLDER,Parameter::validateExistingFolder),
 
             new Parameter("dry", "If set (used) installation will run but nothing really installed", false, "false",ParameterType.BOOLEAN),
-    
+
             new Parameter("remote_server_name", "Name of the remote server", true, "",ParameterType.STRING),
             new Parameter("remote_server_description", "Description of the remote server", true, "",ParameterType.STRING),
             new Parameter("activate_IOT", "if true, IOT access to remote server will be activated", true, "false",ParameterType.BOOLEAN),
