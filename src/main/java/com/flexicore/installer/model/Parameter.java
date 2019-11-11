@@ -2,6 +2,7 @@ package com.flexicore.installer.model;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.apache.commons.validator.routines.UrlValidator;
 
+import javax.swing.text.DefaultEditorKit;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -279,7 +280,7 @@ public class Parameter {
         transformParameters.clear();
     }
 
-    public static boolean validateEmail(Parameter parameter, Object newValue,ValidationMessage validationMessage) {
+    public static boolean validateEmail(InstallationContext context,Parameter parameter, Object newValue, ValidationMessage validationMessage) {
         String email=newValue.toString();
         email = email.trim();
         EmailValidator eValidator = EmailValidator.getInstance();
@@ -294,7 +295,7 @@ public class Parameter {
     }
     @FunctionalInterface
     public  static interface parameterValidator {
-        boolean validate(Parameter toValid,Object newValue,ValidationMessage message);
+        boolean validate(InstallationContext context,Parameter toValid,Object newValue,ValidationMessage message);
     }
 
     public Parameter.parameterValidator getParameterValidator() {
@@ -305,36 +306,36 @@ public class Parameter {
         this.parameterValidator = parameterValidator;
         return this;
     }
-    public boolean validate(Object newValue,ValidationMessage validationMessage) {
+    public boolean validate(InstallationContext context, Object newValue,ValidationMessage validationMessage) {
         if (parameterValidator!=null) {
-           return parameterValidator.validate(this,newValue,validationMessage);
+           return parameterValidator.validate(context,this,newValue,validationMessage);
         }
         return true;
     }
-    public static boolean validateURL(Parameter parameter,Object newValue, ValidationMessage validationMessage) {
+    public static boolean validateURL(InstallationContext context,Parameter parameter,Object newValue, ValidationMessage validationMessage) {
         String[] schemes = {"http", "https"};
         UrlValidator urlValidator = new UrlValidator(schemes);
         boolean result = urlValidator.isValid(newValue.toString());
         if (!result) validationMessage.setMessage("URL is not a valid URL");
         return result;
     }
-    public static boolean validateExistingFolder(Parameter parameter,Object newValue, ValidationMessage validationMessage) {
-        File file=new File(newValue.toString());
+    public static boolean validateExistingFolder(InstallationContext context,Parameter parameter,Object newValue, ValidationMessage validationMessage) {
+        File file=new File(getReplaced(context,newValue.toString(),parameter));
         if (!file.exists()) {
             validationMessage.setMessage("Cannot locate folder: "+newValue);
             return false;
         }
         return true;
     }
-    public static boolean validateExistingFile(Parameter parameter,Object newValue, ValidationMessage validationMessage) {
-        File file=new File(newValue.toString());
+    public static boolean validateExistingFile(InstallationContext context,Parameter parameter,Object newValue, ValidationMessage validationMessage) {
+        File file=new File(getReplaced(context,newValue.toString(),parameter));
         if (!file.exists()) {
             validationMessage.setMessage("Cannot locate file: "+newValue);
             return false;
         }
         return true;
     }
-    public static boolean validatePort(Parameter parameter,Object newValue, ValidationMessage validationMessage) {
+    public static boolean validatePort(InstallationContext context,Parameter parameter,Object newValue, ValidationMessage validationMessage) {
         try {
             int p= Integer.parseInt(newValue.toString());
             if (p!=80 && ( p>8085 || p<8079 )) {
@@ -354,6 +355,27 @@ public class Parameter {
     public Parameter setOrdinal(int ordinal) {
         this.ordinal = ordinal;
         return this;
+    }
+    public static String getReplaced(InstallationContext installationContext, String result, Parameter parameter) {
+        int a = result.indexOf("&");
+        if (a > -1) {
+            int index = a + 2;
+            String temp = null;
+            int i = 1;
+            while (index <= result.length()) {
+                if (!result.substring(a + i++, index++).matches("[a-zA-Z0-9]+")) break;
+
+            }
+            if (index>result.length())index++; //special case
+
+            String toReplace = result.substring(a+1, index - 2);
+            String newString = installationContext.getParamaters().getValue(toReplace.substring(0));
+            if (newString != null && !newString.isEmpty()) {
+                parameter.setReferencedParameter(toReplace.substring(1));
+                result = result.replace(result.substring(a, index - 2), newString);
+            }
+        }
+        return result;
     }
 }
 

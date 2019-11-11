@@ -19,7 +19,10 @@ public class CommonParameters extends InstallationTask {
 
     static Parameter[] preDefined = {
             new Parameter("targetpath", "the target path to install this installation into", true, "/temp/target",ParameterType.FOLDER),
-            new Parameter("serverpath", "where to get this installation files from (not alien components)", true, parentFolder + "/resources/server",ParameterType.FOLDER,Parameter::validateExistingFolder),
+            new Parameter("serverpath", "where to get this installation files from (not alien components)",
+            true, parentFolder + "/resources/server",ParameterType.FOLDER,Parameter::validateExistingFolder),
+            new Parameter("testpath", "where to get this installation files from (not alien components)",
+                    true,  "&serverpath",ParameterType.FOLDER,Parameter::validateExistingFolder,3),
             new Parameter("instllationspath", "where to find alien components installation files, for example Java installation. This is more relevant for Windows", true, parentFolder + "/resources/installations",ParameterType.FOLDER,Parameter::validateExistingFolder),
             new Parameter("scriptspath", "where to find operating system scripts", true, parentFolder + "/scripts",ParameterType.FOLDER,Parameter::validateExistingFolder),
 

@@ -306,32 +306,13 @@ public class Start {
         if (result.contains("&")) {
             parameter.setNonTranslatedValue(result);
             parameter.setSandSymbolPresent(true);
-            result = getReplaced(installationContext, result,parameter);
+            result = Parameter.getReplaced(installationContext, result,parameter);
         }
 
         return result;
     }
 
-    public static String getReplaced(InstallationContext installationContext, String result, Parameter parameter) {
-        int a = result.indexOf("&");
-        if (a > -1) {
-            int index = a + 2;
-            String temp = null;
-            int i = 1;
-            while (index < result.length()) {
-                if (!result.substring(a + i++, index++).matches("[a-zA-Z0-9]+")) break;
 
-            }
-
-            String toReplace = result.substring(a, index - 2);
-            String newString = installationContext.getParamaters().getValue(toReplace.substring(1));
-            if (newString != null) {
-                parameter.setReferencedParameter(toReplace.substring(1));
-                result = result.replace(result.substring(a, index - 2), newString);
-            }
-        }
-        return result;
-    }
 
     private static Options getOptions(IInstallationTask task, InstallationContext installationContext) {
         Options options = new Options();
