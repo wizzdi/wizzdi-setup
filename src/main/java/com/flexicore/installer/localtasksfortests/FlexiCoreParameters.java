@@ -22,7 +22,7 @@ public class FlexiCoreParameters extends InstallationTask {
             new Parameter("flexicorehome", "target for flexicore files", true,  "&targetpath"+ "/flexicore",ParameterType.FOLDER),
             new Parameter("deleteplugins", "delete all plugins before copying", true,  "true",ParameterType.BOOLEAN),
             new Parameter("backupprevious", "backup previous plugins", true,  "true",ParameterType.BOOLEAN),
-            new Parameter("JWTSecondsValid", "Number of seconds to path before JWT password renewal is required", true,  "2592000",ParameterType.NUMBER),
+            new Parameter("JWTSecondsValid", "Number of seconds to pass before JWT password renewal is required", true,  "2592000",ParameterType.NUMBER, FlexiCoreParameters::validateJWT),
 
     };
     @Override
@@ -39,6 +39,9 @@ public class FlexiCoreParameters extends InstallationTask {
         Parameters result = new Parameters();
 
         for (Parameter parameter : preDefined) {
+            if (parameter.getName().equals("JWTSecondsValid")) {
+                parameter.setMinValue(86400).setMaxValue(2592000);
+            }
             result.addParameter(parameter,this);
             logger.info("Got a default parameter: "+ parameter.toString());
         }
@@ -83,5 +86,9 @@ public class FlexiCoreParameters extends InstallationTask {
     public String toString() {
         return "Installation task: "+this.getId();
     }
-
+    public static boolean validateJWT(InstallationContext context,Parameter parameter,Object newValue, ValidationMessage validationMessage) {
+        Integer value=Integer.parseInt(newValue.toString());
+        if (value>3600 && value<2592000) return true;
+        return false;
+    }
 }
