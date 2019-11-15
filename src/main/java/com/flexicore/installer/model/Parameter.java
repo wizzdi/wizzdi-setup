@@ -4,6 +4,7 @@ import org.apache.commons.validator.routines.UrlValidator;
 
 import javax.swing.text.DefaultEditorKit;
 import java.io.File;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +12,7 @@ public class Parameter {
     private String name;
     private String description;
     private String defaultValue;
+    private int defaultIndex;
     private String value;
     private String nonTranslatedValue;
     private String referencedParameter;
@@ -27,7 +29,7 @@ public class Parameter {
     private boolean sandSymbolPresent=false;
     private boolean hasValue;
     private boolean locked=false;
-    private List<String> listOptions=new ArrayList<>();
+    private ArrayList<String> listOptions=new ArrayList<>();
 
 
     /**
@@ -59,15 +61,29 @@ public class Parameter {
 
 
     }
-    public Parameter(String name, String description, boolean hasValue, String defaultValue,ParameterType parameterType,List<String> options) {
+    public Parameter(String name, String description, boolean hasValue, String defaultValue, ParameterType parameterType, ArrayList<String> options, parameterValidator validator) {
         this.type=parameterType;
         this.hasValue = hasValue;
         this.name = name;
         this.description = description;
         this.defaultValue = defaultValue;
         this.listOptions=options;
+        this.parameterValidator=validator;
+    }
+    public Parameter(String name, String description, boolean hasValue,
+                     String defaultValue,ParameterType parameterType,ArrayList<String> options,ParameterSource parameterSource,Parameter.parameterValidator validator) {
+        this.type = parameterType;
+        this.hasValue = hasValue;
+        this.name = name;
+        this.description = description;
+        this.defaultValue = defaultValue;
+        this.listOptions = options;
+        this.source=parameterSource;
+        this.parameterValidator=validator;
 
     }
+
+
     public Parameter(String name, String description, boolean hasValue, String defaultValue, ParameterType parameterType, ParameterSource parameterSource, Parameter.parameterValidator validator) {
         this.type=parameterType;
         this.hasValue = hasValue;
@@ -179,11 +195,11 @@ public class Parameter {
         return this;
     }
 
-    public List<String> getListOptions() {
+    public ArrayList<String> getListOptions() {
         return listOptions;
     }
 
-    public Parameter setListOptions(List<String> listOptions) {
+    public Parameter setListOptions(ArrayList<String> listOptions) {
         this.listOptions = listOptions;
         return this;
     }
@@ -265,6 +281,15 @@ public class Parameter {
         return this;
     }
 
+    public int getDefaultIndex() {
+        return defaultIndex;
+    }
+
+    public Parameter setDefaultIndex(int defaultIndex) {
+        this.defaultIndex = defaultIndex;
+        return this;
+    }
+
     public String getReferencedParameter() {
         return referencedParameter;
     }
@@ -318,6 +343,16 @@ public class Parameter {
         boolean result = urlValidator.isValid(newValue.toString());
         if (!result) validationMessage.setMessage("URL is not a valid URL");
         return result;
+    }
+    public static boolean validateList(InstallationContext context,Parameter parameter,Object newValue, ValidationMessage validationMessage) {
+        if (parameter.getListOptions()!=null) {
+            if (parameter.getListOptions().contains(newValue)) {
+                return true;
+            }
+            validationMessage.setMessage("The value: <"+newValue +"> is not one of the possible values in the list");
+            return false;
+        }
+        return true;
     }
     public static boolean validateExistingFolder(InstallationContext context,Parameter parameter,Object newValue, ValidationMessage validationMessage) {
         File file=new File(getReplaced(context,newValue.toString(),parameter));

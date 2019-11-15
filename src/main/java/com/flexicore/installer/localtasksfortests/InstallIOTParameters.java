@@ -62,22 +62,22 @@ public class InstallIOTParameters extends InstallationTask {
     /**
      * configuration file for remoteServer should include the parametersnames as the current values
      */
-    static List<String> sslOptions =new ArrayList<>();
+    static ArrayList<String> sslOptions =new ArrayList<>();
+    static ArrayList<String> servers=new ArrayList<>();
     static Parameter[] preDefined = {
-            new Parameter("remote-server-name", "Name of the remote server", true, "",ParameterType.STRING),
-            new Parameter("remote-server-description", "Description of the remote server", true, "",ParameterType.STRING),
-            new Parameter("activate-IOT", "if true, IOT access to remote server will be activated", true, "false",ParameterType.BOOLEAN),
-            new Parameter("remote-server-externalid", "The unique remote server external id", true, "",ParameterType.STRING),
-            new Parameter("remote-server-url", "remote server URL, must be the URL of the remote server this unit is defined at", true,
+            new Parameter("remote_server_name", "Name of the remote server", true, "",ParameterType.LIST,servers, Parameter::validateList),
+            new Parameter("activate_IOT", "if true, IOT access to remote server will be activated", true, "false",ParameterType.BOOLEAN),
+            new Parameter("remote_server_externalid", "The unique remote server external id", true, "",ParameterType.STRING),
+            new Parameter("remote_server_url", "remote server URL, must be the URL of the remote server this unit is defined at", true,
                     "",ParameterType.URL,Parameter::validateURL),
-            new Parameter("remote-server-web-service-url", "remote server web service URL, must be the URL of the remote server this unit is defined at", true, "default value",ParameterType.URL,Parameter::validateURL),
-            new Parameter("remote-server-port", "remote server port, normally 80", true, "80",ParameterType.NUMBER),
-            new Parameter("remote-server-ssl", "remote server SSL support", true, "SSL",ParameterType.LIST, sslOptions),
-            new Parameter("remote-server-username",
+            new Parameter("remote_server_web_service_url", "remote server web service URL, must be the URL of the remote server this unit is defined at", true, "default value",ParameterType.URL,Parameter::validateURL),
+            new Parameter("remote_server_port", "remote server port, normally 80", true, "80",ParameterType.NUMBER),
+            new Parameter("remote_server_ssl", "remote server SSL support", true, "SSL",ParameterType.LIST, sslOptions,Parameter::validateList),
+            new Parameter("remote_server_username",
                     "remote server username used to access the cloud", true, "admin@flexicore.com",
                     ParameterType.EMAIL,Parameter::validateEmail),
-            new Parameter("remote-server-password", "remote server password used to access the cloud", true, "",ParameterType.PASSWORD),
-            new Parameter("remoteServer-configuration-file-source", "locate the remoteServer.json (name can be different) source file", true, "&serverpath/iot/remoteServer.json",ParameterType.FILE),
+            new Parameter("remote_server_password", "remote server password used to access the cloud", true, "",ParameterType.PASSWORD),
+            new Parameter("remoteServer_configuration_file_source", "locate the remoteServer.json (name can be different) source file", true, "&serverpath/iot/remoteServer.json",ParameterType.FILE),
 
 
             // this part is inside flexicore.config
@@ -93,6 +93,12 @@ public class InstallIOTParameters extends InstallationTask {
         super(installationTasks);
         sslOptions.add("SSL");
         sslOptions.add("NO-SSL");
+        servers.add("server 1");
+        servers.add("server 2");
+        servers.add("server 0");
+        servers.add("server x");
+        Collections.sort(servers);
+        Collections.sort(sslOptions);
 
     }
     @Override

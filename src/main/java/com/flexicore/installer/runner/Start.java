@@ -103,6 +103,7 @@ public class Start {
         //********************Itamar Installation
         new ItamarParameters(DebuginstallationTasks);
         new ItamarInstall(DebuginstallationTasks);
+        new InstallIOTParameters(DebuginstallationTasks);
 
 
         // handle parameters and command line options here. do it at the dependency order.
@@ -300,6 +301,17 @@ public class Start {
 
         }
         else {
+            if (parameter.getType().equals(ParameterType.LIST)) {
+                String[] split=result.split(",");
+                if (split!=null) {
+                    parameter.getListOptions().clear();
+                    parameter.getListOptions().addAll(Arrays.asList(split));
+                    parameter.getListOptions().remove(split[0]);
+                    Collections.sort(parameter.getListOptions());
+                    parameter.getListOptions().add(0,split[0]);
+
+                }
+            }
             parameter.setSource(ParameterSource.PROPERTIES_FILE);
             info("Parameter " + parameter.getName() + " default value will be taken from a properties file");
         }
