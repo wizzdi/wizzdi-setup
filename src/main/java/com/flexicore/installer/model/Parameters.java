@@ -37,6 +37,7 @@ public class Parameters {
     }
 
     public void sort() {
+        if (bytasks==null) return;
         Comparator<Parameter> parameterComparator = new Comparator<Parameter>() {
             @Override
             public int compare(Parameter p1, Parameter p2) {

@@ -70,40 +70,40 @@ public class Start {
         pluginManager.startPlugins();
 
         Map<String, IInstallationTask> DebuginstallationTasks = pluginManager.getExtensions(IInstallationTask.class).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
+//this is here for debugging purposes.
 
-
-        new FlexicoreUniquenessEnforcer(DebuginstallationTasks);
-        new EPX2000Install(DebuginstallationTasks);
-        new ShekelComponentsInstall(DebuginstallationTasks);
-        new ShekelComponentsParameters(DebuginstallationTasks);
-
-        //********** standard ***************
-        new CommonParameters(DebuginstallationTasks);
-
-
-        //*********** Flexicore installation (home)
-        new FlexiCoreParameters(DebuginstallationTasks);
-
-        new FlexicoreComponentsInstall(DebuginstallationTasks);
-
-        new FlexicoreFixConfigFile(DebuginstallationTasks);
-
-
-        //***************** wildfly installation
-        new WildflyParameters(DebuginstallationTasks);
-
-        new WildflyInstall(DebuginstallationTasks);
-
-        //************ flexicore deployment
-        new FlexicoreDeploymentInstall(DebuginstallationTasks);
-
-        //*********************shekel installation
-        new ShekelComponentsParameters(DebuginstallationTasks);
-        new ShekelComponentsInstall(DebuginstallationTasks);
-        //********************Itamar Installation
-        new ItamarParameters(DebuginstallationTasks);
-        new ItamarInstall(DebuginstallationTasks);
-        new InstallIOTParameters(DebuginstallationTasks);
+//        new FlexicoreUniquenessEnforcer(DebuginstallationTasks);
+//        new EPX2000Install(DebuginstallationTasks);
+//        new ShekelComponentsInstall(DebuginstallationTasks);
+//        new ShekelComponentsParameters(DebuginstallationTasks);
+//
+//        //********** standard ***************
+//        new CommonParameters(DebuginstallationTasks);
+//
+//
+//        //*********** Flexicore installation (home)
+//        new FlexiCoreParameters(DebuginstallationTasks);
+//
+//        new FlexicoreComponentsInstall(DebuginstallationTasks);
+//
+//        new FlexicoreFixConfigFile(DebuginstallationTasks);
+//
+//
+//        //***************** wildfly installation
+//        new WildflyParameters(DebuginstallationTasks);
+//
+//        new WildflyInstall(DebuginstallationTasks);
+//
+//        //************ flexicore deployment
+//        new FlexicoreDeploymentInstall(DebuginstallationTasks);
+//
+//        //*********************shekel installation
+//        new ShekelComponentsParameters(DebuginstallationTasks);
+//        new ShekelComponentsInstall(DebuginstallationTasks);
+//        //********************Itamar Installation
+//        new ItamarParameters(DebuginstallationTasks);
+//        new ItamarInstall(DebuginstallationTasks);
+//        new InstallIOTParameters(DebuginstallationTasks);
 
 
         // handle parameters and command line options here. do it at the dependency order.
@@ -151,7 +151,7 @@ public class Start {
                 }
             }
         }
-        installationContext.getParamaters().sort();
+        if (installationContext.getParamaters()!=null) installationContext.getParamaters().sort();
         boolean stopped = false;
         boolean uiFoundandRun = false;
 

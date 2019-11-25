@@ -3,6 +3,8 @@ import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.interfaces.IUIComponent;
 import com.flexicore.installer.interfaces.ProgressConsumer;
 import com.flexicore.installer.runner.Start;
+
+import java.io.File;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,6 +28,9 @@ public class InstallationContext {
     private ProgressConsumer consumer;
     private int successFullyInstalled=0;
     private int failedToInstall=0;
+    private String mainTitle;
+    private File iconFile;
+    private File imageFile;
     public Logger getLogger() {
         return logger;
     }
@@ -188,6 +193,33 @@ public class InstallationContext {
 
     public InstallationContext setConsumer(ProgressConsumer consumer) {
         this.consumer = consumer;
+        return this;
+    }
+
+    public String getMainTitle() {
+        return mainTitle;
+    }
+
+    public InstallationContext setMainTitle(String mainTitle) {
+        this.mainTitle = mainTitle;
+        return this;
+    }
+
+    public File getIconFile() {
+        return iconFile;
+    }
+
+    public InstallationContext setIconFile(File iconFile) {
+        this.iconFile = iconFile;
+        return this;
+    }
+
+    public File getImageFile() {
+        return imageFile;
+    }
+
+    public InstallationContext setImageFile(File imageFile) {
+        this.imageFile = imageFile;
         return this;
     }
 }
