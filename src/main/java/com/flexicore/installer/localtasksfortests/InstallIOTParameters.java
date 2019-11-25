@@ -15,50 +15,6 @@ import java.util.logging.Logger;
 public class InstallIOTParameters extends InstallationTask {
     static Logger logger;
 
-   /* {
-        "name":"cloud_server",
-            "description":"cloud_server_description",
-            "enabled":true,
-            "externalId":"cloud_server_external_id",
-            "basePathApi":"api_url",
-            "webSocketPath":"web_socket_url", //ssl too
-            "username":"doralon@shekelonline.com",
-            "password":"H5%Wz"
-    }*/
-
-
-
-    /*
-    #Linux Config
-        JWTSecondsValid=2592000
-        PluginPath=/home/flexicore/plugins/
-        EntitiesPath=/home/flexicore/entities/
-        UploadPath=/home/flexicore/upload/
-        UsersRootDirectory=/home/flexicore/users/
-        OutputPath=/home/flexicore/upload/
-        XmlPath=/home/flexicore/xml/
-        SwaggerClientGenCLIPath=/home/flexicore/swaggerclientgenpath/
-        SwaggerClientGenResourceFolder=/home/flexicore/swaggerresources/
-        HttpActive=false
-        firstRunFile=/home/flexicore/firstRun.txt
-        iOTExternalId=TnuvAsk3-3521
-        CONCURRENT_SYNC_JOBS=1
-        MAX_MESSAGE_SIZE=50
-        JOB_TIMEOUT=120000
-        MAX_JOBS_PER_SERVER=1
-    */
-    /*
-    {
-        "name":"shekel-cloud",  //cloud_server
-            "description":"shekel-cloud",
-            "enabled":true,    -> activate-IOT
-            "externalId":"shekel-cloud",
-            "basePathApi":"https://shekelbrainweighmc.com/FlexiCore/rest", ->remote-server-url , remote-server-port
-            "webSocketPath":"wss://shekelbrainweighmc.com/FlexiCore/iotWSGZIP",
-            "username":"bays@smartsell.com",
-            "password":"TgsDvwdZZ39tUC4FU6HJ"
-    }
-*/
     /**
      * configuration file for remoteServer should include the parametersnames as the current values
      */
