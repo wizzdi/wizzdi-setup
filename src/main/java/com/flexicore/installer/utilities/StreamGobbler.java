@@ -21,7 +21,7 @@ public class StreamGobbler extends Thread {
         this.show=show;
     }
 
-    public boolean findString(String toFind) {
+    public boolean dryString(String toFind) {
 
         for (String line : lines) {
             //System.out.println(line);

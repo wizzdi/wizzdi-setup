@@ -13,7 +13,7 @@ public class Utilities {
      * @param existingString if not null it contains the the same file from a previous edit, saves disk IO
      * @param toFind the string to look for
      * @param toReplace the string to replace
-     * @param warning send warnings on missed tofind string
+     * @param warning send warnings on missed todry string
      * @param reverseSlash  if true will replace all / with \
      * @param close if true will close the file, leave false only when a subsequent editing on the same file is to be esecuted
      * @return
@@ -22,7 +22,7 @@ public class Utilities {
 
         if (!new File(path).exists()) {
             if (warning) {
-                Start.severe( "Cannot find the file: " + path + " for editing");
+                Start.severe( "Cannot dry the file: " + path + " for editing");
             }
             return null;
         }

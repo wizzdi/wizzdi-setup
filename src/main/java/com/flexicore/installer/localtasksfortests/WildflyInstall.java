@@ -53,7 +53,7 @@ public class WildflyInstall extends InstallationTask {
         super.install(installationContext);
         try {
 
-            if (!isDry()) {
+            if (!dry) {
                 boolean serviceRunning = testServiceRunning("wildfly", "Wildfly installation");
 
                 if (serviceRunning && getContext().getParamaters().getBooleanValue("force")) {
@@ -118,7 +118,7 @@ public class WildflyInstall extends InstallationTask {
                             result = executeCommand("cp /home/firefly/flexicore/installations/standalone-java11-32bit.conf /opt/wildfly-16.0.0.Final/bin/standalone.conf", "", "install wildfly");
                             info("result of copying the correct standalone.conf for Java 11, 32 bits " + result);
                         } else {
-                            info("cannot find wildfly 14 on this device, not a new installation");
+                            info("cannot dry wildfly 14 on this device, not a new installation");
                         }
                        //installation in Linux (using an installation script)
                        if (!new File("/opt/wildfly").exists()) {
@@ -234,10 +234,7 @@ public class WildflyInstall extends InstallationTask {
         return getContext().getParamaters().getBooleanValue("wildflymove");
     }
 
-    boolean executeCommandByRuntime(String target, String ownerName) {
-        return executeCommand(target, "", ownerName);
 
-    }
 
 
     @Override

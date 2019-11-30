@@ -82,7 +82,7 @@ public class FlexicoreUniquenessEnforcer extends InstallationTask {
 
             String flexicoreHome = getFlexicoreHome();
 
-            if (!isDry()) {
+            if (!dry) {
 
                int total= ensureUnique(Paths.get(flexicoreHome+"/plugins"));
                info("Have removed "+total+" duplicate plugins");

@@ -78,7 +78,7 @@ public class InstallIOT extends InstallationTask {
 
             String flexicoreSource = getServerPath() + "/flexicore";
             String flexicoreHome = getFlexicoreHome();
-            if (!isDry()) {
+            if (!dry) {
                 String remoteServerSource = getContext().getParamaters().getValue("remoteServer-configuration-file-source");
                 if (new File(remoteServerSource).exists()) {
                     Path remote = Files.copy(Paths.get(remoteServerSource), Paths.get(flexicoreHome + "/remoteServer.json"));

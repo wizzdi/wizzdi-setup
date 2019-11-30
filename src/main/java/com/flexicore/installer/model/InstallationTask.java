@@ -44,7 +44,9 @@ public class InstallationTask implements IInstallationTask {
     final public static boolean isMac = SystemUtils.IS_OS_MAC;
     Queue<String> lines = new ConcurrentLinkedQueue<String>();
     Queue<String> errorLines = new ConcurrentLinkedQueue<String>();
-
+    public boolean isWindows() {
+        return  SystemUtils.IS_OS_WINDOWS;
+    }
     @Override
     public OperatingSystem getCurrentOperatingSystem() {
         if (isWindows) return OperatingSystem.Windows;
@@ -119,7 +121,7 @@ public class InstallationTask implements IInstallationTask {
             }
         } else {
 
-            severe("******Cannot find script: " + script);
+            severe("******Cannot dry script: " + script);
 
             return false;
         }
@@ -192,18 +194,21 @@ public class InstallationTask implements IInstallationTask {
             }
         }
     }
+   public boolean executeCommandByRuntime(String target, String ownerName) {
+        return executeCommand(target, "", ownerName);
 
-    boolean executeCommandByBuilder(String[] args, String toFind, boolean notTofind, String ownerName) throws IOException {
+    }
+   public boolean executeCommandByBuilder(String[] args, String toFind, boolean notTodry, String ownerName) throws IOException {
         ProcessBuilder pb = new ProcessBuilder(args);
         Process process;
         process = pb.start();
-        return contWithProcess(process, toFind, notTofind, ownerName);
+        return contWithProcess(process, toFind, notTodry, ownerName);
 
 
     }
 
 
-    private boolean contWithProcess(Process process, String toFind, boolean notTofind, String ownerName) {
+    private boolean contWithProcess(Process process, String toFind, boolean notTodry, String ownerName) {
         try {
 
             boolean show = ownerName.contains("Update Linux repositories");
@@ -231,10 +236,10 @@ public class InstallationTask implements IInstallationTask {
                 }
             }
             if (toFind == null || toFind.isEmpty()) return exitVal == 0;
-            if (notTofind) {
-                return (exitVal == 0 && !outputGobbler.findString(toFind));
+            if (notTodry) {
+                return (exitVal == 0 && !outputGobbler.dryString(toFind));
             } else {
-                boolean r = outputGobbler.findString(toFind);
+                boolean r = outputGobbler.dryString(toFind);
                 return ((exitVal == 0) && r);
             }
 
@@ -247,6 +252,10 @@ public class InstallationTask implements IInstallationTask {
 
     public String flexicoreSource;
     public String flexicoreHome;
+    public boolean force;
+    public boolean dry;
+    public String phase="";
+
 
 
     @Override
@@ -254,8 +263,9 @@ public class InstallationTask implements IInstallationTask {
         context = installationContext;
         flexicoreSource = getServerPath() + "/flexicore";
         flexicoreHome = getFlexicoreHome();
-
-        if (isDry()) {
+        dry=getContext().getParamaters().getBooleanValue("dry");
+        force=getContext().getParamaters().getBooleanValue("force");
+        if (dry) {
             info("Dry run  of " + this.getId() + " -> " + this.getDescription() + getParameters(installationContext).toString());
             return new InstallationResult().setInstallationStatus(InstallationStatus.ISDRY);
         }
@@ -471,10 +481,10 @@ public class InstallationTask implements IInstallationTask {
     public void simpleMessage(String owner, String info, String message) {
         switch (info) {
             case "severe":
-                severe(message);
+                severe("Phase: "+ owner+" "+message);
                 break;
             default:
-                info(message);
+                info("Phase: "+ owner+" "+message);
 
         }
     }
@@ -489,9 +499,7 @@ public class InstallationTask implements IInstallationTask {
 
     }
 
-    public boolean isDry() {
-        return getContext().getParamaters().getBooleanValue("dry");
-    }
+    
 
     /**
      * get
@@ -548,12 +556,12 @@ public class InstallationTask implements IInstallationTask {
         Path sourcePath = Paths.get(installationDir);
         File sourceFile = new File(installationDir);
         if (sourceFile.exists()) {
-            if (!isDry()) {
+            if (!dry) {
                 ensureTarget(targetDir);
                 try {
                     CopyFileVisitor copyFileVisitor = null;
                     addMessage("" + ownerName + " copying server", "info", "copy started, make take few minutes");
-                    if (!isDry()) {
+                    if (!dry) {
                         Files.walkFileTree(sourcePath, copyFileVisitor = new CopyFileVisitor(targetPath).setInstallationTask(this).setLogger(getContext().getLogger()).setCopyOver(true));
                     }
                     addMessage(ownerName + " copying server", "info", "copy finished " + ((copyFileVisitor == null) ? "" : ((copyFileVisitor.getCount() + "  files copied" + (copyFileVisitor.getErrors() == 0 ? "" : "  Errors: " + copyFileVisitor.getErrors())))));
@@ -673,7 +681,7 @@ public class InstallationTask implements IInstallationTask {
         Path sourcePath = Paths.get(installationDir);
         File sourceFile = new File(installationDir);
         if (sourceFile.exists()) {
-            if (!isDry()) {
+            if (!dry) {
                 if (!target.exists()) {
                     target.mkdirs();
                     info("Folder : " + targetPath + " was created");
@@ -683,7 +691,7 @@ public class InstallationTask implements IInstallationTask {
                 try {
                     CopyFileVisitor copyFileVisitor = null;
 
-                    if (!isDry()) {
+                    if (!dry) {
                         Files.walkFileTree(sourcePath, copyFileVisitor = new CopyFileVisitor(targetPath).setInstallationTask(this).setLogger(context.getLogger()).setCopyOver(true));
                     }
 
@@ -824,7 +832,7 @@ public class InstallationTask implements IInstallationTask {
             }
         } catch (Exception e) {
             if (task == null) {
-                severe("Could not find a task with id: " + id);
+                severe("Could not dry a task with id: " + id);
             }
         }
         return true;
@@ -843,7 +851,7 @@ public class InstallationTask implements IInstallationTask {
     public String editFile(String path, String existingString, String toFind, String toReplace, boolean warning, boolean reverseSlash, boolean close) {
         if (!new File(path).exists()) {
             if (warning) {
-                addMessage("Edit file", "severe", "Cannot find the file: " + path + " for editing");
+                addMessage("Edit file", "severe", "Cannot dry the file: " + path + " for editing");
             }
             return null;
         }
@@ -926,7 +934,7 @@ public class InstallationTask implements IInstallationTask {
         try {
             user = lookupService.lookupPrincipalByName(userName);
         } catch (IOException e) {
-            severe("Cannot find user named: " + userName, e);
+            severe("Cannot dry user named: " + userName, e);
         }
         try {
 
@@ -935,7 +943,7 @@ public class InstallationTask implements IInstallationTask {
             return result;
 
         } catch (IOException e) {
-            severe("Cannot find group named: " + groupName, e);
+            severe("Cannot dry group named: " + groupName, e);
         }
         return null;
 

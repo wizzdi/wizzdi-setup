@@ -66,7 +66,7 @@ public class ItamarInstall extends InstallationTask {
         String flexicoreHome = getFlexicoreHome();
         boolean isUpdate = new File(flexicoreHome).exists();
         String itamarsource = getContext().getParamaters().getValue("itamarsource");
-        if (!isDry()) {
+        if (!dry) {
             if (isUpdate) {
 
                 if(itamarbackupprevious) {

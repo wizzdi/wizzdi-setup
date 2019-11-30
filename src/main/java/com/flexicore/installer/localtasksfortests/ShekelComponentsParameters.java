@@ -71,7 +71,7 @@ public class ShekelComponentsParameters extends InstallationTask {
 
             String flexicoreSource = getServerPath() + "/flexicore";
             String flexicoreHome = getFlexicoreHome();
-            if (!isDry()) {
+            if (!dry) {
                 editFile(flexicoreHome + "/flexicore.config", null, "/home/flexicore/", flexicoreHome + "/", false, false, true);
 
             }

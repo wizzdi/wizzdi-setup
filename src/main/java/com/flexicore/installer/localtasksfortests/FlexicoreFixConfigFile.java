@@ -65,7 +65,7 @@ public class FlexicoreFixConfigFile extends InstallationTask {
 
 
             String flexicoreHome = getFlexicoreHome();
-            if (!isDry()) {
+            if (!dry) {
                 editFile(flexicoreHome + "/flexicore.config", null, "/home/flexicore/", flexicoreHome + "/", false, false, true);
 
             }

@@ -78,7 +78,7 @@ public class FlexicoreDeploymentInstall extends InstallationTask {
 
             String flexicoreSource = getServerPath() + "/flexicore";
             String flexicoreHome = getFlexicoreHome();
-            if (!isDry()) {
+            if (!dry) {
                 String wildflyhome = isWindows ? installationContext.getParamaters().getValue("wildflyhome") : "/opt/wildfly/";
                 File flexicore=new File(getServerPath()+"/FlexiCore.zip");
                 File deployments=new File(wildflyhome+"wildfly/standalone/deployments");

@@ -78,7 +78,7 @@ public class FlexicoreComponentsInstall extends InstallationTask {
             boolean deleteplugins = getContext().getParamaters().getBooleanValue("deleteplugins");
             String flexicoreSource = getServerPath() + "/flexicore";
             info("Flexicore folder exists :" + isUpdate + " at: " + flexicoreHome);
-            if (!isDry()) {
+            if (!dry) {
                 if (isUpdate) {
                     if (backupprevious) {
                         zipAll(flexicoreHome+"/plugins",flexicoreHome+"/pluginsbackup.zip",getContext());
