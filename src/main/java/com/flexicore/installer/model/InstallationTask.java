@@ -532,7 +532,7 @@ public class InstallationTask implements IInstallationTask {
     }
 
     public String getInstallationsPath() {
-        return getContext().getParamaters().getValue("installlations");
+        return getContext().getParamaters().getValue("installlationspath");
 
     }
 
