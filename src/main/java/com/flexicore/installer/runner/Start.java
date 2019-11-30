@@ -72,38 +72,38 @@ public class Start {
         Map<String, IInstallationTask> DebuginstallationTasks = pluginManager.getExtensions(IInstallationTask.class).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
 //this is here for debugging purposes.
 
-        new FlexicoreUniquenessEnforcer(DebuginstallationTasks);
-        new EPX2000Install(DebuginstallationTasks);
-        new ShekelComponentsInstall(DebuginstallationTasks);
-        new ShekelComponentsParameters(DebuginstallationTasks);
-
-        //********** standard ***************
-        new CommonParameters(DebuginstallationTasks);
-
-
-        //*********** Flexicore installation (home)
-        new FlexiCoreParameters(DebuginstallationTasks);
-
-        new FlexicoreComponentsInstall(DebuginstallationTasks);
-
-        new FlexicoreFixConfigFile(DebuginstallationTasks);
-
-
-        //***************** wildfly installation
-        new WildflyParameters(DebuginstallationTasks);
-
-        new WildflyInstall(DebuginstallationTasks);
-
-        //************ flexicore deployment
-        new FlexicoreDeploymentInstall(DebuginstallationTasks);
-
-        //*********************shekel installation
-        new ShekelComponentsParameters(DebuginstallationTasks);
-        new ShekelComponentsInstall(DebuginstallationTasks);
-        //********************Itamar Installation
-        new ItamarParameters(DebuginstallationTasks);
-        new ItamarInstall(DebuginstallationTasks);
-        new InstallIOTParameters(DebuginstallationTasks);
+//        new FlexicoreUniquenessEnforcer(DebuginstallationTasks);
+//        new EPX2000Install(DebuginstallationTasks);
+//        new ShekelComponentsInstall(DebuginstallationTasks);
+//        new ShekelComponentsParameters(DebuginstallationTasks);
+//
+//        //********** standard ***************
+//        new CommonParameters(DebuginstallationTasks);
+//
+//
+//        //*********** Flexicore installation (home)
+//        new FlexiCoreParameters(DebuginstallationTasks);
+//
+//        new FlexicoreComponentsInstall(DebuginstallationTasks);
+//
+//        new FlexicoreFixConfigFile(DebuginstallationTasks);
+//
+//
+//        //***************** wildfly installation
+//        new WildflyParameters(DebuginstallationTasks);
+//
+//        new WildflyInstall(DebuginstallationTasks);
+//
+//        //************ flexicore deployment
+//        new FlexicoreDeploymentInstall(DebuginstallationTasks);
+//
+//        //*********************shekel installation
+//        new ShekelComponentsParameters(DebuginstallationTasks);
+//        new ShekelComponentsInstall(DebuginstallationTasks);
+//        //********************Itamar Installation
+//        new ItamarParameters(DebuginstallationTasks);
+//        new ItamarInstall(DebuginstallationTasks);
+//        new InstallIOTParameters(DebuginstallationTasks);
 
 
         // handle parameters and command line options here. do it at the dependency order.
@@ -115,8 +115,10 @@ public class Start {
             String installationTaskUniqueId = topologicalOrderIterator.next();
             IInstallationTask task = DebuginstallationTasks.get(installationTaskUniqueId);
             boolean found = false;
+            OperatingSystem cos=task.getCurrentOperatingSystem();
             for (OperatingSystem os : task.getOperatingSystems()) {
-                if (os.equals(task.getCurrentOperatingSystem())) {
+
+                if (os.equals(cos) ){
                     found = true;
                     break;
                 }
@@ -400,6 +402,12 @@ public class Start {
                 for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
                     info("will now install "+installationTask.getName()+" id: "+installationTask.getId());
                     installationTask.setProgress(10).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now());
+                    try {
+                        installationTask.install(context);
+                    } catch (Throwable throwable) {
+                        severe("Exception while installing: "+installationTask.getName(),throwable);
+                        installationTask.setProgress(100).setStatus(InstallationStatus.FAILED).setEnded(LocalDateTime.now());
+                    }
                     context.getConsumer().updateProgress(installationTask, context);
                     // installTask(installationTask, context);
                 }

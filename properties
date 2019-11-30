@@ -1,4 +1,4 @@
-dry=true
+dry=false
 #an example for a list (will be a combo), the list is sorted, however, the first string is the default one
 remote_server_name=123,xirst,aysecond,third
 

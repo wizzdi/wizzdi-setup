@@ -41,7 +41,7 @@ public interface IInstallationTask extends ExtensionPoint {
      */
     int mergeParameters(InstallationContext installationContext);
 
-    boolean getEnabled();
+    boolean isEnabled();
 
     IInstallationTask setEnabled(boolean value);
 

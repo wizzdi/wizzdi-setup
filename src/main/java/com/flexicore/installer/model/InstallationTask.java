@@ -345,7 +345,7 @@ public class InstallationTask implements IInstallationTask {
     }
 
     @Override
-    public boolean getEnabled() {
+    public boolean isEnabled() {
         return enabled;
     }
 
