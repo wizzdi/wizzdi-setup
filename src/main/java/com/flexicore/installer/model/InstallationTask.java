@@ -30,9 +30,11 @@ public class InstallationTask implements IInstallationTask {
     private boolean enabled = true;
     private InstallationStatus status = InstallationStatus.CREATED;
     private String description = "no description";
+    private String message = "";
 
     private InstallationContext context;
     private int order = -1;
+    private boolean admin = false;
 
     public Parameters getPrivateParameters() {
         return null;
@@ -44,9 +46,11 @@ public class InstallationTask implements IInstallationTask {
     final public static boolean isMac = SystemUtils.IS_OS_MAC;
     Queue<String> lines = new ConcurrentLinkedQueue<String>();
     Queue<String> errorLines = new ConcurrentLinkedQueue<String>();
+
     public boolean isWindows() {
-        return  SystemUtils.IS_OS_WINDOWS;
+        return SystemUtils.IS_OS_WINDOWS;
     }
+
     @Override
     public OperatingSystem getCurrentOperatingSystem() {
         if (isWindows) return OperatingSystem.Windows;
@@ -194,21 +198,23 @@ public class InstallationTask implements IInstallationTask {
             }
         }
     }
-   public boolean executeCommandByRuntime(String target, String ownerName) {
+
+    public boolean executeCommandByRuntime(String target, String ownerName) {
         return executeCommand(target, "", ownerName);
 
     }
-   public boolean executeCommandByBuilder(String[] args, String toFind, boolean notTodry, String ownerName) throws IOException {
+
+    public boolean executeCommandByBuilder(String[] args, String toFind, boolean notToFind, String ownerName) throws IOException {
         ProcessBuilder pb = new ProcessBuilder(args);
         Process process;
         process = pb.start();
-        return contWithProcess(process, toFind, notTodry, ownerName);
+        return contWithProcess(process, toFind, notToFind, ownerName);
 
 
     }
 
 
-    private boolean contWithProcess(Process process, String toFind, boolean notTodry, String ownerName) {
+    private boolean contWithProcess(Process process, String toFind, boolean notToFind, String ownerName) {
         try {
 
             boolean show = ownerName.contains("Update Linux repositories");
@@ -236,7 +242,7 @@ public class InstallationTask implements IInstallationTask {
                 }
             }
             if (toFind == null || toFind.isEmpty()) return exitVal == 0;
-            if (notTodry) {
+            if (notToFind) {
                 return (exitVal == 0 && !outputGobbler.dryString(toFind));
             } else {
                 boolean r = outputGobbler.dryString(toFind);
@@ -254,8 +260,7 @@ public class InstallationTask implements IInstallationTask {
     public String flexicoreHome;
     public boolean force;
     public boolean dry;
-    public String phase="";
-
+    public String phase = "";
 
 
     @Override
@@ -263,8 +268,8 @@ public class InstallationTask implements IInstallationTask {
         context = installationContext;
         flexicoreSource = getServerPath() + "/flexicore";
         flexicoreHome = getFlexicoreHome();
-        dry=getContext().getParamaters().getBooleanValue("dry");
-        force=getContext().getParamaters().getBooleanValue("force");
+        dry = getContext().getParamaters().getBooleanValue("dry");
+        force = getContext().getParamaters().getBooleanValue("force");
         if (dry) {
             info("Dry run  of " + this.getId() + " -> " + this.getDescription() + getParameters(installationContext).toString());
             return new InstallationResult().setInstallationStatus(InstallationStatus.ISDRY);
@@ -276,6 +281,33 @@ public class InstallationTask implements IInstallationTask {
         return strNum.matches("-?\\d+(\\.\\d+)?");
     }
 
+    public boolean setAdmin()  {
+
+        if (!admin) {
+            if (isWindows()) {
+                String path= getScriptsPath() + "/setadmin.bat";
+                if (new File(path).exists()) {
+                    try {
+                        if (executeCommandByBuilder(new String[]{path}, "", false, "")) {
+                            admin = true;
+
+                        }
+                    } catch (IOException e) {
+                        severe("Error while setting to administrator", e);
+                        return false;
+                    }
+                }else {
+                    updateProgress(context,"Cannot find script for elevation request at: "+path);
+                    severe("Cannot find elevation script at: "+path);
+                }
+            }
+        }
+        return admin;
+    }
+    public void updateProgress(InstallationContext context, String message) {
+        this.setMessage(message);
+        context.getInstallerProgress().installationProgress(this, context);
+    }
     @Override
     public int getOrder() {
         return order;
@@ -305,12 +337,34 @@ public class InstallationTask implements IInstallationTask {
     }
 
     @Override
+    public IInstallationTask setAdmin(boolean admin) {
+        this.admin = admin;
+        return this;
+    }
+
+    @Override
+    public boolean isAdmin() {
+        return admin;
+    }
+
+    @Override
     public String getName() {
         return name;
     }
 
     @Override
     public IInstallationTask setDescription(String description) {
+        return this;
+    }
+
+    @Override
+    public String getMessage() {
+        return message;
+    }
+
+    @Override
+    public IInstallationTask setMessage(String message) {
+        this.message = message;
         return this;
     }
 
@@ -481,10 +535,10 @@ public class InstallationTask implements IInstallationTask {
     public void simpleMessage(String owner, String info, String message) {
         switch (info) {
             case "severe":
-                severe("Phase: "+ owner+" "+message);
+                severe("Phase: " + owner + " " + message);
                 break;
             default:
-                info("Phase: "+ owner+" "+message);
+                info("Phase: " + owner + " " + message);
 
         }
     }
@@ -499,7 +553,6 @@ public class InstallationTask implements IInstallationTask {
 
     }
 
-    
 
     /**
      * get
@@ -532,7 +585,7 @@ public class InstallationTask implements IInstallationTask {
     }
 
     public String getInstallationsPath() {
-        return getContext().getParamaters().getValue("installlationspath");
+        return getContext().getParamaters().getValue("instllationspath");
 
     }
 

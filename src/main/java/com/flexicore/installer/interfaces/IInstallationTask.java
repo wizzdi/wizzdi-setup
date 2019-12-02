@@ -16,12 +16,16 @@ public interface IInstallationTask extends ExtensionPoint {
     OperatingSystem[] getOperatingSystems();
     OperatingSystem getCurrentOperatingSystem();
     IInstallationTask setId(String id);
-
+    boolean isAdmin();
+    IInstallationTask setAdmin(boolean admin);
     String getName();
 
     String getDescription();
 
     IInstallationTask setDescription(String description);
+    String getMessage();
+
+    IInstallationTask setMessage(String message);
 
     String getVersion();
 

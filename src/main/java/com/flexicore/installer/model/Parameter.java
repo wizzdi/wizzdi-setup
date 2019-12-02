@@ -7,6 +7,7 @@ import java.io.File;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class Parameter {
     private String name;
@@ -392,10 +393,11 @@ public class Parameter {
         return this;
     }
     public static String getReplaced(InstallationContext installationContext, String result, Parameter parameter) {
+        Logger logger=installationContext.getLogger();
+        logger.info("got to replace: "+result);
         int a = result.indexOf("&");
         if (a > -1) {
             int index = a + 2;
-            String temp = null;
             int i = 1;
             while (index <= result.length()) {
                 if (!result.substring(a + i++, index++).matches("[a-zA-Z0-9]+")) break;
@@ -404,13 +406,19 @@ public class Parameter {
             if (index>result.length())index++; //special case
 
             String toReplace = result.substring(a+1, index - 2);
+            logger.info("to replace is, this is the string we are looking for "+toReplace);
             String newString = installationContext.getParamaters().getValue(toReplace.substring(0));
+            logger.info("this is the new replacement:  "+newString);
             if (newString != null && !newString.isEmpty()) {
                 parameter.setReferencedParameter(toReplace.substring(1));
                 result = result.replace(result.substring(a, index - 2), newString);
+                logger.info("after replacement: "+result);
             }
+        }else {
+            logger.info("did not find & in the string "+result);
         }
         return result;
     }
+
 }
 

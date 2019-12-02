@@ -26,6 +26,7 @@ public class InstallationContext {
     private Start.UIAccessInterfaceStop uiStopInstall;
     private Start.UIAccessAbout uiAbout;
     private ProgressConsumer consumer;
+    private Start.InstallerProgress installerProgress;
     private int successFullyInstalled=0;
     private int failedToInstall=0;
     private String mainTitle;
@@ -184,6 +185,15 @@ public class InstallationContext {
 
     public InstallationContext setUiStopInstall(Start.UIAccessInterfaceStop uiStopInstall) {
         this.uiStopInstall = uiStopInstall;
+        return this;
+    }
+
+    public Start.InstallerProgress getInstallerProgress() {
+        return installerProgress;
+    }
+
+    public InstallationContext setInstallerProgress(Start.InstallerProgress installerProgress) {
+        this.installerProgress = installerProgress;
         return this;
     }
 

@@ -34,6 +34,7 @@ public class Start {
     private static final String INSTALLATION_TASKS_FOLDER = "tasks";
     private static Logger logger;
     private static PluginManager pluginManager;
+    private static List<IUIComponent> uiComponents;
 
 
     public static void main(String[] args) throws MissingInstallationTaskDependency, ParseException, InterruptedException {
@@ -55,7 +56,10 @@ public class Start {
                         setUiInstall(Start::uiComponentInstall).
                         setUiShowLogs(Start::uiComponentShowLogs).
                         setUiAbout(Start::UIAccessAbout).
-                        setUiStopInstall(Start::UIAccessInterfaceStop);
+                        setUiStopInstall(Start::UIAccessInterfaceStop).
+                        setInstallerProgress(Start::InstallerProgress)
+                ;
+
 
         File pluginRoot = new File(mainCmd.getOptionValue(INSTALLATION_TASKS_FOLDER, "tasks"));
         String path = pluginRoot.getAbsolutePath();
@@ -157,7 +161,7 @@ public class Start {
         boolean stopped = false;
         boolean uiFoundandRun = false;
 
-        List<IUIComponent> uiComponents = pluginManager.getExtensions(IUIComponent.class);
+        uiComponents= pluginManager.getExtensions(IUIComponent.class);
         for (IUIComponent component : uiComponents) {
             component.setContext(installationContext);
             installationContext.addUIComponent(component);
@@ -179,7 +183,11 @@ public class Start {
             exit(0);
         }
     }
+    private static void doUpdateUI(IInstallationTask task,InstallationContext installationContext) {
 
+        List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
+        filtered.forEach((iuiComponent)->iuiComponent.updateProgress(installationContext,task));
+    }
     /**
      * Look for properties file if exists override code based default properties
      *
@@ -495,6 +503,12 @@ public class Start {
     private static String UIAccessAbout(IUIComponent uiComponent, InstallationContext context) {
         return doAbout();
     }
+    private static IInstallationTask InstallerProgress(IInstallationTask task, InstallationContext context) {
+        doUpdateUI(task,context);
+        return task;
+    }
+
+
 
     private static String doAbout() {
         logger.info("Performing about");
@@ -548,6 +562,10 @@ public class Start {
     @FunctionalInterface
     public static interface UIAccessAbout {
         String uiComponentAbout(IUIComponent uiComponent, InstallationContext context);
+    }
+    @FunctionalInterface
+    public static interface InstallerProgress {
+        IInstallationTask installationProgress(IInstallationTask task, InstallationContext context);
     }
 
 }
