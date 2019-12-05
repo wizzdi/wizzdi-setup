@@ -4,7 +4,6 @@ import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
 import org.pf4j.Extension;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -20,7 +19,7 @@ public class AutosshParameters extends InstallationTask {
 
     static Parameter[] preDefined = {
             new Parameter("autossh-server", "Auto SSH remote server, if not specified, defaults to IOT server remote URL, the server CANNOT be changed after installation", true, "&remote-server-url"),
-            new Parameter("autossh-port", "should be a unique port on this server, the port can be changed after installation", true, "4444",ParameterType.NUMBER,AutosshParameters::validateSSHPort)
+            new Parameter("autossh-port", "should be a unique port on this server, the port can be changed after installation", true, "4444",ParameterType.NUMBER,AutosshParameters::validateSSHPort,false)
 
     };
 

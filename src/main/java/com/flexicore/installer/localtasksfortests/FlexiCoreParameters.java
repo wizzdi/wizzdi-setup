@@ -22,7 +22,7 @@ public class FlexiCoreParameters extends InstallationTask {
             new Parameter("flexicorehome", "target for flexicore files", true,  "&targetpath"+ "/flexicore",ParameterType.FOLDER),
             new Parameter("deleteplugins", "delete all plugins before copying", true,  "true",ParameterType.BOOLEAN),
             new Parameter("backupprevious", "backup previous plugins", true,  "true",ParameterType.BOOLEAN),
-            new Parameter("JWTSecondsValid", "Number of seconds to pass before JWT password renewal is required", true,  "2592000",ParameterType.NUMBER, FlexiCoreParameters::validateJWT),
+            new Parameter("JWTSecondsValid", "Number of seconds to pass before JWT password renewal is required", true,  "2592000",ParameterType.NUMBER, FlexiCoreParameters::validateJWT, false),
 
     };
     @Override

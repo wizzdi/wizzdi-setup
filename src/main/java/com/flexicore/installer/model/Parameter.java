@@ -2,9 +2,7 @@ package com.flexicore.installer.model;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.apache.commons.validator.routines.UrlValidator;
 
-import javax.swing.text.DefaultEditorKit;
 import java.io.File;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -107,16 +105,17 @@ public class Parameter {
         this.autocreate=autoCreate;
 
     }
-    public Parameter(String name, String description, boolean hasValue, String defaultValue, ParameterType parameterType,Parameter.parameterValidator validator) {
+    public Parameter(String name, String description, boolean hasValue, String defaultValue, ParameterType parameterType, Parameter.parameterValidator validator, boolean autoCreate) {
         this.type=parameterType;
         this.hasValue = hasValue;
         this.name = name;
         this.description = description;
         this.defaultValue = defaultValue;
         this.parameterValidator=validator;
+        this.autocreate=autoCreate;
 
     }
-    public Parameter(String name, String description, boolean hasValue, String defaultValue, ParameterType parameterType,Parameter.parameterValidator validator,int ordinal) {
+    public Parameter(String name, String description, boolean hasValue, String defaultValue, ParameterType parameterType, Parameter.parameterValidator validator, int ordinal, boolean autoCreate) {
         this.type=parameterType;
         this.hasValue = hasValue;
         this.name = name;
@@ -124,6 +123,7 @@ public class Parameter {
         this.defaultValue = defaultValue;
         this.parameterValidator=validator;
         this.ordinal=ordinal;
+        this.autocreate=autoCreate;
 
     }
 
