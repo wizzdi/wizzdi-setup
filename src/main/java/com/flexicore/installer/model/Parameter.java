@@ -31,6 +31,7 @@ public class Parameter {
     private boolean hasValue;
     private boolean locked=false;
     private ArrayList<String> listOptions=new ArrayList<>();
+    private boolean autocreate=true;
 
 
     /**
@@ -93,6 +94,17 @@ public class Parameter {
         this.defaultValue = defaultValue;
         this.source=parameterSource;
         this.parameterValidator=validator;
+
+    }
+    public Parameter(String name, String description, boolean hasValue, String defaultValue, ParameterType parameterType, ParameterSource parameterSource, Parameter.parameterValidator validator,boolean autoCreate) {
+        this.type=parameterType;
+        this.hasValue = hasValue;
+        this.name = name;
+        this.description = description;
+        this.defaultValue = defaultValue;
+        this.source=parameterSource;
+        this.parameterValidator=validator;
+        this.autocreate=autoCreate;
 
     }
     public Parameter(String name, String description, boolean hasValue, String defaultValue, ParameterType parameterType,Parameter.parameterValidator validator) {
@@ -313,6 +325,15 @@ public class Parameter {
         if (eValidator.isValid(email)) return true;
         if (validationMessage!=null) validationMessage.setMessage(email+" is not a valid email");
         return false;
+    }
+
+    public boolean isAutocreate() {
+        return autocreate;
+    }
+
+    public Parameter setAutocreate(boolean autocreate) {
+        this.autocreate = autocreate;
+        return this;
     }
 
     @FunctionalInterface

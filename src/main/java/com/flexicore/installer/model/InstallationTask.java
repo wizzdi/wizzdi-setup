@@ -306,6 +306,7 @@ public class InstallationTask implements IInstallationTask {
     }
     public void updateProgress(InstallationContext context, String message) {
         this.setMessage(message);
+        info("Update progress:"+message);
         context.getInstallerProgress().installationProgress(this, context);
     }
     @Override

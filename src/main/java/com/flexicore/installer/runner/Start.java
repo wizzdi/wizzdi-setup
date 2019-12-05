@@ -172,6 +172,11 @@ public class Start {
                 }
             }
         }
+        if (installationContext.getParamaters().getBooleanValue("install")) {
+            install(installationContext);
+        }else {
+            info(" there is no 'install' parameter set to true that will start installation");
+        }
         if (uiFoundandRun) {
             while (!stopped) {
                 Thread.sleep(1000);
