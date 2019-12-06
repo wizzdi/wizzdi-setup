@@ -57,8 +57,7 @@ public class Start {
                         setUiShowLogs(Start::uiComponentShowLogs).
                         setUiAbout(Start::UIAccessAbout).
                         setUiStopInstall(Start::UIAccessInterfaceStop).
-                        setInstallerProgress(Start::InstallerProgress)
-                ;
+                        setInstallerProgress(Start::InstallerProgress);
 
 
         File pluginRoot = new File(mainCmd.getOptionValue(INSTALLATION_TASKS_FOLDER, "tasks"));
@@ -72,7 +71,7 @@ public class Start {
 
         pluginManager.loadPlugins();
         pluginManager.startPlugins();
-        Object o= pluginManager.getExtensions(IInstallationTask.class);
+        Object o = pluginManager.getExtensions(IInstallationTask.class);
         Map<String, IInstallationTask> DebuginstallationTasks = pluginManager.getExtensions(IInstallationTask.class).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
 //this is here for debugging purposes.
 
@@ -119,10 +118,10 @@ public class Start {
             String installationTaskUniqueId = topologicalOrderIterator.next();
             IInstallationTask task = DebuginstallationTasks.get(installationTaskUniqueId);
             boolean found = false;
-            OperatingSystem cos=task.getCurrentOperatingSystem();
+            OperatingSystem cos = task.getCurrentOperatingSystem();
             for (OperatingSystem os : task.getOperatingSystems()) {
 
-                if (os.equals(cos) ){
+                if (os.equals(cos)) {
                     found = true;
                     break;
                 }
@@ -157,11 +156,11 @@ public class Start {
                 }
             }
         }
-        if (installationContext.getParamaters()!=null) installationContext.getParamaters().sort();
+        if (installationContext.getParamaters() != null) installationContext.getParamaters().sort();
         boolean stopped = false;
         boolean uiFoundandRun = false;
 
-        uiComponents= pluginManager.getExtensions(IUIComponent.class);
+        uiComponents = pluginManager.getExtensions(IUIComponent.class);
         for (IUIComponent component : uiComponents) {
             component.setContext(installationContext);
             installationContext.addUIComponent(component);
@@ -174,7 +173,7 @@ public class Start {
         }
         if (installationContext.getParamaters().getBooleanValue("install")) {
             install(installationContext);
-        }else {
+        } else {
             info(" there is no 'install' parameter set to true that will start installation");
         }
         if (uiFoundandRun) {
@@ -188,11 +187,13 @@ public class Start {
             exit(0);
         }
     }
-    private static void doUpdateUI(IInstallationTask task,InstallationContext installationContext) {
+
+    private static void doUpdateUI(IInstallationTask task, InstallationContext installationContext) {
 
         List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
-        filtered.forEach((iuiComponent)->iuiComponent.updateProgress(installationContext,task));
+        filtered.forEach((iuiComponent) -> iuiComponent.updateProgress(installationContext, task));
     }
+
     /**
      * Look for properties file if exists override code based default properties
      *
@@ -314,16 +315,15 @@ public class Start {
         if (result == null) {
             result = parameter.getDefaultValue();
 
-        }
-        else {
+        } else {
             if (parameter.getType().equals(ParameterType.LIST)) {
-                String[] split=result.split(",");
-                if (split!=null) {
+                String[] split = result.split(",");
+                if (split != null) {
                     parameter.getListOptions().clear();
                     parameter.getListOptions().addAll(Arrays.asList(split));
                     parameter.getListOptions().remove(split[0]);
                     Collections.sort(parameter.getListOptions());
-                    parameter.getListOptions().add(0,split[0]);
+                    parameter.getListOptions().add(0, split[0]);
 
                 }
             }
@@ -333,12 +333,11 @@ public class Start {
         if (result.contains("&")) {
             parameter.setNonTranslatedValue(result);
             parameter.setSandSymbolPresent(true);
-            result = Parameter.getReplaced(installationContext, result,parameter);
+            result = Parameter.getReplaced(installationContext, result, parameter);
         }
 
         return result;
     }
-
 
 
     private static Options getOptions(IInstallationTask task, InstallationContext installationContext) {
@@ -406,22 +405,26 @@ public class Start {
         logger.info("Performing install dry");
         return true;
     }
-    private static boolean installRunning=false;
+
+    private static boolean installRunning = false;
+
     private static boolean install(InstallationContext context) {
         if (!installRunning) {
-            installRunning=true;
+            installRunning = true;
             Thread thread = new Thread(() -> {
                 logger.info("Performing installation ");
                 for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
-                    info("will now install "+installationTask.getName()+" id: "+installationTask.getId());
+                    info("will now install " + installationTask.getName() + " id: " + installationTask.getId());
                     installationTask.setProgress(10).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now());
                     try {
                         installationTask.install(context);
                     } catch (Throwable throwable) {
-                        severe("Exception while installing: "+installationTask.getName(),throwable);
+                        severe("Exception while installing: " + installationTask.getName(), throwable);
                         installationTask.setProgress(100).setStatus(InstallationStatus.FAILED).setEnded(LocalDateTime.now());
                     }
-                    context.getConsumer().updateProgress(installationTask, context);
+                    if (context.getConsumer() != null) {
+                        context.getConsumer().updateProgress(installationTask, context);
+                    }
                     // installTask(installationTask, context);
                 }
                 for (IInstallationTask installationTask : context.getCleanupTasks().values()) {
@@ -431,11 +434,11 @@ public class Start {
 
             });
             thread.start();
-            installRunning=false;
-        }else {
+            installRunning = false;
+        } else {
             return true;
         }
-       return false;
+        return false;
     }
 
     private static boolean installTask(IInstallationTask installationTask, InstallationContext context) {
@@ -508,11 +511,11 @@ public class Start {
     private static String UIAccessAbout(IUIComponent uiComponent, InstallationContext context) {
         return doAbout();
     }
+
     private static IInstallationTask InstallerProgress(IInstallationTask task, InstallationContext context) {
-        doUpdateUI(task,context);
+        doUpdateUI(task, context);
         return task;
     }
-
 
 
     private static String doAbout() {
@@ -568,6 +571,7 @@ public class Start {
     public static interface UIAccessAbout {
         String uiComponentAbout(IUIComponent uiComponent, InstallationContext context);
     }
+
     @FunctionalInterface
     public static interface InstallerProgress {
         IInstallationTask installationProgress(IInstallationTask task, InstallationContext context);

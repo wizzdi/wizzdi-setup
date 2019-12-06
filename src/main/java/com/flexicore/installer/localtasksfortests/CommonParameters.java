@@ -17,7 +17,7 @@ public class CommonParameters extends InstallationTask {
     static List<String> sslOptions =new ArrayList<>();
 
     static Parameter[] preDefined = {
-            new Parameter("targetpath", "the target path to install this installation into", true, "/temp/target",ParameterType.FOLDER),
+            new Parameter("targetpath", "the target path to install this installation into", true, "/temp/target",ParameterType.FOLDER,null,true),
             new Parameter("serverpath", "where to get this installation files from (not alien components)",
             true, parentFolder + "/resources/server",ParameterType.FOLDER,Parameter::validateExistingFolder, false),
             new Parameter("instllationspath", "where to dry alien components installation files, for example Java installation. This is more relevant for Windows", true, parentFolder + "/resources/installations",ParameterType.FOLDER,Parameter::validateExistingFolder, false),

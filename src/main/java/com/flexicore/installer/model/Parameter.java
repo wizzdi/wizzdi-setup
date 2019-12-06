@@ -29,7 +29,7 @@ public class Parameter {
     private boolean hasValue;
     private boolean locked=false;
     private ArrayList<String> listOptions=new ArrayList<>();
-    private boolean autocreate=true;
+    private boolean autocreate=false;
 
 
     /**
@@ -379,8 +379,15 @@ public class Parameter {
     public static boolean validateExistingFolder(InstallationContext context,Parameter parameter,Object newValue, ValidationMessage validationMessage) {
         File file=new File(getReplaced(context,newValue.toString(),parameter));
         if (!file.exists()) {
-            validationMessage.setMessage("Cannot locate folder: "+newValue);
-            return false;
+            if (parameter.isAutocreate()) {
+               if(file.mkdirs()) {
+                   context.getLogger().info("have created the required folder: "+file.getAbsolutePath());
+
+               }
+            }else {
+                validationMessage.setMessage("Cannot locate folder: " + newValue);
+                return false;
+            }
         }
         return true;
     }

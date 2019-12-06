@@ -1,7 +1,16 @@
+# task:common-installation-parameters :Common parameters accessible to all installer plugins task id is: common-parameters
+common-parameters=true
+install=true
 dry=false
-force=true
-#an example for a list (will be a combo), the list is sorted, however, the first string is the default one
-remote_server_name=123,xirst,aysecond,third
-
-
-
+delete=false
+force=false
+serverpath=~/installations/resources/server
+installationspath=~/installations/resources/installations
+scriptspath=~/installations/resources/scripts
+targetpath=/temp/target
+update=false
+# end of task: common-installation-parameters
+# task:JDK 64 installer :Install Java if not installed, cross platform task id is: java-installer
+java-installer=true
+jdkinstallationpath=~/installations/resources/installations/openjdk11.msi
+# end of task: JDK 64 installer

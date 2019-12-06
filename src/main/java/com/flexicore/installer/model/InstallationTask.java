@@ -594,6 +594,10 @@ public class InstallationTask implements IInstallationTask {
         return getContext().getParamaters().getValue("scriptspath");
 
     }
+    public String getServicesPath() {
+        return getContext().getParamaters().getValue("servicesspath");
+
+    }
 
     /**
      * @param installationDir source of the copy
