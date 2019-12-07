@@ -586,16 +586,16 @@ public class InstallationTask implements IInstallationTask {
     }
 
     public String getInstallationsPath() {
-        return getContext().getParamaters().getValue("instllationspath");
+        return getContext().getParamaters().getValue("instllationspath")+"/";
 
     }
 
     public String getScriptsPath() {
-        return getContext().getParamaters().getValue("scriptspath");
+        return getContext().getParamaters().getValue("scriptspath")+"/";
 
     }
     public String getServicesPath() {
-        return getContext().getParamaters().getValue("servicesspath");
+        return getContext().getParamaters().getValue("servicesspath"+"/");
 
     }
 

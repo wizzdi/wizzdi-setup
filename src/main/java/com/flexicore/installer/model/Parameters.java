@@ -79,5 +79,11 @@ public class Parameters {
         }
         return "";
     }
+    public String getValueFromSplit(String key) {
+        if (map.containsKey(key)) {
+            return map.get(key).getSplitValue();
+        }
+        return "";
+    }
 
 }

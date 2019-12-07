@@ -369,6 +369,8 @@ public class Start {
         }
         if (!missingDependencies.isEmpty()) {
             String s = "Missing Dependencies:" + System.lineSeparator() + missingDependencies.entrySet().parallelStream().map(f -> f.getKey() + " : " + f.getValue()).collect(Collectors.joining(System.lineSeparator()));
+           //todo:handle missing dependencies differently when running from UI
+            severe("Missing dependencies: "+s);
             throw new MissingInstallationTaskDependency(s);
         }
         return new TopologicalOrderIterator<>(g);

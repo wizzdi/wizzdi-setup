@@ -172,6 +172,12 @@ public class Parameter {
         return Boolean.parseBoolean(value);
 
     }
+    public String getSplitValue() {
+        String v=getValue();
+        String[] split=v.split(":");
+        if (split.length>0) return split[1];
+        return v;
+    }
 
     public boolean isHasValue() {
         return hasValue;
