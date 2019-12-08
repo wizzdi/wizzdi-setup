@@ -601,7 +601,7 @@ public class InstallationTask implements IInstallationTask {
         return getContext().getParamaters().getValue("servicesspath"+"/");
 
     }
- 
+
 
     /**
      * @param installationDir source of the copy
