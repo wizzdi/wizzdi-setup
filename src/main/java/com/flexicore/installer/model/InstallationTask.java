@@ -200,6 +200,15 @@ public class InstallationTask implements IInstallationTask {
                 }
             }
         }
+        if (lines.size() != 0 && (force || context.getParamaters().getBooleanValue("debug"))) {
+            info("normal lines from E stream  while executing OS shell command or script");
+            for (String message : lines) {
+                if (!message.isEmpty()) {
+
+                    info("****** debug line  : " + command + ": " + message);
+                }
+            }
+        }
     }
 
     public boolean executeCommandByRuntime(String target, String ownerName) {
@@ -232,6 +241,7 @@ public class InstallationTask implements IInstallationTask {
             outputGobbler.start();
 
             int exitVal = process.waitFor();
+            info("Exit Val for script :"+exitVal);
             errorLines.clear();
             errorLines.addAll(errorGobbler.getLines());
             lines.clear();
@@ -598,7 +608,7 @@ public class InstallationTask implements IInstallationTask {
 
     }
     public String getServicesPath() {
-        return getContext().getParamaters().getValue("servicesspath"+"/");
+        return getContext().getParamaters().getValue("servicespath"+"/");
 
     }
 
