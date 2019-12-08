@@ -44,6 +44,7 @@ public class InstallationTask implements IInstallationTask {
     final public static boolean isWindows = SystemUtils.IS_OS_WINDOWS;
     final public static boolean isLinux = SystemUtils.IS_OS_LINUX;
     final public static boolean isMac = SystemUtils.IS_OS_MAC;
+    final public static boolean is64 = System.getProperty("sun.arch.data.model").equals("64");
     Queue<String> lines = new ConcurrentLinkedQueue<String>();
     Queue<String> errorLines = new ConcurrentLinkedQueue<String>();
 
@@ -107,7 +108,9 @@ public class InstallationTask implements IInstallationTask {
     public boolean setServiceToStart(String serviceName, String ownerName) {
         return executeCommand("sc start " + serviceName, "START_PENDING", "Set Service To Stop " + serviceName);
     }
-
+    public boolean exists(String file) {
+        return new File(file).exists();
+    }
     public boolean executeBashScript(String script, String toFind, String ownerName) {
 
         if (new File(script).exists()) {

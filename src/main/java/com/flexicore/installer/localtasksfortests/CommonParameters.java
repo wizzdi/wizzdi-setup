@@ -20,8 +20,9 @@ public class CommonParameters extends InstallationTask {
             new Parameter("targetpath", "the target path to install this installation into", true, "/temp/target",ParameterType.FOLDER,null,true),
             new Parameter("serverpath", "where to get this installation files from (not alien components)",
             true, parentFolder + "/resources/server",ParameterType.FOLDER,Parameter::validateExistingFolder, false),
-            new Parameter("instllationspath", "where to dry alien components installation files, for example Java installation. This is more relevant for Windows", true, parentFolder + "/resources/installations",ParameterType.FOLDER,Parameter::validateExistingFolder, false),
-            new Parameter("scriptspath", "where to dry operating system scripts", true, parentFolder + "/scripts",ParameterType.FOLDER,Parameter::validateExistingFolder, false),
+            new Parameter("instllationspath", "where to find alien components installation files, for example Java installation. This is more relevant for Windows", true, parentFolder + "/resources/installations",ParameterType.FOLDER,Parameter::validateExistingFolder, false),
+            new Parameter("scriptspath", "where to find  operating system scripts", true, parentFolder + "/scripts",ParameterType.FOLDER,Parameter::validateExistingFolder, false),
+            new Parameter("filespath", "where to find  additional configuration files", true, parentFolder + "/files",ParameterType.FOLDER,Parameter::validateExistingFolder, false),
 
             new Parameter("dry", "If set (used) installation will run but nothing really installed", false, "false",ParameterType.BOOLEAN),
    };

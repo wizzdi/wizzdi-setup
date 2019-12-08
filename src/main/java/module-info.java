@@ -11,6 +11,7 @@ module flexicore.installer {
     requires org.apache.commons.lang3;
     requires jdk.unsupported;
     requires commons.validator;
+    requires jdk.jdwp.agent;
 
     exports com.flexicore.installer.exceptions;
     exports com.flexicore.installer.model;

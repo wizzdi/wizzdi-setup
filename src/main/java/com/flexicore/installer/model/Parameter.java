@@ -418,6 +418,20 @@ public class Parameter {
         }
         return true;
     }
+    public static boolean validateHeap(InstallationContext context,Parameter parameter,Object newValue, ValidationMessage validationMessage) {
+        try {
+            int heap= Integer.parseInt(newValue.toString());
+            if (heap%256!=0 || heap<768) {
+                validationMessage.setMessage("Heap size must be divisible by 256 and equal or larger than 768 MBytes, value was:  "+newValue.toString());
+                return false;
+            }
+
+        }catch ( Exception e) {
+            validationMessage.setMessage("Heap size must be divisible by 256 and equal or larger than 768 MBytes , value was: "+newValue.toString());
+            return false;
+        }
+        return true;
+    }
     public int getOrdinal() {
         return ordinal;
     }
