@@ -608,7 +608,7 @@ public class InstallationTask implements IInstallationTask {
 
     }
     public String getServicesPath() {
-        return getContext().getParamaters().getValue("servicespath"+"/");
+        return getContext().getParamaters().getValue("servicespath")+"/";
 
     }
 
