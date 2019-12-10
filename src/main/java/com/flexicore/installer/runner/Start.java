@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static com.flexicore.installer.utilities.LoggerUtilities.initLogger;
+import static java.lang.System.currentTimeMillis;
 import static java.lang.System.exit;
 
 
@@ -35,6 +36,10 @@ public class Start {
     private static Logger logger;
     private static PluginManager pluginManager;
     private static List<IUIComponent> uiComponents;
+    private static InstallationContext installationContext = null;
+    static boolean uiFoundandRun = false;
+    static String startupStatus = "";
+    static Map<String, Set<String>> missingDependencies = new HashMap<>();
 
 
     public static void main(String[] args) throws MissingInstallationTaskDependency, ParseException, InterruptedException {
@@ -48,7 +53,7 @@ public class Start {
         CommandLine mainCmd = parser.parse(options, trueArgs, false); //will not fail if fed with plugins options.
 
         logger = initLogger("Installer", mainCmd.getOptionValue(LOG_PATH_OPT, "logs"));
-        InstallationContext installationContext = new InstallationContext()
+        installationContext = new InstallationContext()
                 .setLogger(logger).setParameters(new Parameters()).
                         setUiQuit(Start::uiComponentQuit).
                         setUiPause(Start::uiComponentPause).
@@ -73,40 +78,7 @@ public class Start {
         pluginManager.startPlugins();
         Object o = pluginManager.getExtensions(IInstallationTask.class);
         Map<String, IInstallationTask> DebuginstallationTasks = pluginManager.getExtensions(IInstallationTask.class).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
-//this is here for debugging purposes.
-
-//        new FlexicoreUniquenessEnforcer(DebuginstallationTasks);
-//        new EPX2000Install(DebuginstallationTasks);
-//        new ShekelComponentsInstall(DebuginstallationTasks);
-//        new ShekelComponentsParameters(DebuginstallationTasks);
-//
-//        //********** standard ***************
-//        new CommonParameters(DebuginstallationTasks);
-//
-//
-//        //*********** Flexicore installation (home)
-//        new FlexiCoreParameters(DebuginstallationTasks);
-//
-//        new FlexicoreComponentsInstall(DebuginstallationTasks);
-//
-//        new FlexicoreFixConfigFile(DebuginstallationTasks);
-//
-//
-//        //***************** wildfly installation
-//        new WildflyParameters(DebuginstallationTasks);
-//
-//        new WildflyInstall(DebuginstallationTasks);
-//
-//        //************ flexicore deployment
-//        new FlexicoreDeploymentInstall(DebuginstallationTasks);
-//
-//        //*********************shekel installation
-//        new ShekelComponentsParameters(DebuginstallationTasks);
-//        new ShekelComponentsInstall(DebuginstallationTasks);
-//        //********************Itamar Installation
-//        new ItamarParameters(DebuginstallationTasks);
-//        new ItamarInstall(DebuginstallationTasks);
-//        new InstallIOTParameters(DebuginstallationTasks);
+        loadUiComponents();
 
 
         // handle parameters and command line options here. do it at the dependency order.
@@ -158,8 +130,31 @@ public class Start {
         }
         if (installationContext.getParamaters() != null) installationContext.getParamaters().sort();
         boolean stopped = false;
-        boolean uiFoundandRun = false;
 
+
+        if (installationContext.getParamaters().getBooleanValue("install")) {
+            install(installationContext);
+        } else {
+            info(" there is no 'install' parameter set to true that will start installation");
+        }
+        if (uiFoundandRun) {
+            while (!stopped) {
+                Thread.sleep(1000);
+                if (!startupStatus.equals("")) {
+                    informUI(startupStatus);
+                    startupStatus = "";
+
+                }
+            }
+
+
+            // stop and unload all plugins
+            pluginManager.stopPlugins();
+            exit(0);
+        }
+    }
+
+    private static void loadUiComponents() {
         uiComponents = pluginManager.getExtensions(IUIComponent.class);
         for (IUIComponent component : uiComponents) {
             component.setContext(installationContext);
@@ -170,21 +165,6 @@ public class Start {
                     uiFoundandRun = true; //will not run the installation from command line.
                 }
             }
-        }
-        if (installationContext.getParamaters().getBooleanValue("install")) {
-            install(installationContext);
-        } else {
-            info(" there is no 'install' parameter set to true that will start installation");
-        }
-        if (uiFoundandRun) {
-            while (!stopped) {
-                Thread.sleep(1000);
-            }
-
-
-            // stop and unload all plugins
-            pluginManager.stopPlugins();
-            exit(0);
         }
     }
 
@@ -353,7 +333,7 @@ public class Start {
 
 
     private static TopologicalOrderIterator<String, DefaultEdge> getInstallationTaskIterator(Map<String, IInstallationTask> installationTasks) throws MissingInstallationTaskDependency {
-        Map<String, Set<String>> missingDependencies = new HashMap<>();
+
         Graph<String, DefaultEdge> g = new DefaultDirectedGraph<>(DefaultEdge.class);
         for (IInstallationTask installationTask : installationTasks.values()) {
             String uniqueId = installationTask.getId();
@@ -369,11 +349,31 @@ public class Start {
         }
         if (!missingDependencies.isEmpty()) {
             String s = "Missing Dependencies:" + System.lineSeparator() + missingDependencies.entrySet().parallelStream().map(f -> f.getKey() + " : " + f.getValue()).collect(Collectors.joining(System.lineSeparator()));
-           //todo:handle missing dependencies differently when running from UI
-            severe("Missing dependencies: "+s);
-            throw new MissingInstallationTaskDependency(s);
+            //todo:handle missing dependencies differently when running from UI
+            severe("Missing dependencies: " + s);
+
+            StringBuilder builder = new StringBuilder();
+            builder.append("missing dependencies: ");
+            missingDependencies.forEach((s1, strings) -> {
+                int i = 1;
+                for (String k : strings) {
+                    if (i++ != 1) {
+                        builder.append(",");
+                    }
+                    builder.append(k);
+                }
+            });
+
+            startupStatus = builder.toString();
+
         }
         return new TopologicalOrderIterator<>(g);
+    }
+
+    private static void informUI(String message) {
+        for (IUIComponent component : uiComponents) {
+            component.updateStatus(installationContext, missingDependencies, message);
+        }
     }
 
     private static Options initOptions() {
@@ -413,13 +413,19 @@ public class Start {
     private static boolean install(InstallationContext context) {
         if (!installRunning) {
             installRunning = true;
+
             Thread thread = new Thread(() -> {
-                logger.info("Performing installation ");
+                long startAll = System.currentTimeMillis();
+                logger.info("Performing installation of " + context.getiInstallationTasks().size() + " tasks");
                 for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
                     info("will now install " + installationTask.getName() + " id: " + installationTask.getId());
+                    info("details: " + installationTask.getDescription());
                     installationTask.setProgress(10).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now());
                     try {
-                        installationTask.install(context);
+                        long start = currentTimeMillis();
+                        if (installationTask.install(context).equals(InstallationStatus.COMPLETED)) {
+                            info("Have successfully finished installation task: " + installationTask.getName() + " after " + getSeconds(start));
+                        }
                     } catch (Throwable throwable) {
                         severe("Exception while installing: " + installationTask.getName(), throwable);
                         installationTask.setProgress(100).setStatus(InstallationStatus.FAILED).setEnded(LocalDateTime.now());
@@ -429,6 +435,7 @@ public class Start {
                     }
                     // installTask(installationTask, context);
                 }
+                info("Total installation time was: " + getSeconds(startAll));
                 for (IInstallationTask installationTask : context.getCleanupTasks().values()) {
                     installationTask.setProgress(70).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now());
                     //  installTask(installationTask, context);
@@ -438,9 +445,14 @@ public class Start {
             thread.start();
             installRunning = false;
         } else {
+            info("Install already running");
             return true;
         }
         return false;
+    }
+
+    public static long getSeconds(long from) {
+        return (System.currentTimeMillis() - from) / 1000;
     }
 
     private static boolean installTask(IInstallationTask installationTask, InstallationContext context) {
