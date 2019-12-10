@@ -584,7 +584,7 @@ public class InstallationTask implements IInstallationTask {
     }
 
     public String getWildflySource() {
-        return getContext().getParamaters().getValue("wildflysourcepath");
+        return getContext().getParamaters().getValue("wildflypath");
 
     }
 
@@ -593,10 +593,7 @@ public class InstallationTask implements IInstallationTask {
         return getContext().getParamaters().getValue("serverpath");
     }
 
-    public String getAbsoluteServerSource() {
-        return getContext().getParamaters().getValue("sourcepath") + "/wildfly";
 
-    }
 
     public String getInstallationsPath() {
         return getContext().getParamaters().getValue("instllationspath")+"/";
