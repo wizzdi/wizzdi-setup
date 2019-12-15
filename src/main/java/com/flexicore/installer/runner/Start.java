@@ -131,13 +131,14 @@ public class Start {
         if (installationContext.getParamaters() != null) installationContext.getParamaters().sort();
         boolean stopped = false;
 
-
-        if (installationContext.getParamaters().getBooleanValue("install")) {
-            install(installationContext);
+        if (!uiFoundandRun) {
+            if (installationContext.getParamaters().getBooleanValue("install")) {
+                install(installationContext);
+            } else {
+                info(" there is no 'install' parameter set to true that will start installation");
+            }
         } else {
-            info(" there is no 'install' parameter set to true that will start installation");
-        }
-        if (uiFoundandRun) {
+
             while (!stopped) {
                 Thread.sleep(1000);
                 if (!startupStatus.equals("")) {
@@ -146,12 +147,12 @@ public class Start {
 
                 }
             }
-
-
-            // stop and unload all plugins
-            pluginManager.stopPlugins();
-            exit(0);
         }
+
+        // stop and unload all plugins
+        pluginManager.stopPlugins();
+        exit(0);
+
     }
 
     private static void loadUiComponents() {

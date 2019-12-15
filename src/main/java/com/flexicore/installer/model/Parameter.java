@@ -163,6 +163,11 @@ public class Parameter {
     }
 
     public Parameter setValue(String value) {
+        if (type.equals(ParameterType.FOLDER)) {
+            if (value.toLowerCase().startsWith("c:\\")) {
+                value=value.replace("/","\\");
+            }
+        }
         this.value = value;
         return this;
     }
@@ -460,6 +465,7 @@ public class Parameter {
             if (newString != null && !newString.isEmpty()) {
                 parameter.setReferencedParameter(toReplace.substring(1));
                 result = result.replace(result.substring(a, index - 2), newString);
+              
                 logger.info("after replacement: "+result);
             }
         }else {
