@@ -424,6 +424,7 @@ public class Start {
                     installationTask.setProgress(10).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now());
                     try {
                         long start = currentTimeMillis();
+                        installationTask.setContext(context);
                         if (installationTask.install(context).equals(InstallationStatus.COMPLETED)) {
                             info("Have successfully finished installation task: " + installationTask.getName() + " after " + getSeconds(start));
                         }

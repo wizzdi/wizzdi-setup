@@ -217,6 +217,9 @@ public class InstallationTask implements IInstallationTask {
     }
 
     public boolean executeCommandByBuilder(String[] args, String toFind, boolean notToFind, String ownerName) throws IOException {
+        if (args[0].equals("msiexec")) {
+            args[1]=args[1].replace("/","\\");
+        }
         ProcessBuilder pb = new ProcessBuilder(args);
         Process process;
         process = pb.start();
@@ -596,7 +599,7 @@ public class InstallationTask implements IInstallationTask {
 
 
     public String getInstallationsPath() {
-        return getContext().getParamaters().getValue("instllationspath")+"/";
+        return getContext().getParamaters().getValue("installationspath")+"/";
 
     }
 
@@ -1064,6 +1067,7 @@ public class InstallationTask implements IInstallationTask {
      */
     public boolean installMSI(String pathtoMSI, String... options) {
         if (isWindows) {
+            pathtoMSI=pathtoMSI.replace("/","\\"); //MSI will not be installed with "/"
             Runtime rf = Runtime.getRuntime();
             StringBuilder builder = new StringBuilder();
             for (String option : options) {

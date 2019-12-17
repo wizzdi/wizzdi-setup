@@ -465,7 +465,7 @@ public class Parameter {
             if (newString != null && !newString.isEmpty()) {
                 parameter.setReferencedParameter(toReplace.substring(1));
                 result = result.replace(result.substring(a, index - 2), newString);
-              
+
                 logger.info("after replacement: "+result);
             }
         }else {

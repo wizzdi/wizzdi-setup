@@ -300,8 +300,8 @@
                             </modulePath>
 
 <!--                            <baseJdk>version=11,vendor=openjdk,platform=Linux_x86_64</baseJdk>-->
-                            <baseJdk>version=11,vendor=openjdk,platform=arm_64</baseJdk>
-<!--                           <baseJdk>version=11,vendor=openjdk,platform=windows</baseJdk>-->
+<!--                            <baseJdk>version=11,vendor=openjdk,platform=arm_64</baseJdk>-->
+                           <baseJdk>version=11,vendor=openjdk,platform=windows</baseJdk>
                             <modules>
                                 <module>flexicore.installer</module>
 
