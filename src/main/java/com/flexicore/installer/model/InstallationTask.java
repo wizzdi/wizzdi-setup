@@ -244,7 +244,7 @@ public class InstallationTask implements IInstallationTask {
             outputGobbler.start();
 
             int exitVal = process.waitFor();
-            info("Exit Val for script :"+exitVal);
+            info(ownerName+", Exit Val for script :"+exitVal);
             errorLines.clear();
             errorLines.addAll(errorGobbler.getLines());
             lines.clear();

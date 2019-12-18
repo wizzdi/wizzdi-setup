@@ -164,15 +164,23 @@ public class Start {
                 info("Have started  a UI plugin");
                 if (component.start()) {
                     uiFoundandRun = true; //will not run the installation from command line.
+
                 }
             }
         }
     }
 
+    /**
+     * will not update ui componenets without isShowing=true
+     * @param task
+     * @param installationContext
+     */
     private static void doUpdateUI(IInstallationTask task, InstallationContext installationContext) {
-
         List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
-        filtered.forEach((iuiComponent) -> iuiComponent.updateProgress(installationContext, task));
+        for (IUIComponent component:filtered) {
+            component.updateProgress(installationContext,task);
+        }
+
     }
 
     /**
@@ -421,12 +429,13 @@ public class Start {
                 for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
                     info("will now install " + installationTask.getName() + " id: " + installationTask.getId());
                     info("details: " + installationTask.getDescription());
-                    installationTask.setProgress(10).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now());
+
+                    installationTask.setProgress(0).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now());
                     try {
-                        long start = currentTimeMillis();
+                        long start = System.currentTimeMillis();
                         installationTask.setContext(context);
                         if (installationTask.install(context).equals(InstallationStatus.COMPLETED)) {
-                            info("Have successfully finished installation task: " + installationTask.getName() + " after " + getSeconds(start));
+                            info("Have successfully finished installation task: " + installationTask.getName() + " after " + getSeconds(start)+" Seconds");
                         }
                     } catch (Throwable throwable) {
                         severe("Exception while installing: " + installationTask.getName(), throwable);
@@ -529,6 +538,7 @@ public class Start {
     }
 
     private static IInstallationTask InstallerProgress(IInstallationTask task, InstallationContext context) {
+
         doUpdateUI(task, context);
         return task;
     }
