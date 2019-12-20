@@ -177,8 +177,7 @@ public class Start {
     private static void doUpdateUI(IInstallationTask task, InstallationContext installationContext) {
         List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
         for (IUIComponent component:filtered) {
-            info ("****************** calling");
-            component.updateProgress(installationContext,task);
+             component.updateProgress(installationContext,task);
         }
 
     }
@@ -437,9 +436,11 @@ public class Start {
                         if (installationTask.install(context).equals(InstallationStatus.COMPLETED)) {
                             info("Have successfully finished installation task: " + installationTask.getName() + " after " + getSeconds(start)+" Seconds");
                         }
+                        installationTask.setProgress(100).setEnded(LocalDateTime.now());
                     } catch (Throwable throwable) {
                         severe("Exception while installing: " + installationTask.getName(), throwable);
-                        installationTask.setProgress(100).setStatus(InstallationStatus.FAILED).setEnded(LocalDateTime.now());
+                        installationTask.setProgress(0).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.FAILED);
+
                     }
                     if (context.getConsumer() != null) {
                         context.getConsumer().updateProgress(installationTask, context);
@@ -538,7 +539,6 @@ public class Start {
     }
 
     private static IInstallationTask InstallerProgress(IInstallationTask task, InstallationContext context) {
-        info("&&&&&&&&&&&&&&&&&&&&& calling &&&&&&&&&&&&&&&&&");
         doUpdateUI(task, context);
         return task;
     }

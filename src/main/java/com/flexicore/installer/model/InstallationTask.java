@@ -21,8 +21,8 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class InstallationTask implements IInstallationTask {
-    private LocalDateTime started = LocalDateTime.now();
-    private LocalDateTime ended = LocalDateTime.now();
+    private LocalDateTime started;
+    private LocalDateTime ended;
     private Integer progress = 0;
     private String name = "Unnamed task";
     private String id;
@@ -452,7 +452,11 @@ public class InstallationTask implements IInstallationTask {
         this.started = started;
         return this;
     }
-
+    @Override
+    public InstallationTask setEnded(LocalDateTime ended) {
+        this.ended = ended;
+        return this;
+    }
     @Override
     public IInstallationTask setProgress(Integer progress) {
         this.progress = progress;
@@ -465,11 +469,7 @@ public class InstallationTask implements IInstallationTask {
         return this;
     }
 
-    @Override
-    public InstallationTask setEnded(LocalDateTime ended) {
-        this.ended = ended;
-        return this;
-    }
+
 
     @Override
     public IInstallationTask setName(String name) {
