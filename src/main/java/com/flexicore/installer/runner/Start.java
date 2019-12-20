@@ -78,7 +78,7 @@ public class Start {
         pluginManager.startPlugins();
         Object o = pluginManager.getExtensions(IInstallationTask.class);
         Map<String, IInstallationTask> DebuginstallationTasks = pluginManager.getExtensions(IInstallationTask.class).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
-        loadUiComponents();
+
 
 
         // handle parameters and command line options here. do it at the dependency order.
@@ -130,7 +130,7 @@ public class Start {
         }
         if (installationContext.getParamaters() != null) installationContext.getParamaters().sort();
         boolean stopped = false;
-
+        loadUiComponents(); //in blocking operation, it is never returned.
         if (!uiFoundandRun) {
             if (installationContext.getParamaters().getBooleanValue("install")) {
                 install(installationContext);
@@ -162,10 +162,9 @@ public class Start {
             installationContext.addUIComponent(component);
             if (component.isAutoStart()) {
                 info("Have started  a UI plugin");
-                if (component.start()) {
+                if (component.startAsynch()) {
                     uiFoundandRun = true; //will not run the installation from command line.
-
-                }
+               }
             }
         }
     }
@@ -178,6 +177,7 @@ public class Start {
     private static void doUpdateUI(IInstallationTask task, InstallationContext installationContext) {
         List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
         for (IUIComponent component:filtered) {
+            info ("****************** calling");
             component.updateProgress(installationContext,task);
         }
 
@@ -508,8 +508,8 @@ public class Start {
         return true;
     }
 
-    private static boolean uiComponentInstall(IUIComponent uiComponent, InstallationContext context) {
-        return install(context);
+    private static boolean uiComponentInstall(IUIComponent component, InstallationContext context) {
+       return install(context);
     }
 
     private static boolean uiComponentInstallDry(IUIComponent uiComponent, InstallationContext context) {
@@ -538,7 +538,7 @@ public class Start {
     }
 
     private static IInstallationTask InstallerProgress(IInstallationTask task, InstallationContext context) {
-
+        info("&&&&&&&&&&&&&&&&&&&&& calling &&&&&&&&&&&&&&&&&");
         doUpdateUI(task, context);
         return task;
     }
