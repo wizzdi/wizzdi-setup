@@ -35,6 +35,7 @@ public class InstallationTask implements IInstallationTask {
     private InstallationContext context;
     private int order = -1;
     private boolean admin = false;
+    public boolean stop=false;
 
     public Parameters getPrivateParameters() {
         return null;
@@ -424,6 +425,22 @@ public class InstallationTask implements IInstallationTask {
     public IInstallationTask setEnabled(boolean value) {
         enabled = value;
         return this;
+    }
+
+    @Override
+    public boolean isStop() {
+        return false;
+    }
+
+    @Override
+    public IInstallationTask setSTop(boolean value) {
+        this.stop=value;
+        return this;
+    }
+
+    @Override
+    public boolean isSnooper() {
+        return false;
     }
 
 

@@ -24,8 +24,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static com.flexicore.installer.utilities.LoggerUtilities.initLogger;
-import static java.lang.System.currentTimeMillis;
-import static java.lang.System.exit;
+import static java.lang.System.*;
 
 
 public class Start {
@@ -344,14 +343,16 @@ public class Start {
 
         Graph<String, DefaultEdge> g = new DefaultDirectedGraph<>(DefaultEdge.class);
         for (IInstallationTask installationTask : installationTasks.values()) {
-            String uniqueId = installationTask.getId();
-            g.addVertex(uniqueId);
-            for (String req : installationTask.getPrerequisitesTask()) {
-                if (installationTasks.containsKey(req)) {
-                    g.addVertex(req);
-                    g.addEdge(req, uniqueId);
-                } else {
-                    missingDependencies.computeIfAbsent(uniqueId, f -> new HashSet<>()).add(req);
+            if(!installationTask.isSnooper()) {
+                String uniqueId = installationTask.getId();
+                g.addVertex(uniqueId);
+                for (String req : installationTask.getPrerequisitesTask()) {
+                    if (installationTasks.containsKey(req)) {
+                        g.addVertex(req);
+                        g.addEdge(req, uniqueId);
+                    } else {
+                        missingDependencies.computeIfAbsent(uniqueId, f -> new HashSet<>()).add(req);
+                    }
                 }
             }
         }
@@ -417,7 +418,7 @@ public class Start {
     }
 
     private static boolean installRunning = false;
-
+    private static ArrayList<Thread> snoopers=new ArrayList<>();
     private static boolean install(InstallationContext context) {
         if (!installRunning) {
             installRunning = true;
@@ -433,13 +434,25 @@ public class Start {
                     try {
                         long start = System.currentTimeMillis();
                         installationTask.setContext(context);
-                        if (installationTask.install(context).equals(InstallationStatus.COMPLETED)) {
-                            info("Have successfully finished installation task: " + installationTask.getName() + " after " + getSeconds(start)+" Seconds");
+                        if (!installationTask.isSnooper()) {
+                            if (installationTask.install(context).equals(InstallationStatus.COMPLETED)) {
+                                info("Have successfully finished installation task: " + installationTask.getName() + " after " + getSeconds(start) + " Seconds");
+                                installationTask.setProgress(1000).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.COMPLETED);
+                            } else {
+                                installationTask.setProgress(0).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.FAILED);
+                            }
+                        }else {
+                            Thread snooper = new Thread(() -> {
+                            });
+                            snooper.setName(installationTask.getId());
+                            snoopers.add(snooper);
+                            snooper.start();
+
+
                         }
-                        installationTask.setProgress(100).setEnded(LocalDateTime.now());
                     } catch (Throwable throwable) {
                         severe("Exception while installing: " + installationTask.getName(), throwable);
-                        installationTask.setProgress(0).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.FAILED);
+
 
                     }
                     if (context.getConsumer() != null) {

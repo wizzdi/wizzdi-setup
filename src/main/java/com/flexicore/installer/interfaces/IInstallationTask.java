@@ -48,7 +48,9 @@ public interface IInstallationTask extends ExtensionPoint {
     boolean isEnabled();
 
     IInstallationTask setEnabled(boolean value);
-
+    boolean isStop();
+    IInstallationTask setSTop(boolean value);
+    boolean isSnooper();
     boolean cleanup();
 
     LocalDateTime getStarted();
