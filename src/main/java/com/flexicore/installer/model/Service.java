@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 public class Service {
     String serviceId;
     String name;
-    String Description;
+    String description;
     LocalDateTime lastChecked;
     LocalDateTime runningFrom;
     boolean running;
@@ -29,11 +29,11 @@ public class Service {
     }
 
     public String getDescription() {
-        return Description;
+        return description;
     }
 
     public Service setDescription(String description) {
-        Description = description;
+        this.description = description;
         return this;
     }
 
