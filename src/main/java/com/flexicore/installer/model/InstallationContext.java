@@ -14,6 +14,7 @@ public class InstallationContext {
     private Parameters parameters;
     private Properties properties;
     private LinkedHashMap<String,IInstallationTask> iInstallationTasks =new LinkedHashMap<>();
+    private HashMap<String,Service> services=new HashMap<>();
     private LinkedHashMap<String,IInstallationTask> cleanupTasks=new LinkedHashMap<>();
     private LinkedHashMap<String,InstallationResult> results=new LinkedHashMap<>();
     private List<IUIComponent> iuiComponents=new ArrayList<>();
@@ -230,6 +231,20 @@ public class InstallationContext {
 
     public InstallationContext setImageFile(File imageFile) {
         this.imageFile = imageFile;
+        return this;
+    }
+
+    /**
+     * list of running/failed services following the installation.
+     * The list can be amended by one of the installers or more likely, by a snooper.
+     * @return
+     */
+    public HashMap<String, Service> getServices() {
+        return services;
+    }
+
+    public InstallationContext setServices(HashMap<String, Service> services) {
+        this.services = services;
         return this;
     }
 }

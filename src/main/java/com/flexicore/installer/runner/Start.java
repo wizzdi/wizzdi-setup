@@ -76,18 +76,24 @@ public class Start {
         pluginManager.loadPlugins();
         pluginManager.startPlugins();
         Object o = pluginManager.getExtensions(IInstallationTask.class);
-        Map<String, IInstallationTask> DebuginstallationTasks = pluginManager.getExtensions(IInstallationTask.class).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
-
+        Map<String, IInstallationTask> installationTasks = pluginManager.getExtensions(IInstallationTask.class).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
 
 
         // handle parameters and command line options here. do it at the dependency order.
-        TopologicalOrderIterator<String, DefaultEdge> topologicalOrderIterator = getInstallationTaskIterator(DebuginstallationTasks);
+        int order = 1;
+        for (IInstallationTask task:installationTasks.values()) {
+            if (task.isSnooper()) {
+                task.setOrder(order++);
+                installationContext.addTask(task);
+            }
+        }
+        TopologicalOrderIterator<String, DefaultEdge> topologicalOrderIterator = getInstallationTaskIterator(installationTasks);
         readProperties(installationContext);
         installationContext.getiInstallationTasks().clear();
-        int order = 1;
+
         while (topologicalOrderIterator.hasNext()) {
             String installationTaskUniqueId = topologicalOrderIterator.next();
-            IInstallationTask task = DebuginstallationTasks.get(installationTaskUniqueId);
+            IInstallationTask task = installationTasks.get(installationTaskUniqueId);
             boolean found = false;
             OperatingSystem cos = task.getCurrentOperatingSystem();
             for (OperatingSystem os : task.getOperatingSystems()) {
@@ -150,8 +156,25 @@ public class Start {
 
         // stop and unload all plugins
         pluginManager.stopPlugins();
+        cleanSnoopers();
         exit(0);
 
+    }
+
+    private static void cleanSnoopers() {
+        for (Thread thread : snoopers) {
+            info("stopping thread: " + thread.getName());
+            if (thread.isAlive()) {
+                thread.interrupt();
+                while (thread.isAlive()) {
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                        logger.severe("Error while waiting for thread to stop");
+                    }
+                }
+            }
+        }
     }
 
     private static void loadUiComponents() {
@@ -163,20 +186,21 @@ public class Start {
                 info("Have started  a UI plugin");
                 if (component.startAsynch()) {
                     uiFoundandRun = true; //will not run the installation from command line.
-               }
+                }
             }
         }
     }
 
     /**
      * will not update ui componenets without isShowing=true
+     *
      * @param task
      * @param installationContext
      */
     private static void doUpdateUI(IInstallationTask task, InstallationContext installationContext) {
         List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
-        for (IUIComponent component:filtered) {
-             component.updateProgress(installationContext,task);
+        for (IUIComponent component : filtered) {
+            component.updateProgress(installationContext, task);
         }
 
     }
@@ -343,18 +367,18 @@ public class Start {
 
         Graph<String, DefaultEdge> g = new DefaultDirectedGraph<>(DefaultEdge.class);
         for (IInstallationTask installationTask : installationTasks.values()) {
-            if(!installationTask.isSnooper()) {
-                String uniqueId = installationTask.getId();
-                g.addVertex(uniqueId);
-                for (String req : installationTask.getPrerequisitesTask()) {
-                    if (installationTasks.containsKey(req)) {
-                        g.addVertex(req);
-                        g.addEdge(req, uniqueId);
-                    } else {
-                        missingDependencies.computeIfAbsent(uniqueId, f -> new HashSet<>()).add(req);
-                    }
+
+            String uniqueId = installationTask.getId();
+            g.addVertex(uniqueId);
+            for (String req : installationTask.getPrerequisitesTask()) {
+                if (installationTasks.containsKey(req)) {
+                    g.addVertex(req);
+                    g.addEdge(req, uniqueId);
+                } else {
+                    missingDependencies.computeIfAbsent(uniqueId, f -> new HashSet<>()).add(req);
                 }
             }
+
         }
         if (!missingDependencies.isEmpty()) {
             String s = "Missing Dependencies:" + System.lineSeparator() + missingDependencies.entrySet().parallelStream().map(f -> f.getKey() + " : " + f.getValue()).collect(Collectors.joining(System.lineSeparator()));
@@ -418,7 +442,8 @@ public class Start {
     }
 
     private static boolean installRunning = false;
-    private static ArrayList<Thread> snoopers=new ArrayList<>();
+    private static ArrayList<Thread> snoopers = new ArrayList<>();
+
     private static boolean install(InstallationContext context) {
         if (!installRunning) {
             installRunning = true;
@@ -435,14 +460,20 @@ public class Start {
                         long start = System.currentTimeMillis();
                         installationTask.setContext(context);
                         if (!installationTask.isSnooper()) {
-                            if (installationTask.install(context).equals(InstallationStatus.COMPLETED)) {
+                            InstallationResult result = installationTask.install(context);
+                            if (result.getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
                                 info("Have successfully finished installation task: " + installationTask.getName() + " after " + getSeconds(start) + " Seconds");
-                                installationTask.setProgress(1000).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.COMPLETED);
+                                installationTask.setProgress(100).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.COMPLETED);
                             } else {
                                 installationTask.setProgress(0).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.FAILED);
                             }
-                        }else {
+                        } else {
                             Thread snooper = new Thread(() -> {
+                                try {
+                                    InstallationResult result = installationTask.install(context);
+                                } catch (Throwable throwable) {
+                                    severe("Exception while running a snooper",throwable);
+                                }
                             });
                             snooper.setName(installationTask.getId());
                             snoopers.add(snooper);
@@ -452,6 +483,7 @@ public class Start {
                         }
                     } catch (Throwable throwable) {
                         severe("Exception while installing: " + installationTask.getName(), throwable);
+                        installationTask.setProgress(0).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.FAILED);
 
 
                     }
@@ -518,12 +550,13 @@ public class Start {
 
     private static boolean uiComponentQuit(IUIComponent uiComponent, InstallationContext context) {
         pluginManager.stopPlugins();
+        cleanSnoopers();
         exit(0);
         return true;
     }
 
     private static boolean uiComponentInstall(IUIComponent component, InstallationContext context) {
-       return install(context);
+        return install(context);
     }
 
     private static boolean uiComponentInstallDry(IUIComponent uiComponent, InstallationContext context) {

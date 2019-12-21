@@ -52,7 +52,8 @@ public interface IInstallationTask extends ExtensionPoint {
     IInstallationTask setSTop(boolean value);
     boolean isSnooper();
     boolean cleanup();
-
+    Service getService();
+    IInstallationTask setService(Service service);
     LocalDateTime getStarted();
 
     IInstallationTask setStarted(LocalDateTime started);

@@ -36,6 +36,7 @@ public class InstallationTask implements IInstallationTask {
     private int order = -1;
     private boolean admin = false;
     public boolean stop=false;
+    private Service service;
 
     public Parameters getPrivateParameters() {
         return null;
@@ -447,6 +448,17 @@ public class InstallationTask implements IInstallationTask {
     @Override
     public boolean cleanup() {
         return false;
+    }
+
+    @Override
+    public Service getService() {
+        return service;
+    }
+
+    @Override
+    public IInstallationTask setService(Service service) {
+        this.service=service;
+        return this;
     }
 
     @Override
