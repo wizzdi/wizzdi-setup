@@ -28,6 +28,7 @@ public class InstallationContext {
     private Start.UIAccessAbout uiAbout;
     private ProgressConsumer consumer;
     private Start.InstallerProgress installerProgress;
+    private Start.UpdateService updateService;
     private int successFullyInstalled=0;
     private int failedToInstall=0;
     private String mainTitle;
@@ -245,6 +246,15 @@ public class InstallationContext {
 
     public InstallationContext setServices(HashMap<String, Service> services) {
         this.services = services;
+        return this;
+    }
+
+    public Start.UpdateService getUpdateService() {
+        return updateService;
+    }
+
+    public InstallationContext setUpdateService(Start.UpdateService uiUpdateService) {
+        updateService=uiUpdateService;
         return this;
     }
 }

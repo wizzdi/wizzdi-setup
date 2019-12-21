@@ -324,8 +324,11 @@ public class InstallationTask implements IInstallationTask {
     }
     public void updateProgress(InstallationContext context, String message) {
         this.setMessage(message);
-        info("Update progress:"+message);
         context.getInstallerProgress().installationProgress(this, context);
+    }
+    public boolean updateService(InstallationContext context, Service service, IInstallationTask task) {
+
+        return context.getUpdateService().serviceProgress(context,service,this);
     }
     @Override
     public int getOrder() {

@@ -61,7 +61,8 @@ public class Start {
                         setUiShowLogs(Start::uiComponentShowLogs).
                         setUiAbout(Start::UIAccessAbout).
                         setUiStopInstall(Start::UIAccessInterfaceStop).
-                        setInstallerProgress(Start::InstallerProgress);
+                        setInstallerProgress(Start::InstallerProgress).
+                        setUpdateService(Start::uiUpdateService);
 
 
         File pluginRoot = new File(mainCmd.getOptionValue(INSTALLATION_TASKS_FOLDER, "tasks"));
@@ -203,6 +204,20 @@ public class Start {
             component.updateProgress(installationContext, task);
         }
 
+    }
+
+    /**
+     * Update service status on UI
+     * @param installationContext
+     * @param service
+     * @param task
+     */
+    private static boolean doUpdateService(InstallationContext installationContext,Service service,IInstallationTask task) {
+        List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
+        for (IUIComponent component : filtered) {
+            component.updateService(installationContext,service, task);
+        }
+        return filtered.size()!=0;
     }
 
     /**
@@ -588,6 +603,10 @@ public class Start {
         doUpdateUI(task, context);
         return task;
     }
+    private static boolean uiUpdateService(InstallationContext context,Service service,IInstallationTask task) {
+        return doUpdateService(context,service,task);
+    }
+
 
 
     private static String doAbout() {
@@ -647,6 +666,10 @@ public class Start {
     @FunctionalInterface
     public static interface InstallerProgress {
         IInstallationTask installationProgress(IInstallationTask task, InstallationContext context);
+    }
+    @FunctionalInterface
+    public static interface UpdateService {
+        boolean serviceProgress(InstallationContext context, Service service, IInstallationTask task);
     }
 
 }
