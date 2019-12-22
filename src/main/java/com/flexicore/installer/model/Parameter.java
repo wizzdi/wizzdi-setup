@@ -30,6 +30,7 @@ public class Parameter {
     private boolean locked=false;
     private ArrayList<String> listOptions=new ArrayList<>();
     private boolean autocreate=false;
+    private boolean hidden=false;
 
 
     /**
@@ -445,6 +446,16 @@ public class Parameter {
         this.ordinal = ordinal;
         return this;
     }
+
+    public boolean isHidden() {
+        return hidden;
+    }
+
+    public Parameter setHidden(boolean hidden) {
+        this.hidden = hidden;
+        return this;
+    }
+
     public static String getReplaced(InstallationContext installationContext, String result, Parameter parameter) {
         Logger logger=installationContext.getLogger();
         logger.info("got to replace: "+result);

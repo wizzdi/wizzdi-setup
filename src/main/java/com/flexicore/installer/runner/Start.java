@@ -185,7 +185,7 @@ public class Start {
             installationContext.addUIComponent(component);
             if (component.isAutoStart()) {
                 info("Have started  a UI plugin");
-                if (component.startAsynch()) {
+                if (component.startAsynch(installationContext)) {
                     uiFoundandRun = true; //will not run the installation from command line.
                 }
             }

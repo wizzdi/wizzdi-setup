@@ -11,8 +11,8 @@ public interface IUIComponent extends ExtensionPoint {
     void setContext(InstallationContext context);
     boolean isAutoStart();
     boolean isShowing();
-    boolean startAsynch();
-    boolean startBlocking();
+    boolean startAsynch(InstallationContext context);
+    boolean startBlocking(InstallationContext context);
     boolean updateProgress(InstallationContext context,IInstallationTask task);
     boolean sendMessage(String message);
     boolean updateService(InstallationContext context, Service service, IInstallationTask task);
