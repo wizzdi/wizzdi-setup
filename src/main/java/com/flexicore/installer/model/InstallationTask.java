@@ -62,13 +62,25 @@ public class InstallationTask implements IInstallationTask {
         return OperatingSystem.Linux;
     }
 
-    public boolean testServiceRunning(String serviceName, String ownerName) {
-        if (isWindows) {
+    public boolean testServiceRunning(String serviceName, String ownerName,boolean wait) {
+        boolean result=false;
+        int times=0;
+        do {
+            if (isWindows) {
 
-            return executeCommand("sc query " + serviceName, "RUNNING", "checking if service " + serviceName + " runs");
-        } else {
-            return executeCommand("service  " + serviceName + " status", "active", "checking if service " + serviceName + " runs");
-        }
+                result =executeCommand("sc query " + serviceName, "RUNNING", "checking if service " + serviceName + " runs");
+            } else {
+                result= executeCommand("service  " + serviceName + " status", "active", "checking if service " + serviceName + " runs");
+            }
+            if (result) break;
+            times++;
+            try {
+                if (wait) Thread.sleep(50);
+            } catch (InterruptedException e) {
+                break;
+            }
+        }while (!result && times<20 && wait);
+        return result;
     }
 
     public InstallationTask() {
@@ -1081,15 +1093,15 @@ public class InstallationTask implements IInstallationTask {
 
     public boolean startEnableService(String serviceName) {
         if (executeCommand("systemctl daemon-reload", "", "Reloading services")) {
-            simpleMessage("auto ssh", "info", "reloading system services daemon");
+
             if (executeCommand("systemctl enable " + serviceName, "", " enabling " + serviceName)) {
                 simpleMessage("service " + serviceName, "info", "enabled service");
-                if (testServiceRunning(serviceName, "installing " + serviceName)) {
+                if (testServiceRunning(serviceName, "installing " + serviceName,true)) {
                     executeCommand("service " + serviceName + "stop", "", " stopping " + serviceName);
                 }
                 if (executeCommand("service " + serviceName + " start", "", " starting " + serviceName)) {
                     simpleMessage(serviceName, "info", "have started service " + serviceName);
-                    if (testServiceRunning(serviceName, serviceName + " installation")) {
+                    if (testServiceRunning(serviceName, serviceName + " installation",true)) {
                         simpleMessage(serviceName, "info", serviceName + " started");
                         return true;
                     } else {

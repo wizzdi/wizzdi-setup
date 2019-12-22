@@ -54,7 +54,7 @@ public class WildflyInstall extends InstallationTask {
         try {
 
             if (!dry) {
-                boolean serviceRunning = testServiceRunning("wildfly", "Wildfly installation");
+                boolean serviceRunning = testServiceRunning("wildfly", "Wildfly installation",false);
 
                 if (serviceRunning && getContext().getParamaters().getBooleanValue("force")) {
 
