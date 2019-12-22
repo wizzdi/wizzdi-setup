@@ -295,6 +295,22 @@ public class InstallationTask implements IInstallationTask {
         return new InstallationResult().setInstallationStatus(InstallationStatus.CONTINUE);
     }
 
+    /**
+     * create a service for uodating running services (makes sense only if there is a UI available)
+     * @param running
+     * @return
+     */
+    public Service getNewService(boolean running) {
+        Service service=new Service().
+                setServiceId(getId()).
+                setName(getName()).
+                setDescription(getDescription()).
+                setRunning(running);
+        if (running){
+            service.setRunningFrom(LocalDateTime.now()).setLastChecked(LocalDateTime.now());
+        }
+        return service;
+    }
     public static boolean isNumeric(String strNum) {
         return strNum.matches("-?\\d+(\\.\\d+)?");
     }

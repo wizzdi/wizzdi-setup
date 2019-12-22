@@ -487,7 +487,7 @@ public class Start {
                                 try {
                                     InstallationResult result = installationTask.install(context);
                                 } catch (Throwable throwable) {
-                                    severe("Exception while running a snooper",throwable);
+                                   // severe("Exception while running a snooper",throwable);
                                 }
                             });
                             snooper.setName(installationTask.getId());

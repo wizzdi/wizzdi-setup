@@ -106,7 +106,22 @@ public class Parameter {
         this.autocreate=autoCreate;
 
     }
-    public Parameter(String name, String description, boolean hasValue, String defaultValue, ParameterType parameterType, Parameter.parameterValidator validator, boolean autoCreate) {
+
+    public Parameter(String name, String description, boolean hasValue, String defaultValue, ParameterType parameterType, ParameterSource parameterSource, Parameter.parameterValidator validator,boolean autoCreate,boolean hidden) {
+        this.type=parameterType;
+        this.hasValue = hasValue;
+        this.name = name;
+        this.description = description;
+        this.defaultValue = defaultValue;
+        this.source=parameterSource;
+        this.parameterValidator=validator;
+        this.autocreate=autoCreate;
+        this.setHidden(hidden);
+
+    }
+    public Parameter(String name, String description,
+                     boolean hasValue, String defaultValue, ParameterType parameterType,
+                     Parameter.parameterValidator validator, boolean autoCreate) {
         this.type=parameterType;
         this.hasValue = hasValue;
         this.name = name;
@@ -115,8 +130,23 @@ public class Parameter {
         this.parameterValidator=validator;
         this.autocreate=autoCreate;
 
+
     }
-    public Parameter(String name, String description, boolean hasValue, String defaultValue, ParameterType parameterType, Parameter.parameterValidator validator, int ordinal, boolean autoCreate) {
+    public Parameter(String name, String description,
+                     boolean hasValue, String defaultValue, ParameterType parameterType,
+                     Parameter.parameterValidator validator, boolean autoCreate,boolean hidden) {
+        this.type=parameterType;
+        this.hasValue = hasValue;
+        this.name = name;
+        this.description = description;
+        this.defaultValue = defaultValue;
+        this.parameterValidator=validator;
+        this.autocreate=autoCreate;
+        this.hidden=hidden;
+
+    }
+    public Parameter(String name, String description,
+                     boolean hasValue, String defaultValue, ParameterType parameterType, Parameter.parameterValidator validator, int ordinal, boolean autoCreate,boolean hidden) {
         this.type=parameterType;
         this.hasValue = hasValue;
         this.name = name;
@@ -125,6 +155,7 @@ public class Parameter {
         this.parameterValidator=validator;
         this.ordinal=ordinal;
         this.autocreate=autoCreate;
+        this.hidden=hidden;
 
     }
 
