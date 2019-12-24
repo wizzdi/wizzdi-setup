@@ -263,7 +263,7 @@ public class InstallationTask implements IInstallationTask {
             errorLines.addAll(errorGobbler.getLines());
             lines.clear();
             lines.addAll(outputGobbler.getLines()); //for debugging purposes
-            debuglines(ownerName, false);
+            debuglines(ownerName, false ||exitVal!=0); //write debug lines when exit val is not zero
             if (!isWindows && exitVal == 4) {
                 return false; //seems to be the response when looking for a non-existent service. TODO:make sure that this is the case
             } else {

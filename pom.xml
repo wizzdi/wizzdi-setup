@@ -26,7 +26,12 @@
             <artifactId>slf4j-jdk14</artifactId>
             <version>1.7.25</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.2.9</version>
+            <scope>compile</scope>
+        </dependency>
         <dependency>
             <groupId>org.jgrapht</groupId>
             <artifactId>jgrapht-core</artifactId>
@@ -152,7 +157,25 @@
                                     </moduleInfo>
 
                                 </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.postgresql</groupId>
+                                        <artifactId>postgresql</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>org.postgresql.jdbc</name>
+                                    </moduleInfo>
 
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.apache.commons</groupId>
+                                        <artifactId>commons-lang3</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>org.apache.commons.lang3</name>
+                                    </moduleInfo>
+                                </module>
                                 <module>
                                     <artifact>
                                         <groupId>org.apache.commons</groupId>

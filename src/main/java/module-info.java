@@ -12,6 +12,8 @@ module flexicore.installer {
     requires jdk.unsupported;
     requires commons.validator;
     requires jdk.jdwp.agent;
+    requires java.sql;
+    requires org.postgresql.jdbc;
 
     exports com.flexicore.installer.exceptions;
     exports com.flexicore.installer.model;
