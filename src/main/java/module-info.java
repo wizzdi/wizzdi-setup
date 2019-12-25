@@ -12,6 +12,7 @@ module flexicore.installer {
     requires jdk.unsupported;
     requires commons.validator;
     requires jdk.jdwp.agent;
+    requires java.sql;
 
     exports com.flexicore.installer.exceptions;
     exports com.flexicore.installer.model;
