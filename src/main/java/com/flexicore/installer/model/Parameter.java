@@ -195,7 +195,8 @@ public class Parameter {
     }
 
     public Parameter setValue(String value) {
-        if (type.equals(ParameterType.FOLDER)) {
+
+        if (type.equals(ParameterType.FOLDER) || type.equals(ParameterType.FILE)) {
             if (value.toLowerCase().startsWith("c:\\")) {
                 value=value.replace("/","\\");
             }
