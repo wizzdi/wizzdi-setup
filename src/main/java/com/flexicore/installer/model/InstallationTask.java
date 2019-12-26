@@ -263,7 +263,7 @@ public class InstallationTask implements IInstallationTask {
             errorLines.addAll(errorGobbler.getLines());
             lines.clear();
             lines.addAll(outputGobbler.getLines()); //for debugging purposes
-            debuglines(ownerName, false ||exitVal!=0); //write debug lines when exit val is not zero
+            debuglines(ownerName, true ||exitVal!=0); //write debug lines when exit val is not zero
             if (!isWindows && exitVal == 4) {
                 return false; //seems to be the response when looking for a non-existent service. TODO:make sure that this is the case
             } else {
@@ -273,9 +273,11 @@ public class InstallationTask implements IInstallationTask {
             }
             if (toFind == null || toFind.isEmpty()) return exitVal == 0;
             if (notToFind) {
-                return (exitVal == 0 && !outputGobbler.dryString(toFind));
+
+                return (exitVal == 0 && !( outputGobbler.dryString(toFind) || errorGobbler.dryString(toFind)) );
             } else {
                 boolean r = outputGobbler.dryString(toFind);
+                if (!r) r=errorGobbler.dryString(toFind); //pg_dump sends to error gobbler ....
                 return ((exitVal == 0) && r);
             }
 
