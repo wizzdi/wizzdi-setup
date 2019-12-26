@@ -467,6 +467,11 @@ public class Start {
                 long startAll = System.currentTimeMillis();
                 logger.info("Performing installation of " + context.getiInstallationTasks().size() + " tasks");
                 for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
+                    if (!installationTask.isEnabled()) {
+                        info("task "+installationTask.getName()+" is disabled, skipping");
+                        continue;
+
+                    }
                     info("will now install " + installationTask.getName() + " id: " + installationTask.getId());
                     info("details: " + installationTask.getDescription());
 

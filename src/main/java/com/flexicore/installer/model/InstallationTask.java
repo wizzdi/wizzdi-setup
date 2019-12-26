@@ -297,7 +297,7 @@ public class InstallationTask implements IInstallationTask {
     public InstallationResult install(InstallationContext installationContext) throws Throwable {
         context = installationContext;
         flexicoreSource = getServerPath() + "/flexicore";
-        flexicoreHome = getFlexicoreHome();
+
         dry = getContext().getParamaters().getBooleanValue("dry");
         force = getContext().getParamaters().getBooleanValue("force");
         if (dry) {
@@ -353,6 +353,7 @@ public class InstallationTask implements IInstallationTask {
     public void updateProgress(InstallationContext context, String message) {
         this.setMessage(message);
         context.getInstallerProgress().installationProgress(this, context);
+        info(message);
     }
     public boolean updateService(InstallationContext context, Service service, IInstallationTask task) {
 
@@ -631,25 +632,7 @@ public class InstallationTask implements IInstallationTask {
     }
 
 
-    /**
-     * get
-     *
-     * @return
-     */
-    public String getFlexicoreHome() {
-        return getContext().getParamaters().getValue("flexicorehome");
 
-    }
-
-    public String getWildflyHome() {
-        return getContext().getParamaters().getValue("wildflyhome");
-
-    }
-
-    public String getWildflySource() {
-        return getContext().getParamaters().getValue("wildflypath");
-
-    }
 
 
     public String getServerPath() {
@@ -1145,6 +1128,24 @@ public class InstallationTask implements IInstallationTask {
         }
         return false;
     }
+    /**
+     * these are not really needed here
+     *
+     * @return
+     */
+    public String getFlexicoreHome() {
+        return getContext().getParamaters().getValue("flexicorehome");
 
+    }
+
+    public String getWildflyHome() {
+        return getContext().getParamaters().getValue("wildflyhome");
+
+    }
+
+    public String getWildflySource() {
+        return getContext().getParamaters().getValue("wildflysourcepath");
+
+    }
 
 }
