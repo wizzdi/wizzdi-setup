@@ -587,7 +587,7 @@ public class InstallationTask implements IInstallationTask {
         file.setLastModified(timestamp);
     }
 
-    protected void ensureTarget(String targetDir) {
+    public void ensureTarget(String targetDir) {
         File target = new File(targetDir);
         if (!target.exists()) {
             target.mkdirs();
