@@ -359,7 +359,7 @@ public class Start {
         if (result.contains("&")) {
             parameter.setNonTranslatedValue(result);
             parameter.setSandSymbolPresent(true);
-            result = Parameter.getReplaced(installationContext, result, parameter);
+            result = Parameter.getReplaced(installationContext, result, parameter,null);
         }
 
         return result;

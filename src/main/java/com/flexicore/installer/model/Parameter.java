@@ -421,7 +421,7 @@ public class Parameter {
         return true;
     }
     public static boolean validateExistingFolder(InstallationContext context,Parameter parameter,Object newValue, ValidationMessage validationMessage) {
-        File file=new File(getReplaced(context,newValue.toString(),parameter));
+        File file=new File(getReplaced(context,newValue.toString(),parameter,null));
         if (!file.exists()) {
             if (parameter.isAutocreate()) {
                if(file.mkdirs()) {
@@ -436,7 +436,7 @@ public class Parameter {
         return true;
     }
     public static boolean validateExistingFile(InstallationContext context,Parameter parameter,Object newValue, ValidationMessage validationMessage) {
-        File file=new File(getReplaced(context,newValue.toString(),parameter));
+        File file=new File(getReplaced(context,newValue.toString(),parameter,null));
         if (!file.exists()) {
             validationMessage.setMessage("Cannot locate file: "+newValue);
             return false;
@@ -488,7 +488,7 @@ public class Parameter {
         return this;
     }
 
-    public static String getReplaced(InstallationContext installationContext, String result, Parameter parameter) {
+    public static String getReplaced(InstallationContext installationContext, String result, Parameter parameter,Parameter onlyParameter) {
         Logger logger=installationContext.getLogger();
         logger.info("got to replace: "+result);
         int a = result.indexOf("&");
@@ -503,9 +503,11 @@ public class Parameter {
 
             String toReplace = result.substring(a+1, index - 2);
             logger.info("to replace is, this is the string we are looking for "+toReplace);
+            boolean doReplace= onlyParameter!=null ? toReplace.equals(onlyParameter.getName()) : true; //if onlyParameter was provided, then use it only as key
+
             String newString = installationContext.getParamaters().getValue(toReplace.substring(0));
             logger.info("this is the new replacement:  "+newString);
-            if (newString != null && !newString.isEmpty()) {
+            if (newString != null && !newString.isEmpty() && doReplace) {
                 parameter.setReferencedParameter(toReplace.substring(1));
                 result = result.replace(result.substring(a, index - 2), newString);
 
