@@ -23,6 +23,7 @@ public class InstallationContext {
     private Start.UIAccessInterfaceInstall uiInstall;
     private Start.UIAccessInterfacePause uiPause;
     private Start.UIAccessInterfaceResume uiResume;
+    private Start.UIAccessInterfaceToggle uiToggle;
     private Start.UIAccessInterfaceShowLogs uiShowLogs;
     private Start.UIAccessInterfaceStop uiStopInstall;
     private Start.UIAccessAbout uiAbout;
@@ -255,6 +256,15 @@ public class InstallationContext {
 
     public InstallationContext setUpdateService(Start.UpdateService uiUpdateService) {
         updateService=uiUpdateService;
+        return this;
+    }
+
+    public Start.UIAccessInterfaceToggle getUiToggle() {
+        return uiToggle;
+    }
+
+    public InstallationContext setUiToggle(Start.UIAccessInterfaceToggle uiToggle) {
+        this.uiToggle = uiToggle;
         return this;
     }
 }

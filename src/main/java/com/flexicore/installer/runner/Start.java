@@ -62,7 +62,8 @@ public class Start {
                         setUiAbout(Start::UIAccessAbout).
                         setUiStopInstall(Start::UIAccessInterfaceStop).
                         setInstallerProgress(Start::InstallerProgress).
-                        setUpdateService(Start::uiUpdateService);
+                        setUpdateService(Start::uiUpdateService).
+                        setUiToggle(Start::uiComponentToggle);
 
 
         File pluginRoot = new File(mainCmd.getOptionValue(INSTALLATION_TASKS_FOLDER, "tasks"));
@@ -459,6 +460,12 @@ public class Start {
     private static boolean installRunning = false;
     private static ArrayList<Thread> snoopers = new ArrayList<>();
 
+    private static boolean toggle(InstallationContext context) {
+        for (IInstallationTask task: context.getiInstallationTasks().values()) {
+            task.setEnabled(!task.isEnabled());
+        }
+        return true;
+    }
     private static boolean install(InstallationContext context) {
         if (!installRunning) {
             installRunning = true;
@@ -578,6 +585,9 @@ public class Start {
     private static boolean uiComponentInstall(IUIComponent component, InstallationContext context) {
         return install(context);
     }
+    private static boolean uiComponentToggle(IUIComponent component, InstallationContext context) {
+        return toggle(context);
+    }
 
     private static boolean uiComponentInstallDry(IUIComponent uiComponent, InstallationContext context) {
         return doInstallDry();
@@ -635,6 +645,11 @@ public class Start {
     @FunctionalInterface
     public static interface UIAccessInterfaceInstall {
         boolean uiComponentInstall(IUIComponent uiComponent, InstallationContext context);
+
+    }
+    @FunctionalInterface
+    public static interface UIAccessInterfaceToggle {
+        boolean uiComponentToggle(IUIComponent uiComponent, InstallationContext context);
 
     }
 
