@@ -128,7 +128,6 @@ public class InstallationTask implements IInstallationTask {
     }
 
     /**
-     *
      * @param script
      * @param toFind
      * @param ownerName
@@ -304,13 +303,11 @@ public class InstallationTask implements IInstallationTask {
     public String phase = "";
 
 
-
-
     @Override
     public InstallationResult install(InstallationContext installationContext) throws Throwable {
         context = installationContext;
         flexicoreSource = getServerPath() + "/flexicore";
-
+        flexicoreHome = getFlexicoreHome();
         dry = getContext().getParamaters().getBooleanValue("dry");
         force = getContext().getParamaters().getBooleanValue("force");
         if (dry) {
@@ -322,6 +319,7 @@ public class InstallationTask implements IInstallationTask {
 
     /**
      * this is optionally handled by an installation plugin once all plugins have been installed. can be used for restarting a service
+     *
      * @param installationContext
      * @return
      * @throws Throwable
@@ -581,6 +579,7 @@ public class InstallationTask implements IInstallationTask {
 
     /**
      * delete a directory
+     *
      * @param path
      * @throws IOException
      */
@@ -821,7 +820,6 @@ public class InstallationTask implements IInstallationTask {
     }
 
     /**
-     *
      * @param installationDir
      * @param targetDir
      * @param context
@@ -1014,7 +1012,7 @@ public class InstallationTask implements IInstallationTask {
         toReplace = toReplace.replace("\\", "/");
         toFind = toFind.replace("\\", "/");
         String fileAsString = existingString;
-        if (existingString == null) {
+        if (existingString == null || existingString.isEmpty()) {
             InputStream is;
 
             try {
@@ -1034,9 +1032,7 @@ public class InstallationTask implements IInstallationTask {
                     return null;
                 }
 
-                if (reverseSlash) {
-                    fileAsString = fileAsString.replaceAll("/", "\\");
-                }
+
                 is.close();
             } catch (IOException e) {
                 severe("Error while reading file", e);
@@ -1049,6 +1045,31 @@ public class InstallationTask implements IInstallationTask {
                 return null;
             }
             fileAsString = fileAsString.replaceAll(toFind, toReplace);
+            if (isWindows() && reverseSlash) {
+                info("Fixing Windows backslash");
+                fileAsString = fileAsString.replaceAll("/", "\\\\");
+                String lines[] = fileAsString.split("\n");
+                boolean replaced = false;
+                String[] newLines = new String[lines.length];
+                int i = 0;
+                for (String line : lines) {
+                    String eq[] = line.split("=");
+                    if (eq.length == 2) {
+                        if (eq[1].trim().startsWith("\\")) {
+                            line = eq[0] + "=" + "c:" + eq[1];
+                            replaced = true;
+                        }
+                    }
+                    newLines[i++] = line;
+                }
+                if (replaced) {
+                    StringBuilder sb = new StringBuilder();
+                    for (String line : newLines) {
+                        sb.append(line).append("\n");
+                    }
+                    fileAsString = sb.toString();
+                }
+            }
         }
         if (close) {
             try {
@@ -1190,11 +1211,12 @@ public class InstallationTask implements IInstallationTask {
     }
 
     /**
-     * this is to help in using editfile, may be redundant
+     * this is to help in using editfile, may be redundant, no need to reverse slash
+     *
      * @param path
      * @return
      */
     public boolean fixFlexicoreConfig(String path) {
-        return editFile(path, "", "/flexicore/home", flexicoreHome, false, isWindows(), true) != null;
+        return editFile(path, "", "/home/flexicore", flexicoreHome, false, isWindows(), true) != null;
     }
 }
