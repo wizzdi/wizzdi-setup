@@ -2,35 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5a5edd4e-73f9-41ab-925c-ed8a5f34bf28" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/$CACHE_FILE$" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_flexicore_flexicore_installer_1_0_16.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_github_zafarkhaja_java_semver_0_9_0.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_google_guava_guava_20_0.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__commons_beanutils_commons_beanutils_1_9_4.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__commons_cli_commons_cli_1_4.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__commons_collections_commons_collections_3_2_2.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__commons_digester_commons_digester_1_8_1.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__commons_logging_commons_logging_1_2.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__commons_validator_commons_validator_1_6.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_apache_commons_commons_lang3_3_9.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_javassist_javassist_3_21_0_GA.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_jgrapht_jgrapht_core_1_3_1.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_jheaps_jheaps_0_10.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_ow2_asm_asm_7_1.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_pf4j_pf4j_3_0_1.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_postgresql_postgresql_42_2_9.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_reflections_reflections_0_9_11.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_slf4j_slf4j_api_1_7_26.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_slf4j_slf4j_jdk14_1_7_25.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_zeroturnaround_zt_zip_1_13.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/deploy-flexicore.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,6 +11,13 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IgnoredFileRootStore">
+    <option name="generatedRoots">
+      <set>
+        <option value="C:\dev\ideaProjects\installer-plugins\deploy-flexicore\.idea" />
+      </set>
+    </option>
   </component>
   <component name="MavenImportPreferences">
     <option name="importingSettings">
@@ -144,62 +123,79 @@
       <updated>1575691161503</updated>
       <workItem from="1575691167629" duration="874000" />
       <workItem from="1575877613641" duration="594000" />
-      <workItem from="1577430656495" duration="4117000" />
+      <workItem from="1577430656495" duration="6881000" />
+      <workItem from="1577513726817" duration="598000" />
     </task>
+    <task id="LOCAL-00001" summary="first">
+      <created>1577453423358</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1577453423358</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
   </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="first" />
+    <option name="LAST_COMMIT_MESSAGE" value="first" />
+  </component>
   <component name="WindowStateProjectService">
-    <state x="225" y="68" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1577432020146">
+    <state x="225" y="68" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1577512133977">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state x="225" y="68" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1536.764@0.0.1536.764" timestamp="1577432020146" />
+    <state x="225" y="68" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1536.764@0.0.1536.764" timestamp="1577512133977" />
+    <state x="356" y="0" key="CommitChangelistDialog2" timestamp="1577453422568">
+      <screen x="0" y="0" width="1536" height="764" />
+    </state>
+    <state x="356" y="0" key="CommitChangelistDialog2/0.0.1536.764@0.0.1536.764" timestamp="1577453422568" />
     <state x="549" y="166" key="FileChooserDialogImpl" timestamp="1575691439737">
       <screen x="0" y="0" width="1536" height="814" />
     </state>
     <state x="549" y="166" key="FileChooserDialogImpl/0.0.1536.814@0.0.1536.814" timestamp="1575691439737" />
-    <state width="1493" height="198" key="GridCell.Tab.0.bottom" timestamp="1577453035391">
+    <state width="1493" height="198" key="GridCell.Tab.0.bottom" timestamp="1577462673658">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state width="1493" height="198" key="GridCell.Tab.0.bottom/0.0.1536.764@0.0.1536.764" timestamp="1577453035391" />
-    <state width="1493" height="198" key="GridCell.Tab.0.center" timestamp="1577453035391">
+    <state width="1493" height="198" key="GridCell.Tab.0.bottom/0.0.1536.764@0.0.1536.764" timestamp="1577462673658" />
+    <state width="1493" height="198" key="GridCell.Tab.0.center" timestamp="1577462673658">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state width="1493" height="198" key="GridCell.Tab.0.center/0.0.1536.764@0.0.1536.764" timestamp="1577453035391" />
-    <state width="1493" height="198" key="GridCell.Tab.0.left" timestamp="1577453035391">
+    <state width="1493" height="198" key="GridCell.Tab.0.center/0.0.1536.764@0.0.1536.764" timestamp="1577462673658" />
+    <state width="1493" height="198" key="GridCell.Tab.0.left" timestamp="1577462673657">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state width="1493" height="198" key="GridCell.Tab.0.left/0.0.1536.764@0.0.1536.764" timestamp="1577453035391" />
-    <state width="1493" height="198" key="GridCell.Tab.0.right" timestamp="1577453035391">
+    <state width="1493" height="198" key="GridCell.Tab.0.left/0.0.1536.764@0.0.1536.764" timestamp="1577462673657" />
+    <state width="1493" height="198" key="GridCell.Tab.0.right" timestamp="1577462673658">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state width="1493" height="198" key="GridCell.Tab.0.right/0.0.1536.764@0.0.1536.764" timestamp="1577453035391" />
-    <state width="1493" height="198" key="GridCell.Tab.1.bottom" timestamp="1577453049189">
+    <state width="1493" height="198" key="GridCell.Tab.0.right/0.0.1536.764@0.0.1536.764" timestamp="1577462673658" />
+    <state width="1493" height="198" key="GridCell.Tab.1.bottom" timestamp="1577462704195">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state width="1493" height="198" key="GridCell.Tab.1.bottom/0.0.1536.764@0.0.1536.764" timestamp="1577453049189" />
-    <state width="1493" height="198" key="GridCell.Tab.1.center" timestamp="1577453049189">
+    <state width="1493" height="198" key="GridCell.Tab.1.bottom/0.0.1536.764@0.0.1536.764" timestamp="1577462704195" />
+    <state width="1493" height="198" key="GridCell.Tab.1.center" timestamp="1577462704193">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state width="1493" height="198" key="GridCell.Tab.1.center/0.0.1536.764@0.0.1536.764" timestamp="1577453049189" />
-    <state width="1493" height="198" key="GridCell.Tab.1.left" timestamp="1577453049189">
+    <state width="1493" height="198" key="GridCell.Tab.1.center/0.0.1536.764@0.0.1536.764" timestamp="1577462704193" />
+    <state width="1493" height="198" key="GridCell.Tab.1.left" timestamp="1577462704191">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state width="1493" height="198" key="GridCell.Tab.1.left/0.0.1536.764@0.0.1536.764" timestamp="1577453049189" />
-    <state width="1493" height="198" key="GridCell.Tab.1.right" timestamp="1577453049189">
+    <state width="1493" height="198" key="GridCell.Tab.1.left/0.0.1536.764@0.0.1536.764" timestamp="1577462704191" />
+    <state width="1493" height="198" key="GridCell.Tab.1.right" timestamp="1577462704194">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state width="1493" height="198" key="GridCell.Tab.1.right/0.0.1536.764@0.0.1536.764" timestamp="1577453049189" />
+    <state width="1493" height="198" key="GridCell.Tab.1.right/0.0.1536.764@0.0.1536.764" timestamp="1577462704194" />
     <state x="250" y="0" key="SettingsEditor" timestamp="1577430668225">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
     <state x="250" y="0" key="SettingsEditor/0.0.1536.764@0.0.1536.764" timestamp="1577430668225" />
-    <state x="362" y="146" key="Vcs.Push.Dialog.v2" timestamp="1577453406546">
+    <state x="362" y="146" key="Vcs.Push.Dialog.v2" timestamp="1577453426370">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state x="362" y="146" key="Vcs.Push.Dialog.v2/0.0.1536.764@0.0.1536.764" timestamp="1577453406546" />
+    <state x="362" y="146" key="Vcs.Push.Dialog.v2/0.0.1536.764@0.0.1536.764" timestamp="1577453426370" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
