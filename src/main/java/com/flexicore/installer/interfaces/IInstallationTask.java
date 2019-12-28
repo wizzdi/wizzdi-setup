@@ -10,6 +10,7 @@ import java.util.Set;
 public interface IInstallationTask extends ExtensionPoint {
 
     InstallationResult install(InstallationContext installationContext) throws Throwable;
+    InstallationResult finalizeInstallation(InstallationContext installationContext) throws Throwable;
     int getOrder();
     IInstallationTask setOrder(int order);
     String getId();

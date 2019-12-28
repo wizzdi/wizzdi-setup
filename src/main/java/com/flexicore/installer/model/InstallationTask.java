@@ -35,7 +35,7 @@ public class InstallationTask implements IInstallationTask {
     private InstallationContext context;
     private int order = -1;
     private boolean admin = false;
-    public boolean stop=false;
+    public boolean stop = false;
     private Service service;
 
     public Parameters getPrivateParameters() {
@@ -62,15 +62,15 @@ public class InstallationTask implements IInstallationTask {
         return OperatingSystem.Linux;
     }
 
-    public boolean testServiceRunning(String serviceName, String ownerName,boolean wait) {
-        boolean result=false;
-        int times=0;
+    public boolean testServiceRunning(String serviceName, String ownerName, boolean wait) {
+        boolean result = false;
+        int times = 0;
         do {
             if (isWindows) {
 
-                result =executeCommand("sc query " + serviceName, "RUNNING", "checking if service " + serviceName + " runs");
+                result = executeCommand("sc query " + serviceName, "RUNNING", "checking if service " + serviceName + " runs");
             } else {
-                result= executeCommand("service  " + serviceName + " status", "active", "checking if service " + serviceName + " runs");
+                result = executeCommand("service  " + serviceName + " status", "active", "checking if service " + serviceName + " runs");
             }
             if (result) break;
             times++;
@@ -79,7 +79,7 @@ public class InstallationTask implements IInstallationTask {
             } catch (InterruptedException e) {
                 break;
             }
-        }while (!result && times<20 && wait);
+        } while (!result && times < 20 && wait);
         return result;
     }
 
@@ -122,9 +122,18 @@ public class InstallationTask implements IInstallationTask {
     public boolean setServiceToStart(String serviceName, String ownerName) {
         return executeCommand("sc start " + serviceName, "START_PENDING", "Set Service To Stop " + serviceName);
     }
+
     public boolean exists(String file) {
         return new File(file).exists();
     }
+
+    /**
+     *
+     * @param script
+     * @param toFind
+     * @param ownerName
+     * @return
+     */
     public boolean executeBashScript(String script, String toFind, String ownerName) {
 
         if (new File(script).exists()) {
@@ -232,7 +241,7 @@ public class InstallationTask implements IInstallationTask {
 
     public boolean executeCommandByBuilder(String[] args, String toFind, boolean notToFind, String ownerName) throws IOException {
         if (args[0].equals("msiexec")) {
-            args[1]=args[1].replace("/","\\");
+            args[1] = args[1].replace("/", "\\");
         }
         ProcessBuilder pb = new ProcessBuilder(args);
         Process process;
@@ -258,12 +267,12 @@ public class InstallationTask implements IInstallationTask {
             outputGobbler.start();
 
             int exitVal = process.waitFor();
-            info(ownerName+", Exit Val for script :"+exitVal);
+            info(ownerName + ", Exit Val for script :" + exitVal);
             errorLines.clear();
             errorLines.addAll(errorGobbler.getLines());
             lines.clear();
             lines.addAll(outputGobbler.getLines()); //for debugging purposes
-            debuglines(ownerName, true ||exitVal!=0); //write debug lines when exit val is not zero
+            debuglines(ownerName, true || exitVal != 0); //write debug lines when exit val is not zero
             if (!isWindows && exitVal == 4) {
                 return false; //seems to be the response when looking for a non-existent service. TODO:make sure that this is the case
             } else {
@@ -274,10 +283,10 @@ public class InstallationTask implements IInstallationTask {
             if (toFind == null || toFind.isEmpty()) return exitVal == 0;
             if (notToFind) {
 
-                return (exitVal == 0 && !( outputGobbler.dryString(toFind) || errorGobbler.dryString(toFind)) );
+                return (exitVal == 0 && !(outputGobbler.dryString(toFind) || errorGobbler.dryString(toFind)));
             } else {
                 boolean r = outputGobbler.dryString(toFind);
-                if (!r) r=errorGobbler.dryString(toFind); //pg_dump sends to error gobbler ....
+                if (!r) r = errorGobbler.dryString(toFind); //pg_dump sends to error gobbler ....
                 return ((exitVal == 0) && r);
             }
 
@@ -295,6 +304,8 @@ public class InstallationTask implements IInstallationTask {
     public String phase = "";
 
 
+
+
     @Override
     public InstallationResult install(InstallationContext installationContext) throws Throwable {
         context = installationContext;
@@ -310,30 +321,43 @@ public class InstallationTask implements IInstallationTask {
     }
 
     /**
+     * this is optionally handled by an installation plugin once all plugins have been installed. can be used for restarting a service
+     * @param installationContext
+     * @return
+     * @throws Throwable
+     */
+    @Override
+    public InstallationResult finalizeInstallation(InstallationContext installationContext) throws Throwable {
+        return null;
+    }
+
+    /**
      * create a service for uodating running services (makes sense only if there is a UI available)
+     *
      * @param running
      * @return
      */
     public Service getNewService(boolean running) {
-        Service service=new Service().
+        Service service = new Service().
                 setServiceId(getId()).
                 setName(getName()).
                 setDescription(getDescription()).
                 setRunning(running);
-        if (running){
+        if (running) {
             service.setRunningFrom(LocalDateTime.now()).setLastChecked(LocalDateTime.now());
         }
         return service;
     }
+
     public static boolean isNumeric(String strNum) {
         return strNum.matches("-?\\d+(\\.\\d+)?");
     }
 
-    public boolean setAdmin()  {
+    public boolean setAdmin() {
 
         if (!admin) {
             if (isWindows()) {
-                String path= getScriptsPath() + "/setadmin.bat";
+                String path = getScriptsPath() + "/setadmin.bat";
                 if (new File(path).exists()) {
                     try {
                         if (executeCommandByBuilder(new String[]{path}, "", false, "")) {
@@ -344,23 +368,26 @@ public class InstallationTask implements IInstallationTask {
                         severe("Error while setting to administrator", e);
                         return false;
                     }
-                }else {
-                    updateProgress(context,"Cannot find script for elevation request at: "+path);
-                    severe("Cannot find elevation script at: "+path);
+                } else {
+                    updateProgress(context, "Cannot find script for elevation request at: " + path);
+                    severe("Cannot find elevation script at: " + path);
                 }
             }
         }
         return admin;
     }
+
     public void updateProgress(InstallationContext context, String message) {
         this.setMessage(message);
         context.getInstallerProgress().installationProgress(this, context);
         info(message);
     }
+
     public boolean updateService(InstallationContext context, Service service, IInstallationTask task) {
 
-        return context.getUpdateService().serviceProgress(context,service,this);
+        return context.getUpdateService().serviceProgress(context, service, this);
     }
+
     @Override
     public int getOrder() {
         return order;
@@ -469,7 +496,7 @@ public class InstallationTask implements IInstallationTask {
 
     @Override
     public IInstallationTask setSTop(boolean value) {
-        this.stop=value;
+        this.stop = value;
         return this;
     }
 
@@ -491,7 +518,7 @@ public class InstallationTask implements IInstallationTask {
 
     @Override
     public IInstallationTask setService(Service service) {
-        this.service=service;
+        this.service = service;
         return this;
     }
 
@@ -515,11 +542,13 @@ public class InstallationTask implements IInstallationTask {
         this.started = started;
         return this;
     }
+
     @Override
     public InstallationTask setEnded(LocalDateTime ended) {
         this.ended = ended;
         return this;
     }
+
     @Override
     public IInstallationTask setProgress(Integer progress) {
         this.progress = progress;
@@ -531,7 +560,6 @@ public class InstallationTask implements IInstallationTask {
         this.status = status;
         return this;
     }
-
 
 
     @Override
@@ -551,6 +579,11 @@ public class InstallationTask implements IInstallationTask {
         return this;
     }
 
+    /**
+     * delete a directory
+     * @param path
+     * @throws IOException
+     */
     public static void deleteDirectoryStream(Path path) throws IOException {
         Files.walk(path)
                 .sorted(Comparator.reverseOrder())
@@ -634,26 +667,23 @@ public class InstallationTask implements IInstallationTask {
     }
 
 
-
-
-
     public String getServerPath() {
         return getContext().getParamaters().getValue("serverpath");
     }
 
 
-
     public String getInstallationsPath() {
-        return getContext().getParamaters().getValue("installationspath")+"/";
+        return getContext().getParamaters().getValue("installationspath") + "/";
 
     }
 
     public String getScriptsPath() {
-        return getContext().getParamaters().getValue("scriptspath")+"/";
+        return getContext().getParamaters().getValue("scriptspath") + "/";
 
     }
+
     public String getServicesPath() {
-        return getContext().getParamaters().getValue("servicespath")+"/";
+        return getContext().getParamaters().getValue("servicespath") + "/";
 
     }
 
@@ -790,6 +820,14 @@ public class InstallationTask implements IInstallationTask {
 
     }
 
+    /**
+     *
+     * @param installationDir
+     * @param targetDir
+     * @param context
+     * @return
+     * @throws InterruptedException
+     */
     public boolean copy(String installationDir, String targetDir, InstallationContext context) throws InterruptedException {
 
         addMessage("application server-Sanity", "info", "starting parameters sanity check");
@@ -968,7 +1006,7 @@ public class InstallationTask implements IInstallationTask {
     public String editFile(String path, String existingString, String toFind, String toReplace, boolean warning, boolean reverseSlash, boolean close) {
         if (!new File(path).exists()) {
             if (warning) {
-                addMessage("Edit file", "severe", "Cannot dry the file: " + path + " for editing");
+                addMessage("Edit file", "severe", "Cannot open the file: " + path + " for editing");
             }
             return null;
         }
@@ -1081,12 +1119,12 @@ public class InstallationTask implements IInstallationTask {
 
             if (executeCommand("systemctl enable " + serviceName, "", " enabling " + serviceName)) {
                 simpleMessage("service " + serviceName, "info", "enabled service");
-                if (testServiceRunning(serviceName, "installing " + serviceName,true)) {
+                if (testServiceRunning(serviceName, "installing " + serviceName, true)) {
                     executeCommand("service " + serviceName + "stop", "", " stopping " + serviceName);
                 }
                 if (executeCommand("service " + serviceName + " start", "", " starting " + serviceName)) {
                     simpleMessage(serviceName, "info", "have started service " + serviceName);
-                    if (testServiceRunning(serviceName, serviceName + " installation",true)) {
+                    if (testServiceRunning(serviceName, serviceName + " installation", true)) {
                         simpleMessage(serviceName, "info", serviceName + " started");
                         return true;
                     } else {
@@ -1112,7 +1150,7 @@ public class InstallationTask implements IInstallationTask {
      */
     public boolean installMSI(String pathtoMSI, String... options) {
         if (isWindows) {
-            pathtoMSI=pathtoMSI.replace("/","\\"); //MSI will not be installed with "/"
+            pathtoMSI = pathtoMSI.replace("/", "\\"); //MSI will not be installed with "/"
             Runtime rf = Runtime.getRuntime();
             StringBuilder builder = new StringBuilder();
             for (String option : options) {
@@ -1130,6 +1168,7 @@ public class InstallationTask implements IInstallationTask {
         }
         return false;
     }
+
     /**
      * these are not really needed here
      *
@@ -1150,4 +1189,12 @@ public class InstallationTask implements IInstallationTask {
 
     }
 
+    /**
+     * this is to help in using editfile, may be redundant
+     * @param path
+     * @return
+     */
+    public boolean fixFlexicoreConfig(String path) {
+        return editFile(path, "", "/flexicore/home", flexicoreHome, false, isWindows(), true) != null;
+    }
 }

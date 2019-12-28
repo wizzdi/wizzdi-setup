@@ -519,6 +519,15 @@ public class Start {
                     }
                     // installTask(installationTask, context);
                 }
+                for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
+                    if (installationTask.isSnooper()) {
+                        try {
+                            installationTask.finalizeInstallation(context);
+                        } catch (Throwable throwable) {
+                            severe("Error while finalizing task: "+installationTask.getName());
+                        }
+                    }
+                }
                 info("Total installation time was: " + getSeconds(startAll));
                 for (IInstallationTask installationTask : context.getCleanupTasks().values()) {
                     installationTask.setProgress(70).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now());
