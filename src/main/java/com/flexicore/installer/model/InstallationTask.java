@@ -425,6 +425,11 @@ public class InstallationTask implements IInstallationTask {
         return admin;
     }
 
+    /**
+     * if true, will be sorted as if all other plugins are pre-requisites, effectively put finalizers last in the list
+     * finalizers order is not fixed and it is assumed that these need to run last.
+     * @return
+     */
     @Override
     public boolean isFinalizerOnly() {
         return false;
