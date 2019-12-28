@@ -18,6 +18,7 @@ public interface IInstallationTask extends ExtensionPoint {
     OperatingSystem getCurrentOperatingSystem();
     IInstallationTask setId(String id);
     boolean isAdmin();
+    boolean isFinalizerOnly();
     IInstallationTask setAdmin(boolean admin);
     String getName();
 

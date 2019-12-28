@@ -426,6 +426,11 @@ public class InstallationTask implements IInstallationTask {
     }
 
     @Override
+    public boolean isFinalizerOnly() {
+        return false;
+    }
+
+    @Override
     public String getName() {
         return name;
     }

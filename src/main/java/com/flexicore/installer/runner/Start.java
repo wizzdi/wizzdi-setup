@@ -380,21 +380,35 @@ public class Start {
 
 
     private static TopologicalOrderIterator<String, DefaultEdge> getInstallationTaskIterator(Map<String, IInstallationTask> installationTasks) throws MissingInstallationTaskDependency {
-
         Graph<String, DefaultEdge> g = new DefaultDirectedGraph<>(DefaultEdge.class);
+        HashMap<String,String> allReq=new HashMap<>();
         for (IInstallationTask installationTask : installationTasks.values()) {
+            if (!installationTask.isFinalizerOnly()) {
+                String uniqueId = installationTask.getId();
+                allReq.put(uniqueId,uniqueId);
+                g.addVertex(uniqueId);
+                for (String req : installationTask.getPrerequisitesTask()) {
 
-            String uniqueId = installationTask.getId();
-            g.addVertex(uniqueId);
-            for (String req : installationTask.getPrerequisitesTask()) {
-                if (installationTasks.containsKey(req)) {
-                    g.addVertex(req);
-                    g.addEdge(req, uniqueId);
-                } else {
-                    missingDependencies.computeIfAbsent(uniqueId, f -> new HashSet<>()).add(req);
+                    if (installationTasks.containsKey(req)) {
+                        g.addVertex(req);
+                        g.addEdge(req, uniqueId);
+                    } else {
+                        missingDependencies.computeIfAbsent(uniqueId, f -> new HashSet<>()).add(req);
+                    }
                 }
-            }
 
+            }
+        }
+        for (IInstallationTask installationTask : installationTasks.values()) {
+            if (installationTask.isFinalizerOnly()) {
+                String id;
+                g.addVertex(id=installationTask.getId());
+                for (String req:allReq.values()) {
+                    g.addVertex(req);
+                    g.addEdge(req,id);
+                }
+
+            }
         }
         if (!missingDependencies.isEmpty()) {
             String s = "Missing Dependencies:" + System.lineSeparator() + missingDependencies.entrySet().parallelStream().map(f -> f.getKey() + " : " + f.getValue()).collect(Collectors.joining(System.lineSeparator()));
@@ -520,7 +534,7 @@ public class Start {
                     // installTask(installationTask, context);
                 }
                 for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
-                    if (installationTask.isSnooper()) {
+                    if (!installationTask.isSnooper()) {
                         try {
                             installationTask.finalizeInstallation(context);
                         } catch (Throwable throwable) {
@@ -531,7 +545,7 @@ public class Start {
                 info("Total installation time was: " + getSeconds(startAll));
                 for (IInstallationTask installationTask : context.getCleanupTasks().values()) {
                     installationTask.setProgress(70).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now());
-                    //  installTask(installationTask, context);
+
                 }
 
             });
