@@ -73,7 +73,6 @@ static Parameter[] preDefined ={
     public InstallationResult install(InstallationContext installationContext) throws  Throwable{
 
         super.install(installationContext);
-
         try {
 
             String flexicoreSource = getServerPath() + "/flexicore";
