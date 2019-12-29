@@ -91,7 +91,7 @@ static Parameter[] preDefined ={
                         Files.deleteIfExists(Paths.get(deployments + "/FlexiCore.war.undeployed"));
                         touch(new File(deployments.getAbsolutePath() + "/FlexiCore.war.dodeploy"));
                         ZipUtil.unpack(flexicore, deployments);
-                        setOwnerFolder(Paths.get(deployments.getAbsolutePath()), "wildfly", "wildfly");
+                       if (!isWindows) setOwnerFolder(Paths.get(deployments.getAbsolutePath()), "wildfly", "wildfly");
                         return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
                     } else {
                         severe("Wildfly deployments was not located on: " + deployments.getAbsolutePath());
