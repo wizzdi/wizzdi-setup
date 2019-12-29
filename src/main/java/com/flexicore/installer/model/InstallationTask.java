@@ -1175,6 +1175,29 @@ public class InstallationTask implements IInstallationTask {
     }
 
     /**
+     * set Windows service dependencies, service will not start unless the dependson are running
+     * @param serviceName
+     * @param dependsOn
+     * @param ownerName
+     * @return
+     */
+    public boolean setServiceDependencies(String serviceName, String[] dependsOn, String ownerName) {
+        if (isWindows()) {
+            String services = null;
+            for (String service : dependsOn) {
+                if (services == null) {
+                    services = service;
+                } else {
+                    services += "/" + service;
+                }
+            }
+            if (services == null || services.isEmpty()) return false;
+            return executeCommand("sc config " + serviceName + " depend= " + services, "success", " Setting dependencies on: " + ownerName);
+        } else return true;
+
+
+    }
+    /**
      * @param pathtoMSI full path to msi
      * @param options   any of: [/quiet][/passive][/q{n|b|r|f}]
      * @return
