@@ -496,18 +496,22 @@ public class Start {
                     info("will now install " + installationTask.getName() + " id: " + installationTask.getId());
                     info("details: " + installationTask.getDescription());
 
-                    installationTask.setProgress(0).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now());
+                    installationTask.setProgress(0).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now()).setMessage(" Just started");
+                    doUpdateUI(installationTask,installationContext);
                     try {
                         long start = System.currentTimeMillis();
                         installationTask.setContext(context);
                         if (!installationTask.isSnooper()) {
+
                             InstallationResult result = installationTask.install(context);
                             if (result.getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
                                 info("Have successfully finished installation task: " + installationTask.getName() + " after " + getSeconds(start) + " Seconds");
                                 installationTask.setProgress(100).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.COMPLETED);
+
                             } else {
                                 installationTask.setProgress(0).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.FAILED);
                             }
+                            doUpdateUI(installationTask,installationContext);
                         } else {
                             Thread snooper = new Thread(() -> {
                                 try {
@@ -519,9 +523,7 @@ public class Start {
                             snooper.setName(installationTask.getId());
                             snoopers.add(snooper);
                             snooper.start();
-
-
-                        }
+                       }
                     } catch (Throwable throwable) {
                         severe("Exception while installing: " + installationTask.getName(), throwable);
                         installationTask.setProgress(0).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.FAILED);
@@ -533,6 +535,7 @@ public class Start {
                     }
                     // installTask(installationTask, context);
                 }
+                info(" calling finalizers on all tasks");
                 for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
                     if (!installationTask.isSnooper()) {
                         try {
@@ -542,10 +545,20 @@ public class Start {
                         }
                     }
                 }
-                info("Total installation time was: " + getSeconds(startAll));
+                info("Total installation time was: " + getSeconds(startAll)+" Seconds");
+
                 for (IInstallationTask installationTask : context.getCleanupTasks().values()) {
                     installationTask.setProgress(70).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now());
+                    try {
+                       if(installationTask.install(installationContext).equals(InstallationStatus.COMPLETED)) {
 
+                       }else {
+
+                       }
+                        doUpdateUI(installationTask,installationContext);
+                    } catch (Throwable throwable) {
+                        severe("Error while cleanup task run "+installationTask.getName());
+                    }
                 }
 
             });
