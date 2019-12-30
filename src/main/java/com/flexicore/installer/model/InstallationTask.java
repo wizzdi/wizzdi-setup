@@ -1183,6 +1183,9 @@ public class InstallationTask implements IInstallationTask {
      */
     public boolean setServiceDependencies(String serviceName, String[] dependsOn, String ownerName) {
         if (isWindows()) {
+
+
+
             String services = null;
             for (String service : dependsOn) {
                 if (services == null) {
@@ -1191,7 +1194,9 @@ public class InstallationTask implements IInstallationTask {
                     services += "/" + service;
                 }
             }
+            info ("Setting server dependencies for service name:"+serviceName+" depends on"+services);
             if (services == null || services.isEmpty()) return false;
+
             return executeCommand("sc config " + serviceName + " depend= " + services, "success", " Setting dependencies on: " + ownerName);
         } else return true;
 
