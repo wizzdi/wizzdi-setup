@@ -147,14 +147,15 @@ public class Start {
                 info(" there is no 'install' parameter set to true that will start installation");
             }
         } else {
-            informUI("Installation ready");
+            boolean displayed = false;
             while (!stopped) {
-                Thread.sleep(1000);
-                if (!currentStatus.equals("")) {
-                    informUI(currentStatus);
 
-
+                Thread.sleep(2000);
+                if (!displayed) {
+                    displayed=true;
+                    informUI("Installation ready");
                 }
+
             }
         }
 
@@ -548,9 +549,14 @@ public class Start {
                 long startAll = System.currentTimeMillis();
                 logger.info("Performing installation of " + context.getiInstallationTasks().size() + " tasks");
                 informUI("Installation running , performed 0, failed 0, skipped 0");
+                int failed=0;
+                int skipped=0;
+                int completed=0;
                 for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
                     if (!installationTask.isEnabled()) {
                         info("task " + installationTask.getName() + " is disabled, skipping");
+                        skipped++;
+                        updateStatus(" installation status",completed,failed,skipped);
                         continue;
 
                     }
@@ -566,10 +572,14 @@ public class Start {
 
                             InstallationResult result = installationTask.install(context);
                             if (result.getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
+                                completed++;
+                                updateStatus(" installation status",completed,failed,skipped);
                                 info("Have successfully finished installation task: " + installationTask.getName() + " after " + getSeconds(start) + " Seconds");
                                 installationTask.setProgress(100).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.COMPLETED);
 
                             } else {
+                                failed++;
+                                updateStatus(" installation status",completed,failed,skipped);
                                 installationTask.setProgress(0).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.FAILED);
                             }
                             doUpdateUI(installationTask, installationContext);
@@ -596,18 +606,25 @@ public class Start {
                     }
                     // installTask(installationTask, context);
                 }
+                updateStatus(" Installation finalizing",completed,failed,skipped);
                 info(" calling finalizers on all tasks");
                 for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
                     if (!installationTask.isSnooper()) {
                         try {
-                            installationTask.finalizeInstallation(context);
+                            if (installationTask.finalizeInstallation(context).getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
+                               completed++;
+                                updateStatus("finalizing  status",completed,failed,skipped);
+                            }else {
+                                failed++;
+                                updateStatus("finalizing  status",completed,failed,skipped);
+                            }
                         } catch (Throwable throwable) {
                             severe("Error while finalizing task: " + installationTask.getName());
                         }
                     }
                 }
                 info("Total installation time was: " + getSeconds(startAll) + " Seconds");
-
+                updateStatus("Have finished installation ",completed,failed,skipped);
                 for (IInstallationTask installationTask : context.getCleanupTasks().values()) {
                     installationTask.setProgress(70).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now());
                     try {
@@ -630,6 +647,10 @@ public class Start {
             return true;
         }
         return false;
+    }
+
+    private static void updateStatus(String message,int completed, int failed, int skipped) {
+        informUI(message+" Completed tasks: "+completed+" Failed tasks: "+failed+" Skipped tasks: "+skipped);
     }
 
     public static long getSeconds(long from) {
