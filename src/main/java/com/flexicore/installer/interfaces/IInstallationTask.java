@@ -34,7 +34,7 @@ public interface IInstallationTask extends ExtensionPoint {
     IInstallationTask setVersion(String version);
 
     Set<String> getPrerequisitesTask();
-
+    Set<String> getSoftPrerequisitesTask(); //added to support forced order between two tasks if both exist
     InstallationStatus getStatus();
 
     Parameters getParameters(InstallationContext installationContext);

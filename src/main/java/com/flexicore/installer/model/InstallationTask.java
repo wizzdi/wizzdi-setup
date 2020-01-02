@@ -471,6 +471,16 @@ public class InstallationTask implements IInstallationTask {
         return Collections.emptySet();
     }
 
+    /**
+     * set of installation tasks that must be installed before this task if exist.
+     *
+     * @return
+     */
+    @Override
+    public Set<String> getSoftPrerequisitesTask() {
+        return Collections.emptySet();
+    } //todo:: check if this is the best solution
+
     @Override
     public InstallationStatus getStatus() {
         return status;

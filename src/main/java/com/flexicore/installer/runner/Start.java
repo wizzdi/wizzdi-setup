@@ -3,7 +3,6 @@ package com.flexicore.installer.runner;
 import com.flexicore.installer.exceptions.MissingInstallationTaskDependency;
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.interfaces.IUIComponent;
-import com.flexicore.installer.localtasksfortests.*;
 import com.flexicore.installer.model.*;
 import org.apache.commons.cli.*;
 import org.jgrapht.Graph;
@@ -37,7 +36,7 @@ public class Start {
     private static List<IUIComponent> uiComponents;
     private static InstallationContext installationContext = null;
     static boolean uiFoundandRun = false;
-    static String startupStatus = "";
+    static String currentStatus = "";
     static Map<String, Set<String>> missingDependencies = new HashMap<>();
 
 
@@ -83,7 +82,7 @@ public class Start {
 
         // handle parameters and command line options here. do it at the dependency order.
         int order = 1;
-        for (IInstallationTask task:installationTasks.values()) {
+        for (IInstallationTask task : installationTasks.values()) {
             if (task.isSnooper()) {
                 task.setOrder(order++);
                 installationContext.addTask(task);
@@ -92,52 +91,55 @@ public class Start {
         TopologicalOrderIterator<String, DefaultEdge> topologicalOrderIterator = getInstallationTaskIterator(installationTasks);
         readProperties(installationContext);
         installationContext.getiInstallationTasks().clear();
-
+        Set<String> softRequired = Collections.emptySet();
+        Set<IInstallationTask> softNeed = Collections.emptySet();
         while (topologicalOrderIterator.hasNext()) {
             String installationTaskUniqueId = topologicalOrderIterator.next();
             IInstallationTask task = installationTasks.get(installationTaskUniqueId);
-            boolean found = false;
-            OperatingSystem cos = task.getCurrentOperatingSystem();
-            for (OperatingSystem os : task.getOperatingSystems()) {
-
-                if (os.equals(cos)) {
-                    found = true;
-                    break;
+            if (!task.getSoftPrerequisitesTask().isEmpty()) { //task has soft prerequisites.
+                //check if required task has been added already.
+                boolean defer=false;
+                for (String req : task.getSoftPrerequisitesTask()) {
+                    if (!installationContext.getiInstallationTasks().containsKey(req)) {
+                        defer=true;
+                        if (!softRequired.contains(req)) {
+                            softRequired.add(req);
+                        }
+                    }
+                }
+                if (defer) {
+                    softNeed.add(task);
+                    continue; //we will not add this task now
                 }
             }
-            if (!found) continue;
-            task.setOrder(order++);
-            installationContext.addTask(task);
-
-            Options taskOptions = getOptions(task, installationContext);
-            if (!updateParameters(task, installationContext, taskOptions, args, parser)) {
-                severe("Error while parsing task parameters, quitting on task: " + task.getId());
-                return; // quit here
+            Set<IInstallationTask> needThis=Collections.emptySet();
+            for (IInstallationTask needingTask:softNeed) {
+                if (needingTask.getSoftPrerequisitesTask().contains(installationTaskUniqueId)) {
+                    needThis.add(needingTask); //these tasks will be added after this task
+                }
+            }
+           if (! handleTask(installationContext,task,needThis,order,mainCmd,args,parser)) {
+               exit(0);
             }
 
-            if (mainCmd.hasOption(HELP)) {
-                if (taskOptions.getOptions().size() != 0) {
+           for (IInstallationTask needingTask:needThis) {
+               if (needingTask.getSoftPrerequisitesTask().size()==1) { //task will be added only if all soft have been added so far
+                   if (!handleTask(installationContext, needingTask, needThis, order, mainCmd, args, parser)) {
+                       exit(0);
+                   }
+               }else {
+                   needingTask.getSoftPrerequisitesTask().remove(installationTaskUniqueId);
+               }
+           }
+            if (!softRequired.isEmpty()) {
+                //we had to defer some of the tasks , we need to see if dependencies are still okay
 
-                    System.out.println("command line options for: " + task.getId() + "  " + task.getDescription());
-                    if (task.getPrerequisitesTask().size() != 0) {
-                        System.out.println("Requires: " + task.getPrerequisitesTask());
-                    }
-
-                    HelpFormatter formatter = new HelpFormatter();
-                    formatter.printHelp("Start.bat ", taskOptions);
-
-                    System.out.println("Task default parameters:");
-                    for (Parameter p : task.getParameters(installationContext).getValues()) {
-                        System.out.println(p);
-
-                    }
-
-                }
             }
         }
+
         if (installationContext.getParamaters() != null) installationContext.getParamaters().sort();
         boolean stopped = false;
-        loadUiComponents(); //in blocking operation, it is never returned.
+        loadUiComponents();  //currently asynchronous
         if (!uiFoundandRun) {
             if (installationContext.getParamaters().getBooleanValue("install")) {
                 install(installationContext);
@@ -145,12 +147,12 @@ public class Start {
                 info(" there is no 'install' parameter set to true that will start installation");
             }
         } else {
-
+            informUI("Installation ready");
             while (!stopped) {
                 Thread.sleep(1000);
-                if (!startupStatus.equals("")) {
-                    informUI(startupStatus);
-                    startupStatus = "";
+                if (!currentStatus.equals("")) {
+                    informUI(currentStatus);
+
 
                 }
             }
@@ -161,6 +163,61 @@ public class Start {
         cleanSnoopers();
         exit(0);
 
+    }
+
+    /**
+     * adds a task if matches the current operating system.
+     * @param installationContext
+     * @param task
+     * @param needThis
+     * @param order
+     * @param mainCmd
+     * @param args
+     * @param parser
+     * @return
+     */
+    private static boolean handleTask(InstallationContext installationContext,
+                                      IInstallationTask task, Set<IInstallationTask> needThis,
+                                      int order, CommandLine mainCmd,String[] args ,CommandLineParser parser) {
+        boolean found = false;
+        OperatingSystem cos = task.getCurrentOperatingSystem();
+        for (OperatingSystem os : task.getOperatingSystems()) {
+
+            if (os.equals(cos)) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) return true;
+        task.setOrder(order++);
+        installationContext.addTask(task);
+
+        Options taskOptions = getOptions(task, installationContext);
+        if (!updateParameters(task, installationContext, taskOptions, args, parser)) {
+            severe("Error while parsing task parameters, quitting on task: " + task.getId());
+            return false;
+        }
+
+        if (mainCmd.hasOption(HELP)) {
+            if (taskOptions.getOptions().size() != 0) {
+
+                System.out.println("command line options for: " + task.getId() + "  " + task.getDescription());
+                if (task.getPrerequisitesTask().size() != 0) {
+                    System.out.println("Requires: " + task.getPrerequisitesTask());
+                }
+
+                HelpFormatter formatter = new HelpFormatter();
+                formatter.printHelp("Start.bat ", taskOptions);
+
+                System.out.println("Task default parameters:");
+                for (Parameter p : task.getParameters(installationContext).getValues()) {
+                    System.out.println(p);
+
+                }
+
+            }
+        }
+        return true;
     }
 
     private static void cleanSnoopers() {
@@ -209,16 +266,17 @@ public class Start {
 
     /**
      * Update service status on UI
+     *
      * @param installationContext
      * @param service
      * @param task
      */
-    private static boolean doUpdateService(InstallationContext installationContext,Service service,IInstallationTask task) {
+    private static boolean doUpdateService(InstallationContext installationContext, Service service, IInstallationTask task) {
         List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
         for (IUIComponent component : filtered) {
-            component.updateService(installationContext,service, task);
+            component.updateService(installationContext, service, task);
         }
-        return filtered.size()!=0;
+        return filtered.size() != 0;
     }
 
     /**
@@ -360,7 +418,7 @@ public class Start {
         if (result.contains("&")) {
             parameter.setNonTranslatedValue(result);
             parameter.setSandSymbolPresent(true);
-            result = Parameter.getReplaced(installationContext, result, parameter,null);
+            result = Parameter.getReplaced(installationContext, result, parameter, null);
         }
 
         return result;
@@ -381,11 +439,11 @@ public class Start {
 
     private static TopologicalOrderIterator<String, DefaultEdge> getInstallationTaskIterator(Map<String, IInstallationTask> installationTasks) throws MissingInstallationTaskDependency {
         Graph<String, DefaultEdge> g = new DefaultDirectedGraph<>(DefaultEdge.class);
-        HashMap<String,String> allReq=new HashMap<>();
+        HashMap<String, String> allReq = new HashMap<>();
         for (IInstallationTask installationTask : installationTasks.values()) {
             if (!installationTask.isFinalizerOnly()) {
                 String uniqueId = installationTask.getId();
-                allReq.put(uniqueId,uniqueId);
+                allReq.put(uniqueId, uniqueId);
                 g.addVertex(uniqueId);
                 for (String req : installationTask.getPrerequisitesTask()) {
 
@@ -402,10 +460,10 @@ public class Start {
         for (IInstallationTask installationTask : installationTasks.values()) {
             if (installationTask.isFinalizerOnly()) {
                 String id;
-                g.addVertex(id=installationTask.getId());
-                for (String req:allReq.values()) {
+                g.addVertex(id = installationTask.getId());
+                for (String req : allReq.values()) {
                     g.addVertex(req);
-                    g.addEdge(req,id);
+                    g.addEdge(req, id);
                 }
 
             }
@@ -427,7 +485,7 @@ public class Start {
                 }
             });
 
-            startupStatus = builder.toString();
+            currentStatus = builder.toString();
 
         }
         return new TopologicalOrderIterator<>(g);
@@ -437,6 +495,7 @@ public class Start {
         for (IUIComponent component : uiComponents) {
             component.updateStatus(installationContext, missingDependencies, message);
         }
+        currentStatus=message;
     }
 
     private static Options initOptions() {
@@ -475,11 +534,12 @@ public class Start {
     private static ArrayList<Thread> snoopers = new ArrayList<>();
 
     private static boolean toggle(InstallationContext context) {
-        for (IInstallationTask task: context.getiInstallationTasks().values()) {
+        for (IInstallationTask task : context.getiInstallationTasks().values()) {
             task.setEnabled(!task.isEnabled());
         }
         return true;
     }
+
     private static boolean install(InstallationContext context) {
         if (!installRunning) {
             installRunning = true;
@@ -487,9 +547,10 @@ public class Start {
             Thread thread = new Thread(() -> {
                 long startAll = System.currentTimeMillis();
                 logger.info("Performing installation of " + context.getiInstallationTasks().size() + " tasks");
+                informUI("Installation running , performed 0, failed 0, skipped 0");
                 for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
                     if (!installationTask.isEnabled()) {
-                        info("task "+installationTask.getName()+" is disabled, skipping");
+                        info("task " + installationTask.getName() + " is disabled, skipping");
                         continue;
 
                     }
@@ -497,7 +558,7 @@ public class Start {
                     info("details: " + installationTask.getDescription());
 
                     installationTask.setProgress(0).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now()).setMessage(" Just started");
-                    doUpdateUI(installationTask,installationContext);
+                    doUpdateUI(installationTask, installationContext);
                     try {
                         long start = System.currentTimeMillis();
                         installationTask.setContext(context);
@@ -511,19 +572,19 @@ public class Start {
                             } else {
                                 installationTask.setProgress(0).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.FAILED);
                             }
-                            doUpdateUI(installationTask,installationContext);
+                            doUpdateUI(installationTask, installationContext);
                         } else {
                             Thread snooper = new Thread(() -> {
                                 try {
                                     InstallationResult result = installationTask.install(context);
                                 } catch (Throwable throwable) {
-                                   // severe("Exception while running a snooper",throwable);
+                                    // severe("Exception while running a snooper",throwable);
                                 }
                             });
                             snooper.setName(installationTask.getId());
                             snoopers.add(snooper);
                             snooper.start();
-                       }
+                        }
                     } catch (Throwable throwable) {
                         severe("Exception while installing: " + installationTask.getName(), throwable);
                         installationTask.setProgress(0).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.FAILED);
@@ -541,23 +602,23 @@ public class Start {
                         try {
                             installationTask.finalizeInstallation(context);
                         } catch (Throwable throwable) {
-                            severe("Error while finalizing task: "+installationTask.getName());
+                            severe("Error while finalizing task: " + installationTask.getName());
                         }
                     }
                 }
-                info("Total installation time was: " + getSeconds(startAll)+" Seconds");
+                info("Total installation time was: " + getSeconds(startAll) + " Seconds");
 
                 for (IInstallationTask installationTask : context.getCleanupTasks().values()) {
                     installationTask.setProgress(70).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now());
                     try {
-                       if(installationTask.install(installationContext).equals(InstallationStatus.COMPLETED)) {
+                        if (installationTask.install(installationContext).equals(InstallationStatus.COMPLETED)) {
 
-                       }else {
+                        } else {
 
-                       }
-                        doUpdateUI(installationTask,installationContext);
+                        }
+                        doUpdateUI(installationTask, installationContext);
                     } catch (Throwable throwable) {
-                        severe("Error while cleanup task run "+installationTask.getName());
+                        severe("Error while cleanup task run " + installationTask.getName());
                     }
                 }
 
@@ -621,6 +682,7 @@ public class Start {
     private static boolean uiComponentInstall(IUIComponent component, InstallationContext context) {
         return install(context);
     }
+
     private static boolean uiComponentToggle(IUIComponent component, InstallationContext context) {
         return toggle(context);
     }
@@ -654,10 +716,10 @@ public class Start {
         doUpdateUI(task, context);
         return task;
     }
-    private static boolean uiUpdateService(InstallationContext context,Service service,IInstallationTask task) {
-        return doUpdateService(context,service,task);
-    }
 
+    private static boolean uiUpdateService(InstallationContext context, Service service, IInstallationTask task) {
+        return doUpdateService(context, service, task);
+    }
 
 
     private static String doAbout() {
@@ -683,6 +745,7 @@ public class Start {
         boolean uiComponentInstall(IUIComponent uiComponent, InstallationContext context);
 
     }
+
     @FunctionalInterface
     public static interface UIAccessInterfaceToggle {
         boolean uiComponentToggle(IUIComponent uiComponent, InstallationContext context);
@@ -723,6 +786,7 @@ public class Start {
     public static interface InstallerProgress {
         IInstallationTask installationProgress(IInstallationTask task, InstallationContext context);
     }
+
     @FunctionalInterface
     public static interface UpdateService {
         boolean serviceProgress(InstallationContext context, Service service, IInstallationTask task);
