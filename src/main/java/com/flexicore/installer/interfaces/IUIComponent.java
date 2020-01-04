@@ -1,6 +1,7 @@
 package com.flexicore.installer.interfaces;
 
 import com.flexicore.installer.model.InstallationContext;
+import com.flexicore.installer.model.InstallationState;
 import com.flexicore.installer.model.Service;
 import org.pf4j.ExtensionPoint;
 
@@ -17,6 +18,6 @@ public interface IUIComponent extends ExtensionPoint {
     boolean sendMessage(String message);
     boolean updateService(InstallationContext context, Service service, IInstallationTask task);
     String getVersion();
-    boolean updateStatus(InstallationContext context, Map<String, Set<String>> additional, String message);
+    boolean updateStatus(InstallationContext context, Map<String, Set<String>> additional, String message, InstallationState state);
 
 }
