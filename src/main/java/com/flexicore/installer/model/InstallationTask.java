@@ -302,6 +302,16 @@ public class InstallationTask implements IInstallationTask {
     public boolean dry;
     public String phase = "";
 
+    /**
+     * called before the installation allowing tasks to inform on previous installations, removals etc.
+     * @param context
+     * @return
+     */
+    @Override
+    public InspectionResult inspect(InstallationContext context) {
+        return new InspectionResult().setInspectionState(InspectionState.NOT_FOUND).setSkip(true);
+
+    }
 
     @Override
     public InstallationResult install(InstallationContext installationContext) throws Throwable {

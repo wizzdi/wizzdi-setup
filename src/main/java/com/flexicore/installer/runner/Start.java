@@ -503,7 +503,12 @@ public class Start {
         }
         currentStatus=message;
     }
+    private static void informUIOnInspections(InstallationContext context, ArrayList<InspectionResult>  inspections) {
+        for (IUIComponent component : uiComponents) {
+            component.updateInspections(context, inspections);
+        }
 
+    }
     private static Options initOptions() {
 
         // create Options object
@@ -557,6 +562,17 @@ public class Start {
                 int failed=0;
                 int skipped=0;
                 int completed=0;
+                int inspected=0;
+                ArrayList<InspectionResult> inspections=new ArrayList<>();
+                for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
+                    InspectionResult result = installationTask.inspect(installationContext);
+                    if (!result.getInspectionState().equals(InspectionState.NOT_FOUND)) {
+                        inspections.add(result);
+                    }
+                }
+                if (inspections.size()!=0) {
+                    informUIOnInspections(installationContext,inspections);
+                }
                 for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
                     if (!installationTask.isEnabled()) {
                         info("task " + installationTask.getName() + " is disabled, skipping");

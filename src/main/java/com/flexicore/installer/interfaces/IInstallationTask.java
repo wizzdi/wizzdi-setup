@@ -8,7 +8,7 @@ import java.util.Set;
 
 
 public interface IInstallationTask extends ExtensionPoint {
-
+    InspectionResult inspect(InstallationContext context);
     InstallationResult install(InstallationContext installationContext) throws Throwable;
     InstallationResult finalizeInstallation(InstallationContext installationContext) throws Throwable;
     int getOrder();
@@ -21,6 +21,7 @@ public interface IInstallationTask extends ExtensionPoint {
     boolean isFinalizerOnly();
     IInstallationTask setAdmin(boolean admin);
     String getName();
+
 
     String getDescription();
 

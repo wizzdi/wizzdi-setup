@@ -1,10 +1,12 @@
 package com.flexicore.installer.interfaces;
 
+import com.flexicore.installer.model.InspectionResult;
 import com.flexicore.installer.model.InstallationContext;
 import com.flexicore.installer.model.InstallationState;
 import com.flexicore.installer.model.Service;
 import org.pf4j.ExtensionPoint;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,4 +22,5 @@ public interface IUIComponent extends ExtensionPoint {
     String getVersion();
     boolean updateStatus(InstallationContext context, Map<String, Set<String>> additional, String message, InstallationState state);
 
+    void updateInspections(InstallationContext context, ArrayList<InspectionResult> inspections);
 }
