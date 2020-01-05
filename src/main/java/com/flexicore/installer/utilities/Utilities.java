@@ -30,7 +30,7 @@ public class Utilities {
         toReplace = toReplace.replace("\\", "/");
         toFind = toFind.replace("\\", "/");
         String fileAsString = existingString;
-        if (existingString == null) {
+        if (existingString == null || (existingString!=null && existingString.isEmpty())) {
             InputStream is;
 
             try {

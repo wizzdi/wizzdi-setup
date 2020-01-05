@@ -300,6 +300,7 @@ public class InstallationTask implements IInstallationTask {
     public String flexicoreHome;
     public boolean force;
     public boolean dry;
+    public boolean update;
     public String phase = "";
 
     /**
@@ -319,6 +320,7 @@ public class InstallationTask implements IInstallationTask {
         flexicoreSource = getServerPath() + "/flexicore";
         flexicoreHome = getFlexicoreHome();
         dry = getContext().getParamaters().getBooleanValue("dry");
+        update = getContext().getParamaters().getBooleanValue("update");
         force = getContext().getParamaters().getBooleanValue("force");
         if (dry) {
             info("Dry run  of " + this.getId() + " -> " + this.getDescription() + getParameters(installationContext).toString());

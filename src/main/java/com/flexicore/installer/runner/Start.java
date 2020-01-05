@@ -503,12 +503,21 @@ public class Start {
         }
         currentStatus=message;
     }
-    private static void informUIOnInspections(InstallationContext context, ArrayList<InspectionResult>  inspections) {
-        for (IUIComponent component : uiComponents) {
-            component.updateInspections(context, inspections);
-        }
 
+    /**
+     * return true if some UI is there, so we should wait for confirmation
+     * @param context
+     * @param inspections
+     * @return
+     */
+    private static boolean informUIOnInspections(InstallationContext context, ArrayList<InspectionResult>  inspections) {
+
+        for (IUIComponent component : uiComponents) {
+            component.handleInspections(context, inspections);
+        }
+        return uiComponents.size()!=0;
     }
+
     private static Options initOptions() {
 
         // create Options object
@@ -562,17 +571,7 @@ public class Start {
                 int failed=0;
                 int skipped=0;
                 int completed=0;
-                int inspected=0;
-                ArrayList<InspectionResult> inspections=new ArrayList<>();
-                for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
-                    InspectionResult result = installationTask.inspect(installationContext);
-                    if (!result.getInspectionState().equals(InspectionState.NOT_FOUND)) {
-                        inspections.add(result);
-                    }
-                }
-                if (inspections.size()!=0) {
-                    informUIOnInspections(installationContext,inspections);
-                }
+                handleInspections(context);
                 for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
                     if (!installationTask.isEnabled()) {
                         info("task " + installationTask.getName() + " is disabled, skipping");
@@ -659,7 +658,11 @@ public class Start {
                         severe("Error while cleanup task run " + installationTask.getName());
                     }
                 }
-                updateStatus("starting cleanup ",completed,failed,skipped,InstallationState.DONE);
+                if (failed==0) {
+                    updateStatus("done, no task has failed ", completed, failed, skipped, InstallationState.COMPLETE);
+                }else {
+                    updateStatus("done, some tasks failed", completed, failed, skipped, InstallationState.PARTLYCOMPLETED);
+                }
             });
             thread.start();
             installRunning = false;
@@ -668,6 +671,37 @@ public class Start {
             return true;
         }
         return false;
+    }
+
+    /**
+     * should allow UI notification on issues found before installation , such as free space memory , already installed
+     * components that need removal etc.
+     * todo: implement using wait on object or timeout.
+     *
+     * @param context
+     */
+    private static void handleInspections(InstallationContext context) {
+//        ArrayList<InspectionResult> inspections=new ArrayList<>();
+//        for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
+//            InspectionResult result = installationTask.inspect(installationContext);
+//            if (!result.getInspectionState().equals(InspectionState.NOT_FOUND)) {
+//                inspections.add(result);
+//            }
+//        }
+//        if (inspections.size()!=0) {
+//            if(informUIOnInspections(installationContext,inspections)) {
+//                boolean notreplied=false;
+//                while (!notreplied) {
+//                    try {
+//                        Thread.sleep(100);
+//                        if (not)
+//                    } catch (InterruptedException e) {
+//                        info ("Interrupted while waiting for UI to respons");
+//                    }
+//                }
+//            }
+//        }
+
     }
 
     private static void updateStatus(String message,int completed, int failed, int skipped,InstallationState state) {

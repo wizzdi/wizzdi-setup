@@ -1,9 +1,6 @@
 package com.flexicore.installer.interfaces;
 
-import com.flexicore.installer.model.InspectionResult;
-import com.flexicore.installer.model.InstallationContext;
-import com.flexicore.installer.model.InstallationState;
-import com.flexicore.installer.model.Service;
+import com.flexicore.installer.model.*;
 import org.pf4j.ExtensionPoint;
 
 import java.util.ArrayList;
@@ -22,5 +19,17 @@ public interface IUIComponent extends ExtensionPoint {
     String getVersion();
     boolean updateStatus(InstallationContext context, Map<String, Set<String>> additional, String message, InstallationState state);
 
-    void updateInspections(InstallationContext context, ArrayList<InspectionResult> inspections);
+    /**
+     * notify optional UI on Installation Tasks having some issues (already installed, different version installed).
+     * @param context
+     * @param inspections
+     */
+    void handleInspections(InstallationContext context, ArrayList<InspectionResult> inspections);
+
+    /**
+     * returned by potential UI interface as a response to handleInspections, this is asynchronous
+     * @param inspections
+     * @return
+     */
+
 }
