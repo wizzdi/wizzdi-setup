@@ -1286,6 +1286,6 @@ public class InstallationTask implements IInstallationTask {
      * @return
      */
     public boolean fixFlexicoreConfig(String path) {
-        return editFile(path, "", "/home/flexicore", flexicoreHome, false, isWindows(), true) != null;
+        return editFile(path, "", "/home/flexicore", flexicoreHome, false, false, true) != null;
     }
 }
