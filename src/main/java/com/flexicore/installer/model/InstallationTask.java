@@ -623,9 +623,17 @@ public class InstallationTask implements IInstallationTask {
     }
 
     public void setOwnerFolder(Path path, String userName, String group) throws IOException {
-        List<Path> list = Files.walk(path).collect(Collectors.toList());
-        for (Path thePath : list) {
-            setOwner(userName, group, thePath);
+        if (!isWindows()) {
+            info("Setting owner on path: "+path);
+            List<Path> list = Files.walk(path).collect(Collectors.toList());
+            for (Path thePath : list) {
+                if (! setOwner(userName, group, thePath)) {
+                    info("Cannot set owner on file: "+thePath);
+                    break;
+                }
+            }
+        }else {
+            info("Setting owner on windows is not supported: "+path);
         }
 
     }
@@ -1142,16 +1150,17 @@ public class InstallationTask implements IInstallationTask {
         try {
             user = lookupService.lookupPrincipalByName(userName);
         } catch (IOException e) {
-            severe("Cannot dry user named: " + userName, e);
+           // severe("Cannot get user named: " + userName, e);
         }
         try {
-
-            GroupPrincipal group = lookupService.lookupPrincipalByGroupName(groupName);
-            Pair<GroupPrincipal, UserPrincipal> result = new ImmutablePair<>(group, user);
-            return result;
+            if (user!=null) {
+                GroupPrincipal group = lookupService.lookupPrincipalByGroupName(groupName);
+                Pair<GroupPrincipal, UserPrincipal> result = new ImmutablePair<>(group, user);
+                return result;
+            }
 
         } catch (IOException e) {
-            severe("Cannot dry group named: " + groupName, e);
+            //severe("Cannot get  group named: " + groupName, e);
         }
         return null;
 

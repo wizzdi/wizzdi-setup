@@ -93,7 +93,7 @@ public class Start {
         readProperties(installationContext);
         installationContext.getiInstallationTasks().clear();
         ArrayList<String> softRequired = new ArrayList<>();
-        ArrayList<IInstallationTask> finalizers=new ArrayList<>();
+        ArrayList<IInstallationTask> finalizers = new ArrayList<>();
         ArrayList<IInstallationTask> softNeed = new ArrayList<>();
         while (topologicalOrderIterator.hasNext()) {
             String installationTaskUniqueId = topologicalOrderIterator.next();
@@ -104,10 +104,10 @@ public class Start {
             }
             if (!task.getSoftPrerequisitesTask().isEmpty()) { //task has soft prerequisites.
                 //check if required task has been added already.
-                boolean defer=false;
+                boolean defer = false;
                 for (String req : task.getSoftPrerequisitesTask()) {
                     if (!installationContext.getiInstallationTasks().containsKey(req)) {
-                        defer=true;
+                        defer = true;
                         if (!softRequired.contains(req)) {
                             softRequired.add(req);
                         }
@@ -118,32 +118,37 @@ public class Start {
                     continue; //we will not add this task now
                 }
             }
-            ArrayList<IInstallationTask> needThis=new ArrayList<>();
-            for (IInstallationTask needingTask:softNeed) {
+            ArrayList<IInstallationTask> needThis = new ArrayList<>();
+            for (IInstallationTask needingTask : softNeed) {
                 if (needingTask.getSoftPrerequisitesTask().contains(installationTaskUniqueId)) {
                     needThis.add(needingTask); //these tasks will be added after this task
                 }
             }
             task.setOrder(order++);
-           if (! handleTask(installationContext,task,mainCmd,args,parser)) {
-               exit(0);
+            if (!handleTask(installationContext, task, mainCmd, args, parser)) {
+                exit(0);
             }
 
-           for (IInstallationTask needingTask:needThis) {
-               if (needingTask.getSoftPrerequisitesTask().size()==1) { //task will be added only if all soft have been added so far
-                   needingTask.setOrder(order++);
-                   if (!handleTask(installationContext, needingTask,   mainCmd, args, parser)) {
-                       exit(0);
-                   }
-               }else {
-                   needingTask.getSoftPrerequisitesTask().remove(installationTaskUniqueId);
-               }
-           }
+            for (IInstallationTask needingTask : needThis) {
+                if (needingTask.getSoftPrerequisitesTask().size() == 1) { //task will be added only if all soft have been added so far
+                    needingTask.setOrder(order++);
+                    if (!handleTask(installationContext, needingTask, mainCmd, args, parser)) {
+                        exit(0);
+                    }
+                } else {
+                    needingTask.getSoftPrerequisitesTask().remove(installationTaskUniqueId);
+                }
+            }
 
         }
-        for (IInstallationTask task:finalizers) {
+        for (IInstallationTask task : finalizers) {
             task.setOrder(order++);
-            handleTask(installationContext, task,  mainCmd, args, parser);
+            handleTask(installationContext, task, mainCmd, args, parser);
+        }
+        //do pass two, brute force second pass on all parameters we cannot fix references unless we have them all.
+        for (IInstallationTask task : installationContext.getiInstallationTasks().values()) {
+            Options taskOptions = getOptions(task, installationContext);
+            updateParameters(false,task, installationContext, taskOptions, args, parser);
         }
         if (installationContext.getParamaters() != null) installationContext.getParamaters().sort();
         boolean stopped = false;
@@ -160,8 +165,8 @@ public class Start {
 
                 Thread.sleep(2000);
                 if (!displayed) {
-                    displayed=true;
-                    informUI("Installation ready",InstallationState.READY);
+                    displayed = true;
+                    informUI("Installation ready", InstallationState.READY);
                 }
 
             }
@@ -176,6 +181,7 @@ public class Start {
 
     /**
      * adds a task if matches the current operating system.
+     *
      * @param installationContext
      * @param task
      * @param mainCmd
@@ -185,7 +191,7 @@ public class Start {
      */
     private static boolean handleTask(InstallationContext installationContext,
                                       IInstallationTask task,
-                                       CommandLine mainCmd,String[] args ,CommandLineParser parser) {
+                                      CommandLine mainCmd, String[] args, CommandLineParser parser) {
         boolean found = false;
         OperatingSystem cos = task.getCurrentOperatingSystem();
         for (OperatingSystem os : task.getOperatingSystems()) {
@@ -200,7 +206,7 @@ public class Start {
         installationContext.addTask(task);
 
         Options taskOptions = getOptions(task, installationContext);
-        if (!updateParameters(task, installationContext, taskOptions, args, parser)) {
+        if (!updateParameters(true,task, installationContext, taskOptions, args, parser)) {
             severe("Error while parsing task parameters, quitting on task: " + task.getId());
             return false;
         }
@@ -265,10 +271,10 @@ public class Start {
      */
     private static void doUpdateUI(IInstallationTask task, InstallationContext installationContext) {
         List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
-        boolean someFound=false;
+        boolean someFound = false;
         for (IUIComponent component : filtered) {
             component.updateProgress(installationContext, task);
-            someFound=true;
+            someFound = true;
         }
         if (someFound) {
             try {
@@ -352,13 +358,16 @@ public class Start {
      * @param parser
      * @return
      */
-    private static boolean updateParameters(IInstallationTask task, InstallationContext installationContext, Options taskOptions, String[] args, CommandLineParser parser) {
+    private static boolean updateParameters(boolean reallyAdd,IInstallationTask task, InstallationContext installationContext, Options taskOptions, String[] args, CommandLineParser parser) {
         try {
+
             String[] trueArgs = getTrueArgs(args, taskOptions);
             CommandLine cmd = parser.parse(taskOptions, trueArgs, true);
             Parameters taskParameters = task.getParameters(installationContext);
             int count = 0;
+
             for (String name : taskParameters.getKeys()) {
+
                 Parameter parameter = taskParameters.getParameter(name);
                 if (parameter.isHasValue()) {
                     parameter.setValue(cmd.getOptionValue(name, getCalculatedDefaultValue(parameter, installationContext))); //set correct value for parameter
@@ -377,8 +386,10 @@ public class Start {
                     }
 
                 }
-                installationContext.getParamaters().addParameter(parameter, task);
-                count++;
+                if (reallyAdd) {
+                    installationContext.getParamaters().addParameter(parameter, task);
+                    count++;
+                }
             }
             info("Have added " + count + " parameters to installation task: " + task.getId() + " ->>" + task.getDescription());
         } catch (ParseException e) {
@@ -506,25 +517,26 @@ public class Start {
         return new TopologicalOrderIterator<>(g);
     }
 
-    private static void informUI(String message,InstallationState state) {
+    private static void informUI(String message, InstallationState state) {
         for (IUIComponent component : uiComponents) {
-            component.updateStatus(installationContext, missingDependencies, message,state);
+            component.updateStatus(installationContext, missingDependencies, message, state);
         }
-        currentStatus=message;
+        currentStatus = message;
     }
 
     /**
      * return true if some UI is there, so we should wait for confirmation
+     *
      * @param context
      * @param inspections
      * @return
      */
-    private static boolean informUIOnInspections(InstallationContext context, ArrayList<InspectionResult>  inspections) {
+    private static boolean informUIOnInspections(InstallationContext context, ArrayList<InspectionResult> inspections) {
 
         for (IUIComponent component : uiComponents) {
             component.handleInspections(context, inspections);
         }
-        return uiComponents.size()!=0;
+        return uiComponents.size() != 0;
     }
 
     private static Options initOptions() {
@@ -576,16 +588,16 @@ public class Start {
             Thread thread = new Thread(() -> {
                 long startAll = System.currentTimeMillis();
                 logger.info("Performing installation of " + context.getiInstallationTasks().size() + " tasks");
-                informUI("Installation running , performed 0, failed 0, skipped 0",InstallationState.RUNNING);
-                int failed=0;
-                int skipped=0;
-                int completed=0;
+                informUI("Installation running , performed 0, failed 0, skipped 0", InstallationState.RUNNING);
+                int failed = 0;
+                int skipped = 0;
+                int completed = 0;
                 handleInspections(context);
                 for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
                     if (!installationTask.isEnabled()) {
                         info("task " + installationTask.getName() + " is disabled, skipping");
                         skipped++;
-                        updateStatus(" installation status",completed,failed,skipped,InstallationState.RUNNING);
+                        updateStatus(" installation status", completed, failed, skipped, InstallationState.RUNNING);
                         continue;
 
                     }
@@ -602,13 +614,13 @@ public class Start {
                             InstallationResult result = installationTask.install(context);
                             if (result.getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
                                 completed++;
-                                updateStatus(" installation status",completed,failed,skipped,InstallationState.RUNNING);
+                                updateStatus(" installation status", completed, failed, skipped, InstallationState.RUNNING);
                                 info("Have successfully finished installation task: " + installationTask.getName() + " after " + getSeconds(start) + " Seconds");
                                 installationTask.setProgress(100).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.COMPLETED);
 
                             } else {
                                 failed++;
-                                updateStatus(" installation status",completed,failed,skipped,InstallationState.RUNNING);
+                                updateStatus(" installation status", completed, failed, skipped, InstallationState.RUNNING);
                                 installationTask.setProgress(0).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.FAILED);
                             }
                             doUpdateUI(installationTask, installationContext);
@@ -635,17 +647,17 @@ public class Start {
                     }
                     // installTask(installationTask, context);
                 }
-                updateStatus(" Installation finalizing",completed,failed,skipped,InstallationState.FINALIZING);
+                updateStatus(" Installation finalizing", completed, failed, skipped, InstallationState.FINALIZING);
                 info(" calling finalizers on all tasks");
                 for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
                     if (!installationTask.isSnooper()) {
                         try {
                             if (installationTask.finalizeInstallation(context).getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
-                               completed++;
-                                updateStatus("finalizing  status",completed,failed,skipped,InstallationState.FINALIZING);
-                            }else {
+                                completed++;
+                                updateStatus("finalizing  status", completed, failed, skipped, InstallationState.FINALIZING);
+                            } else {
                                 failed++;
-                                updateStatus("finalizing  status",completed,failed,skipped,InstallationState.FINALIZING);
+                                updateStatus("finalizing  status", completed, failed, skipped, InstallationState.FINALIZING);
                             }
                         } catch (Throwable throwable) {
                             severe("Error while finalizing task: " + installationTask.getName());
@@ -653,7 +665,7 @@ public class Start {
                     }
                 }
                 info("Total installation time was: " + getSeconds(startAll) + " Seconds");
-                updateStatus("starting cleanup ",completed,failed,skipped,InstallationState.CLEANUP);
+                updateStatus("starting cleanup ", completed, failed, skipped, InstallationState.CLEANUP);
                 for (IInstallationTask installationTask : context.getCleanupTasks().values()) {
                     installationTask.setProgress(70).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now());
                     try {
@@ -667,9 +679,9 @@ public class Start {
                         severe("Error while cleanup task run " + installationTask.getName());
                     }
                 }
-                if (failed==0) {
+                if (failed == 0) {
                     updateStatus("done, no task has failed ", completed, failed, skipped, InstallationState.COMPLETE);
-                }else {
+                } else {
                     updateStatus("done, some tasks failed", completed, failed, skipped, InstallationState.PARTLYCOMPLETED);
                 }
             });
@@ -713,8 +725,8 @@ public class Start {
 
     }
 
-    private static void updateStatus(String message,int completed, int failed, int skipped,InstallationState state) {
-        informUI(message+" Completed tasks: "+completed+" Failed tasks: "+failed+" Skipped tasks: "+skipped,state);
+    private static void updateStatus(String message, int completed, int failed, int skipped, InstallationState state) {
+        informUI(message + " Completed tasks: " + completed + " Failed tasks: " + failed + " Skipped tasks: " + skipped, state);
     }
 
     public static long getSeconds(long from) {
