@@ -31,6 +31,7 @@ public class Start {
     private static final String HELP = "h";
     private static final String LOG_PATH_OPT = "l";
     private static final String INSTALLATION_TASKS_FOLDER = "tasks";
+    private static final long PROGRESS_DELAY = 300;
     private static Logger logger;
     private static PluginManager pluginManager;
     private static List<IUIComponent> uiComponents;
@@ -264,10 +265,18 @@ public class Start {
      */
     private static void doUpdateUI(IInstallationTask task, InstallationContext installationContext) {
         List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
+        boolean someFound=false;
         for (IUIComponent component : filtered) {
             component.updateProgress(installationContext, task);
+            someFound=true;
         }
-
+        if (someFound) {
+            try {
+                Thread.sleep(PROGRESS_DELAY);
+            } catch (InterruptedException e) {
+                severe("Interrupted");
+            }
+        }
     }
 
     /**
@@ -583,7 +592,7 @@ public class Start {
                     info("will now install " + installationTask.getName() + " id: " + installationTask.getId());
                     info("details: " + installationTask.getDescription());
 
-                    installationTask.setProgress(0).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now()).setMessage(" Just started");
+                    installationTask.setProgress(0).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now()).setMessage(" Started installation, may take some time");
                     doUpdateUI(installationTask, installationContext);
                     try {
                         long start = System.currentTimeMillis();
