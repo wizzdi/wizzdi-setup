@@ -305,6 +305,7 @@ public class InstallationTask implements IInstallationTask {
 
     /**
      * called before the installation allowing tasks to inform on previous installations, removals etc.
+     *
      * @param context
      * @return
      */
@@ -440,6 +441,7 @@ public class InstallationTask implements IInstallationTask {
     /**
      * if true, will be sorted as if all other plugins are pre-requisites, effectively put finalizers last in the list
      * finalizers order is not fixed and it is assumed that these need to run last.
+     *
      * @return
      */
     @Override
@@ -624,16 +626,16 @@ public class InstallationTask implements IInstallationTask {
 
     public void setOwnerFolder(Path path, String userName, String group) throws IOException {
         if (!isWindows()) {
-            info("Setting owner on path: "+path);
+            info("Setting owner on path: " + path);
             List<Path> list = Files.walk(path).collect(Collectors.toList());
             for (Path thePath : list) {
-                if (! setOwner(userName, group, thePath)) {
-                    info("Cannot set owner on file: "+thePath);
+                if (!setOwner(userName, group, thePath)) {
+                    info("Cannot set owner on file: " + thePath);
                     break;
                 }
             }
-        }else {
-            info("Setting owner on windows is not supported: "+path);
+        } else {
+            info("Setting owner on windows is not supported: " + path);
         }
 
     }
@@ -1150,10 +1152,10 @@ public class InstallationTask implements IInstallationTask {
         try {
             user = lookupService.lookupPrincipalByName(userName);
         } catch (IOException e) {
-           // severe("Cannot get user named: " + userName, e);
+            // severe("Cannot get user named: " + userName, e);
         }
         try {
-            if (user!=null) {
+            if (user != null) {
                 GroupPrincipal group = lookupService.lookupPrincipalByGroupName(groupName);
                 Pair<GroupPrincipal, UserPrincipal> result = new ImmutablePair<>(group, user);
                 return result;
@@ -1207,6 +1209,7 @@ public class InstallationTask implements IInstallationTask {
 
     /**
      * set Windows service dependencies, service will not start unless the dependson are running
+     *
      * @param serviceName
      * @param dependsOn
      * @param ownerName
@@ -1214,7 +1217,6 @@ public class InstallationTask implements IInstallationTask {
      */
     public boolean setServiceDependencies(String serviceName, String[] dependsOn, String ownerName) {
         if (isWindows()) {
-
 
 
             String services = null;
@@ -1225,7 +1227,7 @@ public class InstallationTask implements IInstallationTask {
                     services += "/" + service;
                 }
             }
-            info ("Setting server dependencies for service name:"+serviceName+" depends on"+services);
+            info("Setting server dependencies for service name:" + serviceName + " depends on" + services);
             if (services == null || services.isEmpty()) return false;
 
             return executeCommand("sc config " + serviceName + " depend= " + services, "success", " Setting dependencies on: " + ownerName);
@@ -1233,6 +1235,7 @@ public class InstallationTask implements IInstallationTask {
 
 
     }
+
     /**
      * @param pathtoMSI full path to msi
      * @param options   any of: [/quiet][/passive][/q{n|b|r|f}]
@@ -1288,4 +1291,23 @@ public class InstallationTask implements IInstallationTask {
     public boolean fixFlexicoreConfig(String path) {
         return editFile(path, "", "/home/flexicore", flexicoreHome, false, false, true) != null;
     }
+
+    public enum WindowsVersion {
+        xp, vista, seven, eight, ten
+    }
+
+    public static WindowsVersion getWindowsVersion() {
+        if (System.getProperty("os.name").toLowerCase().contains("windows") && System.getProperty("os.name").toLowerCase().contains("xp")) {
+            return WindowsVersion.xp;
+        } else if (System.getProperty("os.name").toLowerCase().contains("windows") && System.getProperty("os.name").toLowerCase().contains("vista")) {
+            return WindowsVersion.vista;
+        } else if (System.getProperty("os.name").toLowerCase().contains("windows") && System.getProperty("os.name").toLowerCase().contains("7")) {
+            return WindowsVersion.seven;
+        } else if (System.getProperty("os.name").toLowerCase().contains("windows") && System.getProperty("os.name").toLowerCase().contains("8")) {
+            return WindowsVersion.eight;
+        } else return WindowsVersion.ten;
+    }
+
 }
+
+
