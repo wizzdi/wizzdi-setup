@@ -508,7 +508,7 @@ public class Parameter {
             String newString = installationContext.getParamaters().getValue(toReplace.substring(0));
             logger.info("this is the new replacement:  "+newString);
             if (newString != null && !newString.isEmpty() && doReplace) {
-                parameter.setReferencedParameter(toReplace.substring(1));
+                parameter.setReferencedParameter(toReplace);
                 result = result.replace(result.substring(a, index - 2), newString);
 
                 logger.info("after replacement: "+result);

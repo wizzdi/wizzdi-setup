@@ -26,10 +26,6 @@ public interface IUIComponent extends ExtensionPoint {
      */
     void handleInspections(InstallationContext context, ArrayList<InspectionResult> inspections);
 
-    /**
-     * returned by potential UI interface as a response to handleInspections, this is asynchronous
-     * @param inspections
-     * @return
-     */
+
 
 }
