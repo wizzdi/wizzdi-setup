@@ -728,7 +728,13 @@ public class InstallationTask implements IInstallationTask {
 
     }
 
-
+    public boolean copySingleFile(String source,String target) throws IOException {
+        if (exists(source)) {
+            Files.copy(Paths.get(source) ,Paths.get(target),StandardCopyOption.REPLACE_EXISTING);
+            return true;
+        }
+        return false;
+    }
     /**
      * @param installationDir source of the copy
      * @param targetDir       target of the copy
@@ -748,8 +754,7 @@ public class InstallationTask implements IInstallationTask {
                 ensureTarget(targetDir);
                 try {
                     CopyFileVisitor copyFileVisitor = null;
-                    addMessage("" + ownerName + " copying server", "info", "copy started, make take few minutes");
-                    if (!dry) {
+                     if (!dry) {
                         Files.walkFileTree(sourcePath, copyFileVisitor = new CopyFileVisitor(targetPath).setInstallationTask(this).setLogger(getContext().getLogger()).setCopyOver(true));
                     }
                     addMessage(ownerName + " copying server", "info", "copy finished " + ((copyFileVisitor == null) ? "" : ((copyFileVisitor.getCount() + "  files copied" + (copyFileVisitor.getErrors() == 0 ? "" : "  Errors: " + copyFileVisitor.getErrors())))));
@@ -1032,7 +1037,18 @@ public class InstallationTask implements IInstallationTask {
         }
         return true;
     }
-
+    public boolean addToPath(String path,String owner) {
+        boolean result = false;
+        if (isWindows()) {
+            if (exists(path)) {
+                result = executeCommandByRuntime("setx path  \"" + "%PATH%;" + path + "\"", owner);
+                if (result) {
+                    info ("have added "+path+" to path variable ");
+                }
+            }
+        }
+        return result;
+    }
     /**
      * @param path
      * @param existingString from a previous call, saves time in open/close file sequence, all stages but one in memory

@@ -614,14 +614,17 @@ public class Start {
                             InstallationResult result = installationTask.install(context);
                             if (result.getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
                                 completed++;
-                                updateStatus(" installation status", completed, failed, skipped, InstallationState.RUNNING);
+                                updateStatus(" installation running: ", completed, failed, skipped, InstallationState.RUNNING);
                                 info("Have successfully finished installation task: " + installationTask.getName() + " after " + getSeconds(start) + " Seconds");
                                 installationTask.setProgress(100).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.COMPLETED);
 
                             } else {
+                                info("-----------Failed task: "+installationTask.getName());
                                 failed++;
                                 updateStatus(" installation status", completed, failed, skipped, InstallationState.RUNNING);
                                 installationTask.setProgress(0).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.FAILED);
+                                info("Have unsuccessfully finished installation task: " + installationTask.getName() + " after " + getSeconds(start) + " Seconds");
+
                             }
                             doUpdateUI(installationTask, installationContext);
                         } else {
@@ -657,6 +660,7 @@ public class Start {
                                 updateStatus("finalizing  status", completed, failed, skipped, InstallationState.FINALIZING);
                             } else {
                                 failed++;
+                                info("-----------Failed task while finalizing: "+installationTask.getName());
                                 updateStatus("finalizing  status", completed, failed, skipped, InstallationState.FINALIZING);
                             }
                         } catch (Throwable throwable) {
