@@ -339,7 +339,7 @@ public class InstallationTask implements IInstallationTask {
      */
     @Override
     public InstallationResult finalizeInstallation(InstallationContext installationContext) throws Throwable {
-        return null;
+        return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
     }
 
     /**
