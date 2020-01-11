@@ -1,5 +1,6 @@
 package com.flexicore.installer.utilities;
 
+import com.flexicore.installer.model.InstallationContext;
 import com.flexicore.installer.model.InstallationTask;
 
 import java.io.File;
@@ -15,6 +16,7 @@ public class CopyFileVisitor extends SimpleFileVisitor<Path> {
 
     private InstallationTask installationTask;
     private Logger logger;
+    private InstallationContext context;
     private boolean copyOver=true;
     private String ownerName;
 
@@ -59,14 +61,30 @@ public class CopyFileVisitor extends SimpleFileVisitor<Path> {
     @Override
     public FileVisitResult preVisitDirectory(final Path dir,
                                              final BasicFileAttributes attrs) throws IOException {
+
         if (sourcePath == null) {
             sourcePath = dir;
         } else {
-            Files.createDirectories(targetPath.resolve(sourcePath
-                    .relativize(dir)));
+            try {
+                Files.createDirectories(targetPath.resolve(sourcePath
+                        .relativize(dir)));
+
+            } catch (IOException e) {
+                installationTask.incrementFoldersFailures();
+                throw e;
+            }
         }
         return FileVisitResult.CONTINUE;
     }
+
+    @Override
+    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+        FileVisitResult result = super.postVisitDirectory(dir, exc);
+        installationTask.incrementFolders();
+        context.getFilesProgress().filesProgress(context,installationTask);
+        return result;
+    }
+
     int count=0;
     int errors=0;
 
@@ -76,6 +94,21 @@ public class CopyFileVisitor extends SimpleFileVisitor<Path> {
 
     public int getErrors() {
         return errors;
+    }
+
+    @Override
+    public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+        return super.visitFileFailed(file, exc);
+    }
+
+    public InstallationContext getContext() {
+        return context;
+    }
+
+    public CopyFileVisitor setContext(InstallationContext context) {
+        this.context = context;
+        this.logger=context.getLogger();
+        return this;
     }
 
     @Override
@@ -90,14 +123,17 @@ public class CopyFileVisitor extends SimpleFileVisitor<Path> {
                 if (copyOver) {
                     fileToDelete.setWritable(true); //just in case
                     Files.copy(file,path, StandardCopyOption.REPLACE_EXISTING,StandardCopyOption.COPY_ATTRIBUTES);
+                    installationTask.incrementFiles();
                 }
 
 
             }else {
                 Files.copy(file,path);
+                installationTask.incrementFiles();
             }
         } catch (IOException e) {
             logger.log(Level.SEVERE,"Error while copying file "+path,e);
+            installationTask.incrementFilesErrors();
             errors++;
 
         }

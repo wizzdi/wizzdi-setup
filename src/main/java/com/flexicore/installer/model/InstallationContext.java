@@ -18,6 +18,7 @@ public class InstallationContext {
     private LinkedHashMap<String,IInstallationTask> cleanupTasks=new LinkedHashMap<>();
     private LinkedHashMap<String,InstallationResult> results=new LinkedHashMap<>();
     private List<IUIComponent> iuiComponents=new ArrayList<>();
+    //the following are functional interfaces defined in Start class, can be considered as a modern form of a jump tables into functions
     private Start.UIAccessInterfaceQuit uiQuit;
     private Start.UIAccessInterfaceInstallDry uiInstallDry;
     private Start.UIAccessInterfaceInstall uiInstall;
@@ -27,9 +28,11 @@ public class InstallationContext {
     private Start.UIAccessInterfaceShowLogs uiShowLogs;
     private Start.UIAccessInterfaceStop uiStopInstall;
     private Start.UIAccessAbout uiAbout;
-    private ProgressConsumer consumer;
+
     private Start.InstallerProgress installerProgress;
     private Start.UpdateService updateService;
+    private Start.installerFilesProgress filesProgress;
+    private ProgressConsumer consumer;
     private int successFullyInstalled=0;
     private int failedToInstall=0;
     private String mainTitle;
@@ -265,6 +268,15 @@ public class InstallationContext {
 
     public InstallationContext setUiToggle(Start.UIAccessInterfaceToggle uiToggle) {
         this.uiToggle = uiToggle;
+        return this;
+    }
+
+    public Start.installerFilesProgress getFilesProgress() {
+        return filesProgress;
+    }
+
+    public InstallationContext setFilesProgress(Start.installerFilesProgress filesProgress) {
+        this.filesProgress = filesProgress;
         return this;
     }
 }

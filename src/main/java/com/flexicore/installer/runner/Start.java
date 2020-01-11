@@ -63,6 +63,7 @@ public class Start {
                         setUiStopInstall(Start::UIAccessInterfaceStop).
                         setInstallerProgress(Start::InstallerProgress).
                         setUpdateService(Start::uiUpdateService).
+                        setFilesProgress(Start::updateFilesProgress).
                         setUiToggle(Start::uiComponentToggle);
 
 
@@ -262,7 +263,14 @@ public class Start {
             }
         }
     }
+    private static IInstallationTask updateFilesProgress(InstallationContext context,IInstallationTask task ) {
+        List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
 
+        for (IUIComponent component : filtered) {
+            component.refreshFilesCount(installationContext, task);
+        }
+        return task;
+    }
     /**
      * will not update ui componenets without isShowing=true
      *
@@ -821,6 +829,12 @@ public class Start {
     private static boolean uiUpdateService(InstallationContext context, Service service, IInstallationTask task) {
         return doUpdateService(context, service, task);
     }
+    private static IInstallationTask InstallerFilesProgress(InstallationContext context,IInstallationTask task) {
+        updateFilesProgress( context,task);
+        return task;
+    }
+
+
 
 
     private static String doAbout() {
@@ -888,6 +902,10 @@ public class Start {
         IInstallationTask installationProgress(IInstallationTask task, InstallationContext context);
     }
 
+    @FunctionalInterface
+    public static interface installerFilesProgress {
+        IInstallationTask filesProgress( InstallationContext context,IInstallationTask task);
+    }
     @FunctionalInterface
     public static interface UpdateService {
         boolean serviceProgress(InstallationContext context, Service service, IInstallationTask task);

@@ -7,7 +7,6 @@ import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.zeroturnaround.zip.ZipUtil;
-
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.GroupPrincipal;
@@ -37,6 +36,13 @@ public class InstallationTask implements IInstallationTask {
     private boolean admin = false;
     public boolean stop = false;
     private Service service;
+    private int filesCopied=0;
+    private int filesFailed=0;
+    private int foldersCopied=0;
+    private int foldersFailed=0;
+    private int totalFiles;
+    private int totalFolders;
+    private boolean progressOnFolders=false;
 
     public Parameters getPrivateParameters() {
         return null;
@@ -62,6 +68,13 @@ public class InstallationTask implements IInstallationTask {
         return OperatingSystem.Linux;
     }
 
+    /**
+     * check of a service by a known name is running.
+     * @param serviceName
+     * @param ownerName , for logging purposes (name)
+     * @param wait wait for a defined time (now second) before declaring service not running, useful when the service has just started
+     * @return
+     */
     public boolean testServiceRunning(String serviceName, String ownerName, boolean wait) {
         boolean result = false;
         int times = 0;
@@ -95,6 +108,12 @@ public class InstallationTask implements IInstallationTask {
         installationTasks.put(this.getId(), this);
     }
 
+    /**
+     * Windows only, set service to run on startup
+     * @param serviceName
+     * @param ownerName
+     * @return
+     */
     public boolean setServiceToAuto(String serviceName, String ownerName) {
         if (isWindows) {
             return executeCommand("sc config " + serviceName + " start= auto", "success", "Set Service To Auto");
@@ -102,6 +121,13 @@ public class InstallationTask implements IInstallationTask {
         return true;
     }
 
+    /**
+     * old method of informing UI
+     * @param phase
+     * @param severity
+     * @param message
+     */
+    @Deprecated
     public void addMessage(String phase, String severity, String message) {
         if (severity != "info") {
             severe(phase + "  " + message);
@@ -111,6 +137,12 @@ public class InstallationTask implements IInstallationTask {
 
     }
 
+    /**
+     * Stop service, this is required when updating
+     * @param serviceName
+     * @param ownerName
+     * @return
+     */
     public boolean setServiceToStop(String serviceName, String ownerName) {
         if (isWindows) {
             return executeCommand("sc stop " + serviceName, "STOP_PENDING", "Set Service To Stop " + serviceName);
@@ -118,11 +150,20 @@ public class InstallationTask implements IInstallationTask {
             return executeCommand("service  " + serviceName + " stop", "", "Set Service To Stop " + serviceName);
         }
     }
-
+//todo: check that Linux version works.
     public boolean setServiceToStart(String serviceName, String ownerName) {
-        return executeCommand("sc start " + serviceName, "START_PENDING", "Set Service To Stop " + serviceName);
+        if (isWindows()) {
+            return executeCommand("sc start " + serviceName, "START_PENDING", "Set Service To Stop " + serviceName);
+        }else {
+            return executeCommand("service  " + serviceName+" restart", "", "Set Service To restart  " + serviceName);
+        }
     }
 
+    /**
+     * check if path exists
+     * @param file String, name of path
+     * @return
+     */
     public boolean exists(String file) {
         return new File(file).exists();
     }
@@ -135,7 +176,7 @@ public class InstallationTask implements IInstallationTask {
      */
     public boolean executeBashScript(String script, String toFind, String ownerName) {
 
-        if (new File(script).exists()) {
+        if (new File(script).exists() && !isWindows()) {
 
             executeCommand("chmod +x " + script, "", "change mode to execute");
             String[] cmd = new String[]{"/bin/sh", script};
@@ -755,7 +796,7 @@ public class InstallationTask implements IInstallationTask {
                 try {
                     CopyFileVisitor copyFileVisitor = null;
                      if (!dry) {
-                        Files.walkFileTree(sourcePath, copyFileVisitor = new CopyFileVisitor(targetPath).setInstallationTask(this).setLogger(getContext().getLogger()).setCopyOver(true));
+                        Files.walkFileTree(sourcePath, copyFileVisitor = new CopyFileVisitor(targetPath).setInstallationTask(this).setContext(getContext()).setCopyOver(true));
                     }
                     addMessage(ownerName + " copying server", "info", "copy finished " + ((copyFileVisitor == null) ? "" : ((copyFileVisitor.getCount() + "  files copied" + (copyFileVisitor.getErrors() == 0 ? "" : "  Errors: " + copyFileVisitor.getErrors())))));
                     copyFileVisitor.clear();
@@ -1298,6 +1339,69 @@ public class InstallationTask implements IInstallationTask {
 
     }
 
+    public int getFilesCopied() {
+        return filesCopied;
+    }
+
+    public InstallationTask setFilesCopied(int filesCopied) {
+        this.filesCopied = filesCopied;
+        return this;
+    }
+
+    public int getFilesFailed() {
+        return filesFailed;
+    }
+
+    public InstallationTask setFilesFailed(int filesFailed) {
+        this.filesFailed = filesFailed;
+        return this;
+    }
+
+    public int getFoldersCopied() {
+        return foldersCopied;
+    }
+
+    public InstallationTask setFoldersCopied(int foldersCopied) {
+        this.foldersCopied = foldersCopied;
+        return this;
+    }
+
+    public int getFoldersFailed() {
+        return foldersFailed;
+    }
+
+    public InstallationTask setFoldersFailed(int foldersFailed) {
+        this.foldersFailed = foldersFailed;
+        return this;
+    }
+
+    public int getTotalFiles() {
+        return totalFiles;
+    }
+
+    public InstallationTask setTotalFiles(int totalFiles) {
+        this.totalFiles = totalFiles;
+        return this;
+    }
+
+    public int getTotalFolders() {
+        return totalFolders;
+    }
+
+    public InstallationTask setTotalFolders(int totalFolders) {
+        this.totalFolders = totalFolders;
+        return this;
+    }
+
+    public boolean isProgressOnFolders() {
+        return progressOnFolders;
+    }
+
+    public InstallationTask setProgressOnFolders(boolean progressOnFolders) {
+        this.progressOnFolders = progressOnFolders;
+        return this;
+    }
+
     /**
      * this is to help in using editfile, may be redundant, no need to reverse slash
      *
@@ -1306,6 +1410,22 @@ public class InstallationTask implements IInstallationTask {
      */
     public boolean fixFlexicoreConfig(String path) {
         return editFile(path, "", "/home/flexicore", flexicoreHome, false, false, true) != null;
+    }
+
+    public void incrementFiles() {
+        filesCopied++;
+    }
+
+    public void incrementFilesErrors() {
+        filesFailed++;
+    }
+
+    public void incrementFolders() {
+        foldersCopied++;
+    }
+
+    public void incrementFoldersFailures() {
+        foldersFailed++;
     }
 
     public enum WindowsVersion {
