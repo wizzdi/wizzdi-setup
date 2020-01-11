@@ -11,6 +11,7 @@ public interface IInstallationTask extends ExtensionPoint {
     InspectionResult inspect(InstallationContext context);
     InstallationResult install(InstallationContext installationContext) throws Throwable;
     InstallationResult finalizeInstallation(InstallationContext installationContext) throws Throwable;
+    InstallationResult restartService(InstallationContext installationContext) throws Throwable;
     int getOrder();
     IInstallationTask setOrder(int order);
     String getId();
@@ -35,6 +36,7 @@ public interface IInstallationTask extends ExtensionPoint {
     IInstallationTask setVersion(String version);
 
     Set<String> getPrerequisitesTask();
+    Set<String> getNeedRestartTasks();
     Set<String> getSoftPrerequisitesTask(); //added to support forced order between two tasks if both exist
     InstallationStatus getStatus();
 

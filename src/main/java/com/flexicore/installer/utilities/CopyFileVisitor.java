@@ -98,6 +98,7 @@ public class CopyFileVisitor extends SimpleFileVisitor<Path> {
 
     @Override
     public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+        getInstallationTask().incrementFilesErrors();
         return super.visitFileFailed(file, exc);
     }
 

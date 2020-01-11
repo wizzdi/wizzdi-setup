@@ -383,6 +383,11 @@ public class InstallationTask implements IInstallationTask {
         return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
     }
 
+    @Override
+    public InstallationResult restartService(InstallationContext installationContext) throws Throwable {
+        return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
+    }
+
     /**
      * create a service for uodating running services (makes sense only if there is a UI available)
      *
@@ -523,6 +528,15 @@ public class InstallationTask implements IInstallationTask {
 
     @Override
     public Set<String> getPrerequisitesTask() {
+        return Collections.emptySet();
+    }
+
+    /**
+     * list of ids we need to restart.
+     * @return
+     */
+    @Override
+    public Set<String> getNeedRestartTasks() {
         return Collections.emptySet();
     }
 
@@ -933,7 +947,7 @@ public class InstallationTask implements IInstallationTask {
                     CopyFileVisitor copyFileVisitor = null;
 
                     if (!dry) {
-                        Files.walkFileTree(sourcePath, copyFileVisitor = new CopyFileVisitor(targetPath).setInstallationTask(this).setLogger(context.getLogger()).setCopyOver(true));
+                        Files.walkFileTree(sourcePath, copyFileVisitor = new CopyFileVisitor(targetPath).setInstallationTask(this).setContext(getContext()).setCopyOver(true));
                     }
 
 
