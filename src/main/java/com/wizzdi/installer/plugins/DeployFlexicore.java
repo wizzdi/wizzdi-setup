@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -163,8 +164,12 @@ static Parameter[] preDefined ={
         return this;
     }
 
-
-
+    @Override
+    public Set<String> getNeedRestartTasks() {
+        Set<String> result = new HashSet<>();
+        result.add("Wildfly-installer"); //service must be restarted
+        return result;
+    }
 
     @Override
     public int mergeParameters(InstallationContext installationContext) {

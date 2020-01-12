@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="5a5edd4e-73f9-41ab-925c-ed8a5f34bf28" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,7 +40,7 @@
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../flexicore-fix-config" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -87,6 +88,8 @@
       <workItem from="1577513726817" duration="2165000" />
       <workItem from="1577627738659" duration="1143000" />
       <workItem from="1577684826569" duration="593000" />
+      <workItem from="1578453904732" duration="28000" />
+      <workItem from="1578818298047" duration="692000" />
     </task>
     <task id="LOCAL-00001" summary="first">
       <created>1577453423358</created>
@@ -123,7 +126,14 @@
       <option name="project" value="LOCAL" />
       <updated>1577628142797</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="first">
+      <created>1578453921585</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1578453921585</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -138,13 +148,18 @@
       <screen x="0" y="0" width="1536" height="764" />
     </state>
     <state x="225" y="68" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1536.764@0.0.1536.764" timestamp="1578453912315" />
-    <state x="356" y="0" key="CommitChangelistDialog2" timestamp="1577628141981">
+    <state x="575" y="122" key="#com.intellij.ide.util.MemberChooser" timestamp="1578818750703">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state x="356" y="0" key="CommitChangelistDialog2/0.0.1536.764@0.0.1536.764" timestamp="1577628141981" />
-    <state x="549" y="166" key="FileChooserDialogImpl" timestamp="1575691439737">
-      <screen x="0" y="0" width="1536" height="814" />
+    <state x="575" y="122" key="#com.intellij.ide.util.MemberChooser/0.0.1536.764@0.0.1536.764" timestamp="1578818750703" />
+    <state x="356" y="0" key="CommitChangelistDialog2" timestamp="1578453919862">
+      <screen x="0" y="0" width="1536" height="764" />
     </state>
+    <state x="356" y="0" key="CommitChangelistDialog2/0.0.1536.764@0.0.1536.764" timestamp="1578453919862" />
+    <state x="549" y="156" key="FileChooserDialogImpl" timestamp="1578453930865">
+      <screen x="0" y="0" width="1536" height="764" />
+    </state>
+    <state x="549" y="156" key="FileChooserDialogImpl/0.0.1536.764@0.0.1536.764" timestamp="1578453930865" />
     <state x="549" y="166" key="FileChooserDialogImpl/0.0.1536.814@0.0.1536.814" timestamp="1575691439737" />
     <state width="1493" height="66" key="GridCell.Tab.0.bottom" timestamp="1577628132362">
       <screen x="0" y="0" width="1536" height="764" />
@@ -182,9 +197,9 @@
       <screen x="0" y="0" width="1536" height="764" />
     </state>
     <state x="250" y="0" key="SettingsEditor/0.0.1536.764@0.0.1536.764" timestamp="1577430668225" />
-    <state x="362" y="146" key="Vcs.Push.Dialog.v2" timestamp="1577628144667">
+    <state x="362" y="146" key="Vcs.Push.Dialog.v2" timestamp="1578453923328">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state x="362" y="146" key="Vcs.Push.Dialog.v2/0.0.1536.764@0.0.1536.764" timestamp="1577628144667" />
+    <state x="362" y="146" key="Vcs.Push.Dialog.v2/0.0.1536.764@0.0.1536.764" timestamp="1578453923328" />
   </component>
 </project>
