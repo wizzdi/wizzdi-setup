@@ -149,7 +149,7 @@ public class Start {
         //do pass two, brute force second pass on all parameters we cannot fix references unless we have them all.
         for (IInstallationTask task : installationContext.getiInstallationTasks().values()) {
             Options taskOptions = getOptions(task, installationContext);
-            updateParameters(false,task, installationContext, taskOptions, args, parser);
+            updateParameters(false, task, installationContext, taskOptions, args, parser);
         }
         if (installationContext.getParamaters() != null) installationContext.getParamaters().sort();
         boolean stopped = false;
@@ -207,7 +207,7 @@ public class Start {
         installationContext.addTask(task);
 
         Options taskOptions = getOptions(task, installationContext);
-        if (!updateParameters(true,task, installationContext, taskOptions, args, parser)) {
+        if (!updateParameters(true, task, installationContext, taskOptions, args, parser)) {
             severe("Error while parsing task parameters, quitting on task: " + task.getId());
             return false;
         }
@@ -263,7 +263,8 @@ public class Start {
             }
         }
     }
-    private static IInstallationTask updateFilesProgress(InstallationContext context,IInstallationTask task ) {
+
+    private static IInstallationTask updateFilesProgress(InstallationContext context, IInstallationTask task) {
         List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
 
         for (IUIComponent component : filtered) {
@@ -271,6 +272,7 @@ public class Start {
         }
         return task;
     }
+
     /**
      * will not update ui componenets without isShowing=true
      *
@@ -366,7 +368,7 @@ public class Start {
      * @param parser
      * @return
      */
-    private static boolean updateParameters(boolean reallyAdd,IInstallationTask task, InstallationContext installationContext, Options taskOptions, String[] args, CommandLineParser parser) {
+    private static boolean updateParameters(boolean reallyAdd, IInstallationTask task, InstallationContext installationContext, Options taskOptions, String[] args, CommandLineParser parser) {
         try {
 
             String[] trueArgs = getTrueArgs(args, taskOptions);
@@ -601,6 +603,7 @@ public class Start {
                 int skipped = 0;
                 int completed = 0;
                 handleInspections(context);
+                HashMap<String, String> restarters = new HashMap<>();
                 for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
                     if (!installationTask.isEnabled()) {
                         info("task " + installationTask.getName() + " is disabled, skipping");
@@ -618,7 +621,11 @@ public class Start {
                         long start = System.currentTimeMillis();
                         installationTask.setContext(context);
                         if (!installationTask.isSnooper()) {
-
+                            if (!installationTask.getNeedRestartTasks().isEmpty()) {
+                                for (String id : installationTask.getNeedRestartTasks()) {
+                                    restarters.put(id, id);
+                                }
+                            }
                             InstallationResult result = installationTask.install(context);
                             if (result.getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
                                 completed++;
@@ -627,7 +634,7 @@ public class Start {
                                 installationTask.setProgress(100).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.COMPLETED);
 
                             } else {
-                                info("-----------Failed task: "+installationTask.getName());
+                                info("-----------Failed task: " + installationTask.getName());
                                 failed++;
                                 updateStatus(" installation status", completed, failed, skipped, InstallationState.RUNNING);
                                 installationTask.setProgress(0).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.FAILED);
@@ -658,6 +665,25 @@ public class Start {
                     }
                     // installTask(installationTask, context);
                 }
+                updateStatus(" Installation restarting needed", completed, failed, skipped, InstallationState.FINALIZING);
+
+                for (String id : restarters.values()) {
+                    IInstallationTask task = context.getTask(id);
+                    if (task != null) {
+                        try {
+                            InstallationResult result = task.restartService(context);
+                            if (!(result != null && result.getInstallationStatus() != null && result.getInstallationStatus().equals(InstallationStatus.COMPLETED))) {
+                                failed++;
+                                severe("Failed to restart service of: " + task.getId());
+                            } else {
+                                info("Has started the service of: " + task.getId());
+                            }
+                        } catch (Throwable throwable) {
+                            severe("Error while restarting service: " + id);
+                        }
+                    }
+                }
+
                 updateStatus(" Installation finalizing", completed, failed, skipped, InstallationState.FINALIZING);
                 info(" calling finalizers on all tasks");
                 for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
@@ -668,7 +694,7 @@ public class Start {
                                 updateStatus("finalizing  status", completed, failed, skipped, InstallationState.FINALIZING);
                             } else {
                                 failed++;
-                                info("-----------Failed task while finalizing: "+installationTask.getName());
+                                info("-----------Failed task while finalizing: " + installationTask.getName());
                                 updateStatus("finalizing  status", completed, failed, skipped, InstallationState.FINALIZING);
                             }
                         } catch (Throwable throwable) {
@@ -829,12 +855,11 @@ public class Start {
     private static boolean uiUpdateService(InstallationContext context, Service service, IInstallationTask task) {
         return doUpdateService(context, service, task);
     }
-    private static IInstallationTask InstallerFilesProgress(InstallationContext context,IInstallationTask task) {
-        updateFilesProgress( context,task);
+
+    private static IInstallationTask InstallerFilesProgress(InstallationContext context, IInstallationTask task) {
+        updateFilesProgress(context, task);
         return task;
     }
-
-
 
 
     private static String doAbout() {
@@ -904,8 +929,9 @@ public class Start {
 
     @FunctionalInterface
     public static interface installerFilesProgress {
-        IInstallationTask filesProgress( InstallationContext context,IInstallationTask task);
+        IInstallationTask filesProgress(InstallationContext context, IInstallationTask task);
     }
+
     @FunctionalInterface
     public static interface UpdateService {
         boolean serviceProgress(InstallationContext context, Service service, IInstallationTask task);

@@ -69,6 +69,31 @@ public class InstallationTask implements IInstallationTask {
     }
 
     /**
+     * wait for service to stop
+     * @param serviceName
+     * @param owner
+     * @param waitTimeMS
+     * @return
+     */
+    public boolean waitForServiceToStop(String serviceName,String owner,boolean stopit,long waitTimeMS) {
+        if (stopit) setServiceToStop(serviceName,owner);
+        long started=System.currentTimeMillis();
+        do {
+            if (testServiceRunning(serviceName, "loop while waiting for service to stop", false)) {
+                try {
+                    Thread.sleep(20);
+                } catch (InterruptedException e) {
+                   return false;
+                }
+            } else {
+                info("Service has stopped after "+(System.currentTimeMillis()-started+" milliseconds"));
+                return true;
+            }
+        } while ((System.currentTimeMillis()-started)<waitTimeMS);
+        info("Service has NOT stopped after "+(System.currentTimeMillis()-started+" milliseconds"));
+        return false;
+    }
+    /**
      * check of a service by a known name is running.
      * @param serviceName
      * @param ownerName , for logging purposes (name)
@@ -549,6 +574,16 @@ public class InstallationTask implements IInstallationTask {
     public Set<String> getSoftPrerequisitesTask() {
         return Collections.emptySet();
     } //todo:: check if this is the best solution
+
+    @Override
+    public Set<String> getServices() {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public Set<String> getServicesToRestart() {
+        return Collections.emptySet();
+    }
 
     @Override
     public InstallationStatus getStatus() {
@@ -1149,6 +1184,7 @@ public class InstallationTask implements IInstallationTask {
                 is.close();
             } catch (IOException e) {
                 severe("Error while reading file", e);
+                return null;
             }
         }
         if (fileAsString != null) {

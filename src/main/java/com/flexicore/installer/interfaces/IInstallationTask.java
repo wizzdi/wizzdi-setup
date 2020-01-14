@@ -38,6 +38,8 @@ public interface IInstallationTask extends ExtensionPoint {
     Set<String> getPrerequisitesTask();
     Set<String> getNeedRestartTasks();
     Set<String> getSoftPrerequisitesTask(); //added to support forced order between two tasks if both exist
+    Set<String> getServices(); //list of service names to make sure to start (or to have running)
+    Set<String> getServicesToRestart(); //list of service names to restart once at the end
     InstallationStatus getStatus();
 
     Parameters getParameters(InstallationContext installationContext);
