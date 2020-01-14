@@ -203,11 +203,13 @@ public class DeployFlexicore extends InstallationTask {
 
     @Override
     public InstallationResult finalizeInstallation(InstallationContext installationContext) throws Throwable {
-        if (!serviceRunning) {
+        info("Finalizer on deploy flexicore called");
+
             if (!testServiceRunning(serviceName, "Flexicore deploy finalizer", false)) {
                 setServiceToStart(serviceName, "Flexicore deploy finalizer");
+                info("had to start Wildfly service it was not running");
             }
-        }
+
         return super.finalizeInstallation(installationContext);
     }
 
@@ -251,16 +253,17 @@ public class DeployFlexicore extends InstallationTask {
     }
 
     @Override
+    public Set<String> getNeedRestartTasks() {
+        Set<String> result = new HashSet<>();
+        result.add("wildfly");
+        return result;
+    }
+    @Override
     public IInstallationTask setDescription(String s) {
         return this;
     }
 
-    @Override
-    public Set<String> getNeedRestartTasks() {
-        Set<String> result = new HashSet<>();
-        result.add("Wildfly-installer"); //service must be restarted
-        return result;
-    }
+
 
     @Override
     public int mergeParameters(InstallationContext installationContext) {
