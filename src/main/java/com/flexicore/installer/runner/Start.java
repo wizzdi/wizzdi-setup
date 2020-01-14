@@ -100,13 +100,6 @@ public class Start {
         while (topologicalOrderIterator.hasNext()) {
             String installationTaskUniqueId = topologicalOrderIterator.next();
             IInstallationTask task = installationTasks.get(installationTaskUniqueId);
-
-            for (String service:task.getServices()) {
-                servicesToCheckRunning.put(service,service);
-            }
-            for (String service:task.getServicesToRestart()) {
-                servicesToRestart.put(service,service);
-            }
             if (task.isFinalizerOnly()) {
                 finalizers.add(task);
                 continue;
