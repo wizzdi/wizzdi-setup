@@ -91,19 +91,19 @@ public class DeployFlexicore extends InstallationTask {
                                     , StandardCopyOption.REPLACE_EXISTING);
                             try {
                                 deleteDirectoryStream(deployments.getAbsolutePath() + "/FlexiCore.war");
-                            }catch (Exception e) {
-                                severe("error while deleting folder: "+deployments.getAbsolutePath()+"/FlexiCore.war");
+                            } catch (Exception e) {
+                                severe("error while deleting folder: " + deployments.getAbsolutePath() + "/FlexiCore.war");
                             }
-                            File[] files=deployments.listFiles();
-                            for (File file:files) {
-                                String fileis=file.getAbsolutePath();
+                            File[] files = deployments.listFiles();
+                            for (File file : files) {
+                                String fileis = file.getAbsolutePath();
                                 try {
-                                Files.deleteIfExists(Paths.get(fileis));
-                                }catch (Exception e) {
-                                    severe("error while deleting file: "+file.getAbsolutePath());
+                                    Files.deleteIfExists(Paths.get(fileis));
+                                } catch (Exception e) {
+                                    severe("error while deleting file: " + file.getAbsolutePath());
                                 }
                             }
-                       ZipUtil.unpack(flexicore, deployments);
+                            ZipUtil.unpack(flexicore, deployments);
 
                             if (!isWindows) {
                                 setOwnerFolder(Paths.get(deployments.getAbsolutePath()), "wildfly", "wildfly");
@@ -169,19 +169,14 @@ public class DeployFlexicore extends InstallationTask {
         try {
             File file = new File(path);
             do {
-                File[] files=file.listFiles();
-                int a=3;
-                if (exists(path + "/flexicore.war.deployed")) {
-                    info("redeployed in " + (System.currentTimeMillis() - start) + " milliseconds");
-                    return DeployState.deployed;
-                }
+                Thread.sleep(20);
+                File[] files = file.listFiles();
+                if (exists(path + "/flexicore.war.isdeploying")) continue;
                 if (exists(path + "/flexicore.war.undeployed")) return DeployState.undeployed;
                 if (exists(path + "/flexicore.war.failed")) return DeployState.failed;
-                Thread.sleep(20);
             } while ((System.currentTimeMillis() - start) < timeout);
             if (exists(path + "/flexicore.war.isdeploying")) return DeployState.isdeploying;
             if (exists(path + "/flexicore.war.dodeploy")) return DeployState.dodeploy;
-
         } catch (InterruptedException e) {
             info("Stopped while waiting");
         }
