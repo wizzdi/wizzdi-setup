@@ -575,15 +575,8 @@ public class InstallationTask implements IInstallationTask {
         return Collections.emptySet();
     } //todo:: check if this is the best solution
 
-    @Override
-    public Set<String> getServices() {
-        return Collections.emptySet();
-    }
 
-    @Override
-    public Set<String> getServicesToRestart() {
-        return Collections.emptySet();
-    }
+
 
     @Override
     public InstallationStatus getStatus() {
