@@ -21,6 +21,7 @@ import java.util.logging.Logger;
  */
 public class DeployFlexicore extends InstallationTask {
     static Logger logger;
+    static String serviceName="wildfly";
     static String currentFolder = System.getProperty("user.dir");
     static String parentFolder = new File(currentFolder).getParent();
     static Parameter[] preDefined = {
@@ -41,6 +42,7 @@ public class DeployFlexicore extends InstallationTask {
              */
 
     };
+    private boolean serviceRunning;
 
     /**
      * parameters are best provided by a different plugin
@@ -76,79 +78,79 @@ public class DeployFlexicore extends InstallationTask {
 
         super.install(installationContext);
         try {
-            boolean serviceRunning = testServiceRunning("wildfly", "flexicore deploy", false);
+             serviceRunning = testServiceRunning(serviceName, "flexicore deploy", false);
             String flexicoreSource = getServerPath() + "/flexicore";
             String flexicoreHome = getFlexicoreHome();
             if (!dry) {
-                if (!serviceRunning || update || force) {
-                    String wildflyhome = isWindows ? installationContext.getParamaters().getValue("wildflyhome") : "/opt/wildfly/";
-                    File flexicore = new File(getServerPath() + "/flexicore/FlexiCore.war.zip");
-                    File deployments = new File(wildflyhome + "/standalone/deployments");
-                    if (deployments.exists()) {
-                        if (exists(flexicore.getAbsolutePath())) {
-                            Path result = Files.copy(Paths.get(flexicore.getAbsolutePath())
-                                    , Paths.get(wildflyhome + "/standalone/FlexiCore.war.zip")
-                                    , StandardCopyOption.REPLACE_EXISTING);
-                            try {
-                                deleteDirectoryStream(deployments.getAbsolutePath() + "/FlexiCore.war");
-                            } catch (Exception e) {
-                                severe("error while deleting folder: " + deployments.getAbsolutePath() + "/FlexiCore.war");
-                            }
-                            File[] files = deployments.listFiles();
-                            for (File file : files) {
-                                String fileis = file.getAbsolutePath();
-                                try {
-                                    Files.deleteIfExists(Paths.get(fileis));
-                                } catch (Exception e) {
-                                    severe("error while deleting file: " + file.getAbsolutePath());
-                                }
-                            }
-                            ZipUtil.unpack(flexicore, deployments);
 
-                            if (!isWindows) {
-                                setOwnerFolder(Paths.get(deployments.getAbsolutePath()), "wildfly", "wildfly");
-                            }
-                            touch(new File(deployments.getAbsolutePath() + "/FlexiCore.war.dodeploy")); //this should start deployment
-                            if (serviceRunning) {
-                                //was an update
-                                updateProgress(getContext(), "Waiting up to 200 seconds till Flexicore starts");
-                                DeployState state = waitForServertoDeploy(deployments.getAbsolutePath(), 200000);
-                                switch (state) {
-                                    case deployed:
-                                        updateProgress(getContext(), "Deployment succeeded");
-                                        return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
-                                    case failed:
-                                        updateProgress(getContext(), "Deployment failed");
-                                        break;
-                                    case undeployed:
-                                        updateProgress(getContext(), "Deployment undeployed, requires repeating update");
-                                        break;
-
-                                    case dodeploy:
-                                        updateProgress(getContext(), "Deployment has not started");
-                                        break;
-
-                                    case undefined:
-                                        updateProgress(getContext(), "Deployment undeployed");
-                                        break;
-                                    case isdeploying:
-                                        updateProgress(getContext(), "Deployment is still deploying after 200 seconds");
-                                        break;
-                                    default:
-
-                                }
-                                return new InstallationResult().setInstallationStatus(InstallationStatus.FAILED);
-                            }
-                            return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
-                        } else {
-                            severe("Wildfly deployments was not located on: " + deployments.getAbsolutePath());
+                String wildflyhome = isWindows ? installationContext.getParamaters().getValue("wildflyhome") : "/opt/wildfly/";
+                File flexicore = new File(getServerPath() + "/flexicore/FlexiCore.war.zip");
+                File deployments = new File(wildflyhome + "/standalone/deployments");
+                if (deployments.exists()) {
+                    if (exists(flexicore.getAbsolutePath())) {
+                        Path result = Files.copy(Paths.get(flexicore.getAbsolutePath())
+                                , Paths.get(wildflyhome + "/standalone/FlexiCore.war.zip")
+                                , StandardCopyOption.REPLACE_EXISTING);
+                        try {
+                            deleteDirectoryStream(deployments.getAbsolutePath() + "/FlexiCore.war");
+                        } catch (Exception e) {
+                            severe("error while deleting folder: " + deployments.getAbsolutePath() + "/FlexiCore.war");
                         }
-                    } else {
-                        updateProgress(getContext(), "Cannot find Flexicore.war.zip at: " + flexicore.getAbsolutePath());
-                        return new InstallationResult().setInstallationStatus(InstallationStatus.FAILED);
-                    }
+                        File[] files = deployments.listFiles();
+                        for (File file : files) {
+                            String fileis = file.getAbsolutePath();
+                            try {
+                                Files.deleteIfExists(Paths.get(fileis));
+                            } catch (Exception e) {
+                                severe("error while deleting file: " + file.getAbsolutePath());
+                            }
+                        }
+                        ZipUtil.unpack(flexicore, deployments);
 
-                } else info("Will not install FlexiCore, service is running or update/force not specified");
+                        if (!isWindows) {
+                            setOwnerFolder(Paths.get(deployments.getAbsolutePath()), serviceName, serviceName);
+                        }
+                        touch(new File(deployments.getAbsolutePath() + "/FlexiCore.war.dodeploy")); //this should start deployment
+                        if (serviceRunning) { //will wait here only if service is running
+                            //was an update
+                            updateProgress(getContext(), "Waiting up to 200 seconds till Flexicore starts");
+                            DeployState state = waitForServertoDeploy(deployments.getAbsolutePath(), 200000);
+                            switch (state) {
+                                case deployed:
+                                    updateProgress(getContext(), "Deployment succeeded");
+                                    return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
+                                case failed:
+                                    updateProgress(getContext(), "Deployment failed");
+                                    break;
+                                case undeployed:
+                                    updateProgress(getContext(), "Deployment undeployed, requires repeating update");
+                                    break;
+
+                                case dodeploy:
+                                    updateProgress(getContext(), "Deployment has not started");
+                                    break;
+
+                                case undefined:
+                                    updateProgress(getContext(), "Deployment undeployed");
+                                    break;
+                                case isdeploying:
+                                    updateProgress(getContext(), "Deployment is still deploying after 200 seconds");
+                                    break;
+                                default:
+
+                            }
+                            return new InstallationResult().setInstallationStatus(InstallationStatus.FAILED);
+                        }
+                        return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
+                    } else {
+                        severe("Wildfly deployments was not located on: " + deployments.getAbsolutePath());
+                    }
+                } else {
+                    updateProgress(getContext(), "Cannot find Flexicore.war.zip at: " + flexicore.getAbsolutePath());
+                    return new InstallationResult().setInstallationStatus(InstallationStatus.FAILED);
+                }
+
+
             } else {
                 //todo: add verification on dry (like source available etc)
                 return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
@@ -172,8 +174,10 @@ public class DeployFlexicore extends InstallationTask {
                 Thread.sleep(20);
                 File[] files = file.listFiles();
                 if (exists(path + "/flexicore.war.isdeploying")) continue;
+                if (exists(path + "/flexicore.war.deployed")) return DeployState.deployed;
                 if (exists(path + "/flexicore.war.undeployed")) return DeployState.undeployed;
                 if (exists(path + "/flexicore.war.failed")) return DeployState.failed;
+
             } while ((System.currentTimeMillis() - start) < timeout);
             if (exists(path + "/flexicore.war.isdeploying")) return DeployState.isdeploying;
             if (exists(path + "/flexicore.war.dodeploy")) return DeployState.dodeploy;
@@ -193,6 +197,16 @@ public class DeployFlexicore extends InstallationTask {
     @Override
     public OperatingSystem[] getOperatingSystems() {
         return new OperatingSystem[]{OperatingSystem.Linux, OperatingSystem.Windows};
+    }
+
+    @Override
+    public InstallationResult finalizeInstallation(InstallationContext installationContext) throws Throwable {
+        if (!serviceRunning) {
+            if (!testServiceRunning(serviceName, "Flexicore deploy finalizer", false)) {
+                setServiceToStart(serviceName, "Flexicore deploy finalizer");
+            }
+        }
+        return super.finalizeInstallation(installationContext);
     }
 
     @Override
