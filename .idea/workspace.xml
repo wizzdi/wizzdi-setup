@@ -55,7 +55,7 @@
     <property name="project.structure.side.proportion" value="0.0" />
     <property name="show.migrate.to.gradle.popup" value="false" />
   </component>
-  <component name="RunManager" selected="Maven.package">
+  <component name="RunManager" selected="Remote.debug">
     <list>
       <item itemvalue="Maven.package" />
       <item itemvalue="Remote.debug" />
@@ -94,7 +94,7 @@
       <workItem from="1578825593638" duration="597000" />
       <workItem from="1578828743597" duration="598000" />
       <workItem from="1578846038743" duration="1048000" />
-      <workItem from="1578972785190" duration="4214000" />
+      <workItem from="1578972785190" duration="7680000" />
     </task>
     <task id="LOCAL-00001" summary="first">
       <created>1577453423358</created>
@@ -145,7 +145,14 @@
       <option name="project" value="LOCAL" />
       <updated>1578819008824</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="added support for deployment wait">
+      <created>1578989059659</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1578989059659</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -154,69 +161,98 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="first" />
     <MESSAGE value="added needed restart" />
-    <option name="LAST_COMMIT_MESSAGE" value="added needed restart" />
+    <MESSAGE value="added support for deployment wait" />
+    <option name="LAST_COMMIT_MESSAGE" value="added support for deployment wait" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="225" y="68" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1578819319671">
+    <state x="225" y="68" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1578990902714">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state x="225" y="68" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1536.764@0.0.1536.764" timestamp="1578819319671" />
+    <state x="225" y="68" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1536.764@0.0.1536.764" timestamp="1578990902714" />
     <state x="575" y="122" key="#com.intellij.ide.util.MemberChooser" timestamp="1578818750703">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
     <state x="575" y="122" key="#com.intellij.ide.util.MemberChooser/0.0.1536.764@0.0.1536.764" timestamp="1578818750703" />
-    <state x="356" y="0" key="CommitChangelistDialog2" timestamp="1578819007850">
+    <state x="450" y="141" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog" timestamp="1578992473676">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state x="356" y="0" key="CommitChangelistDialog2/0.0.1536.764@0.0.1536.764" timestamp="1578819007850" />
-    <state x="549" y="156" key="FileChooserDialogImpl" timestamp="1578453930865">
+    <state x="450" y="141" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/0.0.1536.764@0.0.1536.764" timestamp="1578992473676" />
+    <state x="356" y="0" key="CommitChangelistDialog2" timestamp="1578989058642">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state x="549" y="156" key="FileChooserDialogImpl/0.0.1536.764@0.0.1536.764" timestamp="1578453930865" />
+    <state x="356" y="0" key="CommitChangelistDialog2/0.0.1536.764@0.0.1536.764" timestamp="1578989058642" />
+    <state x="549" y="156" key="FileChooserDialogImpl" timestamp="1578989269951">
+      <screen x="0" y="0" width="1536" height="764" />
+    </state>
+    <state x="549" y="156" key="FileChooserDialogImpl/0.0.1536.764@0.0.1536.764" timestamp="1578989269951" />
     <state x="549" y="166" key="FileChooserDialogImpl/0.0.1536.814@0.0.1536.814" timestamp="1575691439737" />
-    <state width="1493" height="212" key="GridCell.Tab.0.bottom" timestamp="1578822054248">
+    <state width="1493" height="46" key="GridCell.Tab.0.bottom" timestamp="1578992880266">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state width="1493" height="212" key="GridCell.Tab.0.bottom/0.0.1536.764@0.0.1536.764" timestamp="1578822054248" />
-    <state width="1493" height="212" key="GridCell.Tab.0.center" timestamp="1578822054248">
+    <state width="1493" height="46" key="GridCell.Tab.0.bottom/0.0.1536.764@0.0.1536.764" timestamp="1578992880266" />
+    <state width="1493" height="46" key="GridCell.Tab.0.center" timestamp="1578992880266">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state width="1493" height="212" key="GridCell.Tab.0.center/0.0.1536.764@0.0.1536.764" timestamp="1578822054248" />
-    <state width="1493" height="212" key="GridCell.Tab.0.left" timestamp="1578822054248">
+    <state width="1493" height="46" key="GridCell.Tab.0.center/0.0.1536.764@0.0.1536.764" timestamp="1578992880266" />
+    <state width="1493" height="46" key="GridCell.Tab.0.left" timestamp="1578992880266">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state width="1493" height="212" key="GridCell.Tab.0.left/0.0.1536.764@0.0.1536.764" timestamp="1578822054248" />
-    <state width="1493" height="212" key="GridCell.Tab.0.right" timestamp="1578822054248">
+    <state width="1493" height="46" key="GridCell.Tab.0.left/0.0.1536.764@0.0.1536.764" timestamp="1578992880266" />
+    <state width="1493" height="46" key="GridCell.Tab.0.right" timestamp="1578992880266">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state width="1493" height="212" key="GridCell.Tab.0.right/0.0.1536.764@0.0.1536.764" timestamp="1578822054248" />
-    <state width="1493" height="212" key="GridCell.Tab.1.bottom" timestamp="1578822054249">
+    <state width="1493" height="46" key="GridCell.Tab.0.right/0.0.1536.764@0.0.1536.764" timestamp="1578992880266" />
+    <state width="1493" height="46" key="GridCell.Tab.1.bottom" timestamp="1578992904162">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state width="1493" height="212" key="GridCell.Tab.1.bottom/0.0.1536.764@0.0.1536.764" timestamp="1578822054249" />
-    <state width="1493" height="212" key="GridCell.Tab.1.center" timestamp="1578822054248">
+    <state width="1493" height="46" key="GridCell.Tab.1.bottom/0.0.1536.764@0.0.1536.764" timestamp="1578992904162" />
+    <state width="1493" height="46" key="GridCell.Tab.1.center" timestamp="1578992904161">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state width="1493" height="212" key="GridCell.Tab.1.center/0.0.1536.764@0.0.1536.764" timestamp="1578822054248" />
-    <state width="1493" height="212" key="GridCell.Tab.1.left" timestamp="1578822054248">
+    <state width="1493" height="46" key="GridCell.Tab.1.center/0.0.1536.764@0.0.1536.764" timestamp="1578992904161" />
+    <state width="1493" height="46" key="GridCell.Tab.1.left" timestamp="1578992904161">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state width="1493" height="212" key="GridCell.Tab.1.left/0.0.1536.764@0.0.1536.764" timestamp="1578822054248" />
-    <state width="1493" height="212" key="GridCell.Tab.1.right" timestamp="1578822054249">
+    <state width="1493" height="46" key="GridCell.Tab.1.left/0.0.1536.764@0.0.1536.764" timestamp="1578992904161" />
+    <state width="1493" height="46" key="GridCell.Tab.1.right" timestamp="1578992904162">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state width="1493" height="212" key="GridCell.Tab.1.right/0.0.1536.764@0.0.1536.764" timestamp="1578822054249" />
+    <state width="1493" height="46" key="GridCell.Tab.1.right/0.0.1536.764@0.0.1536.764" timestamp="1578992904162" />
+    <state x="441" y="112" key="NewModule_or_Project.wizard" timestamp="1578989272592">
+      <screen x="0" y="0" width="1536" height="764" />
+    </state>
+    <state x="441" y="112" key="NewModule_or_Project.wizard/0.0.1536.764@0.0.1536.764" timestamp="1578989272592" />
     <state x="250" y="0" key="SettingsEditor" timestamp="1577430668225">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
     <state x="250" y="0" key="SettingsEditor/0.0.1536.764@0.0.1536.764" timestamp="1577430668225" />
-    <state x="362" y="146" key="Vcs.Push.Dialog.v2" timestamp="1578819010923">
+    <state x="362" y="146" key="Vcs.Push.Dialog.v2" timestamp="1578989061613">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state x="362" y="146" key="Vcs.Push.Dialog.v2/0.0.1536.764@0.0.1536.764" timestamp="1578819010923" />
+    <state x="362" y="146" key="Vcs.Push.Dialog.v2/0.0.1536.764@0.0.1536.764" timestamp="1578989061613" />
     <state x="332" y="149" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2" timestamp="1578821946451">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
     <state x="332" y="149" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2/0.0.1536.764@0.0.1536.764" timestamp="1578821946451" />
+    <state x="431" y="85" width="672" height="678" key="search.everywhere.popup" timestamp="1578993347115">
+      <screen x="0" y="0" width="1536" height="764" />
+    </state>
+    <state x="431" y="85" width="672" height="678" key="search.everywhere.popup/0.0.1536.764@0.0.1536.764" timestamp="1578993347115" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java</url>
+          <line>76</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java</url>
+          <line>175</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
