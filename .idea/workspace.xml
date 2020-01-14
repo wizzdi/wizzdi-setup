@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="5a5edd4e-73f9-41ab-925c-ed8a5f34bf28" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -93,7 +92,7 @@
       <workItem from="1578825593638" duration="597000" />
       <workItem from="1578828743597" duration="598000" />
       <workItem from="1578846038743" duration="1048000" />
-      <workItem from="1578972785190" duration="11497000" />
+      <workItem from="1578972785190" duration="12742000" />
     </task>
     <task id="LOCAL-00001" summary="first">
       <created>1577453423358</created>
@@ -165,7 +164,14 @@
       <option name="project" value="LOCAL" />
       <updated>1578996678053</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="added support for deployment wait">
+      <created>1579000742538</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1579000742538</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -190,10 +196,10 @@
       <screen x="0" y="0" width="1536" height="764" />
     </state>
     <state x="450" y="141" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/0.0.1536.764@0.0.1536.764" timestamp="1578992473676" />
-    <state x="356" y="0" key="CommitChangelistDialog2" timestamp="1578996676179">
+    <state x="356" y="0" key="CommitChangelistDialog2" timestamp="1579000741350">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state x="356" y="0" key="CommitChangelistDialog2/0.0.1536.764@0.0.1536.764" timestamp="1578996676179" />
+    <state x="356" y="0" key="CommitChangelistDialog2/0.0.1536.764@0.0.1536.764" timestamp="1579000741350" />
     <state x="549" y="156" key="FileChooserDialogImpl" timestamp="1578989269951">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
@@ -239,10 +245,10 @@
       <screen x="0" y="0" width="1536" height="764" />
     </state>
     <state x="250" y="0" key="SettingsEditor/0.0.1536.764@0.0.1536.764" timestamp="1577430668225" />
-    <state x="362" y="146" key="Vcs.Push.Dialog.v2" timestamp="1578996681191">
+    <state x="362" y="146" key="Vcs.Push.Dialog.v2" timestamp="1579000745066">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state x="362" y="146" key="Vcs.Push.Dialog.v2/0.0.1536.764@0.0.1536.764" timestamp="1578996681191" />
+    <state x="362" y="146" key="Vcs.Push.Dialog.v2/0.0.1536.764@0.0.1536.764" timestamp="1579000745066" />
     <state x="332" y="149" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2" timestamp="1578821946451">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
