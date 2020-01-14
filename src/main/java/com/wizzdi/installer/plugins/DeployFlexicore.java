@@ -91,6 +91,7 @@ public class DeployFlexicore extends InstallationTask {
                         Path result = Files.copy(Paths.get(flexicore.getAbsolutePath())
                                 , Paths.get(wildflyhome + "/standalone/FlexiCore.war.zip")
                                 , StandardCopyOption.REPLACE_EXISTING);
+                        setProgress(50);
                         try {
                             deleteDirectoryStream(deployments.getAbsolutePath() + "/FlexiCore.war");
                         } catch (Exception e) {
@@ -106,7 +107,7 @@ public class DeployFlexicore extends InstallationTask {
                             }
                         }
                         ZipUtil.unpack(flexicore, deployments);
-
+                        setProgress(70);
                         if (!isWindows) {
                             setOwnerFolder(Paths.get(deployments.getAbsolutePath()), serviceName, serviceName);
                         }
@@ -115,6 +116,7 @@ public class DeployFlexicore extends InstallationTask {
                             //was an update
                             updateProgress(getContext(), "Waiting up to 200 seconds till Flexicore starts");
                             DeployState state = waitForServertoDeploy(deployments.getAbsolutePath(), 200000);
+                            setProgress(97);
                             switch (state) {
                                 case deployed:
                                     updateProgress(getContext(), "Deployment succeeded");
