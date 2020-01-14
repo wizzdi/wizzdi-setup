@@ -75,34 +75,69 @@ static Parameter[] preDefined ={
 
         super.install(installationContext);
         try {
-
+            boolean serviceRunning=testServiceRunning("wildfly","flexicore deploy",false);
             String flexicoreSource = getServerPath() + "/flexicore";
             String flexicoreHome = getFlexicoreHome();
             if (!dry) {
-                String wildflyhome = isWindows ? installationContext.getParamaters().getValue("wildflyhome") : "/opt/wildfly/";
-                File flexicore=new File(getServerPath()+"/flexicore/FlexiCore.war.zip");
-                File deployments=new File(wildflyhome+"/standalone/deployments");
-                if (deployments.exists()) {
-                    if (exists(flexicore.getAbsolutePath())) {
-                        Path result = Files.copy(Paths.get(flexicore.getAbsolutePath())
-                                , Paths.get(wildflyhome + "/standalone/FlexiCore.war.zip")
-                                , StandardCopyOption.REPLACE_EXISTING);
-                        deleteDirectoryStream(deployments.getAbsolutePath() + "/FlexiCore.war");
-                        Files.deleteIfExists(Paths.get(deployments + "/FlexiCore.war.failed"));
-                        Files.deleteIfExists(Paths.get(deployments + "/FlexiCore.war.undeployed"));
-                        touch(new File(deployments.getAbsolutePath() + "/FlexiCore.war.dodeploy"));
-                        ZipUtil.unpack(flexicore, deployments);
-                       if (!isWindows) setOwnerFolder(Paths.get(deployments.getAbsolutePath()), "wildfly", "wildfly");
-                        return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
+                if (!serviceRunning || update || force) {
+                    String wildflyhome = isWindows ? installationContext.getParamaters().getValue("wildflyhome") : "/opt/wildfly/";
+                    File flexicore = new File(getServerPath() + "/flexicore/FlexiCore.war.zip");
+                    File deployments = new File(wildflyhome + "/standalone/deployments");
+                    if (deployments.exists()) {
+                        if (exists(flexicore.getAbsolutePath())) {
+                            Path result = Files.copy(Paths.get(flexicore.getAbsolutePath())
+                                    , Paths.get(wildflyhome + "/standalone/FlexiCore.war.zip")
+                                    , StandardCopyOption.REPLACE_EXISTING);
+                            deleteDirectoryStream(deployments.getAbsolutePath() + "/FlexiCore.war");
+                            Files.deleteIfExists(Paths.get(deployments + "/FlexiCore.war.failed"));
+                            Files.deleteIfExists(Paths.get(deployments + "/FlexiCore.war.undeployed"));
+
+                            ZipUtil.unpack(flexicore, deployments);
+
+                            if (!isWindows) {
+                                setOwnerFolder(Paths.get(deployments.getAbsolutePath()), "wildfly", "wildfly");
+                            }
+                            touch(new File(deployments.getAbsolutePath() + "/FlexiCore.war.dodeploy")); //this should start deployment
+                            if (serviceRunning) {
+                                //was an update
+                                updateProgress(getContext(), "Waiting up to 200 seconds till Flexicore starts");
+                               DeployState state= waitForServertoDeploy(deployments.getAbsolutePath(),200000);
+                               switch (state) {
+                                   case deployed:
+                                       updateProgress(getContext(), "Deployment succeeded");
+                                       return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
+                                   case failed:
+                                       updateProgress(getContext(), "Deployment failed");
+                                        break;
+                                   case undeployed:
+                                       updateProgress(getContext(), "Deployment undeployed, requires repeating update");
+                                       break;
+
+                                   case dodeploy:
+                                       updateProgress(getContext(), "Deployment has not started");
+                                       break;
+
+                                   case undefined:
+                                       updateProgress(getContext(), "Deployment undeployed");
+                                       break;
+                                   case deploying:
+                                       updateProgress(getContext(), "Deployment is still deploying after 200 seconds");
+                                       break;
+                                   default:
+
+                               }
+                                return new InstallationResult().setInstallationStatus(InstallationStatus.FAILED);
+                            }
+                            return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
+                        } else {
+                            severe("Wildfly deployments was not located on: " + deployments.getAbsolutePath());
+                        }
                     } else {
-                        severe("Wildfly deployments was not located on: " + deployments.getAbsolutePath());
+                        updateProgress(getContext(), "Cannot find Flexicore.war.zip at: " + flexicore.getAbsolutePath());
+                        return new InstallationResult().setInstallationStatus(InstallationStatus.FAILED);
                     }
-                }else {
-                    updateProgress(getContext(),"Cannot find Flexicore.war.zip at: "+flexicore.getAbsolutePath());
-                    return new InstallationResult().setInstallationStatus(InstallationStatus.FAILED);
-                }
 
-
+                } else info("Will not install FlexiCore, service is running or update/force not specified");
             } else {
                 //todo: add verification on dry (like source available etc)
                 return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
@@ -116,7 +151,31 @@ static Parameter[] preDefined ={
         return new InstallationResult().setInstallationStatus(InstallationStatus.FAILED);
 
     }
-/**
+
+    private DeployState waitForServertoDeploy(String path,long timeout) {
+        long start = System.currentTimeMillis();
+
+        try {
+            Thread.sleep(1000);
+            if (exists(path+"/flexicore.war.dodeploy")) return DeployState.dodeploy;
+            do {
+                Thread.sleep(20);
+                if (exists(path+"/flexicore.war.deployed")) return DeployState.deployed;
+                if (exists(path+"/flexicore.war.undeployed")) return DeployState.undeployed;
+                if (exists(path+"/flexicore.war.failed")) return DeployState.failed;
+
+            } while ((System.currentTimeMillis()-start) <timeout);
+           if (exists(path+"/flexicore.war.deploying")) return DeployState.deploying;
+
+        } catch (InterruptedException e) {
+            info ("Stopped while waiting");
+        }
+        return DeployState.undefined;
+    }
+    public enum DeployState {
+        deploying,deployed,dodeploy,undeployed,failed,undefined
+    }
+    /**
  * defines here what are the compatible operating systems for this installer plugin
  */
 @Override
