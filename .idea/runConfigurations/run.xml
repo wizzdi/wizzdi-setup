@@ -2,7 +2,6 @@
   <configuration default="false" name="run" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="com.flexicore.installer.runner.Start" />
     <module name="flexicore-installer" />
-    <option name="VM_PARAMETERS" value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

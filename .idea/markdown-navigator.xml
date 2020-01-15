@@ -15,7 +15,7 @@
         <provider providerId="com.vladsch.idea.multimarkdown.editor.swing.html.panel" providerName="Default - Swing" />
       </PanelProvider>
     </PreviewSettings>
-    <ParserSettings gitHubSyntaxChange="false" correctedInvalidSettings="true" emojiShortcuts="1" emojiImages="0">
+    <ParserSettings gitHubSyntaxChange="false" correctedInvalidSettings="false" emojiShortcuts="1" emojiImages="0">
       <PegdownExtensions>
         <option name="ANCHORLINKS" value="true" />
         <option name="ATXHEADERSPACE" value="true" />

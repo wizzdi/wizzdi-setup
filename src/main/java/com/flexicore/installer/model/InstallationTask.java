@@ -232,20 +232,25 @@ public class InstallationTask implements IInstallationTask {
         }
     }
 
-    public boolean createLink(String sourceLocation, String shortcutTargetlocation) {
-        File file = new File(sourceLocation);
+    /**
+     *Creates a shortcut, Windows only
+     * @param targetLocation the file (executable or other) that is the target of the link
+     * @param shortcutLocation the location of the shortcut, can be System.getProperty("user.home")+"/Desktop/"+"shortcut.lnk" (example)
+     * @param iconIndex index in the SystemRoot%\system32\SHELL32.dll icons
+     * @param workingDir the working directory for the target file.
+     * @return
+     */
+    public boolean createLink(String targetLocation, String shortcutLocation, int iconIndex, String workingDir) {
+        if (!isWindows()) return false;
+        File file = new File(targetLocation);
         if (file.exists()) {
-            ShellLink sl = ShellLink.createLink(sourceLocation)
-                    .setWorkingDir(file.getParent())
+            ShellLink sl = ShellLink.createLink(targetLocation)
+                    .setWorkingDir(workingDir)
                     .setIconLocation("%SystemRoot%\\system32\\SHELL32.dll");
-            sl.getHeader().setIconIndex(128);
-            sl.getConsoleData()
-                    .setFont(com.wizzdi.installer.extra.ConsoleData.Font.Consolas)
-                    .setFontSize(24)
-                    .setTextColor(5);
-
+            sl.getHeader().setIconIndex(iconIndex);
             try {
-                sl.saveTo(shortcutTargetlocation);
+                sl.saveTo(shortcutLocation);
+                info("Have successfully created a shortcut at: "+shortcutLocation);
                 return true;
             } catch (IOException e) {
                 severe("Error while creating shortcut", e);
@@ -263,7 +268,7 @@ public class InstallationTask implements IInstallationTask {
     public boolean executeCommand(String command, String toFind, String ownerName) {
 
 
-        Process process = null;
+        Process process;
 
         try {
             if (!isWindows) {

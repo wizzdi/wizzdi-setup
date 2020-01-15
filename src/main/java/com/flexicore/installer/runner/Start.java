@@ -593,6 +593,7 @@ public class Start {
     }
 
     private static boolean install(InstallationContext context) {
+
         if (!installRunning) {
             installRunning = true;
 
@@ -702,10 +703,10 @@ public class Start {
                     }
                 }
                 //ugly, we need to have one Installation task for the operation
-                if (context.getiInstallationTasks().size()!=0) {
+                if (context.getiInstallationTasks().size() != 0) {
                     InstallationTask task = (InstallationTask) context.getiInstallationTasks().values().toArray()[0];
                     for (String service : restarters.values()) {
-                        task.setServiceToStart(service,"runner finalizing");
+                        task.setServiceToStart(service, "runner finalizing");
                     }
                 }
                 if (failed == 0) {
