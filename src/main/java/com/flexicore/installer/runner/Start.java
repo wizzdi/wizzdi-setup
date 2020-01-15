@@ -623,8 +623,8 @@ public class Start {
                         installationTask.setContext(context);
                         if (!installationTask.isSnooper()) {
                             if (!installationTask.getNeedRestartTasks().isEmpty()) {
-                                for (String id : installationTask.getNeedRestartTasks()) {
-                                    restarters.put(id, id);
+                                for (String service : installationTask.getNeedRestartTasks()) {
+                                    restarters.put(service, service);
                                 }
                             }
                             InstallationResult result = installationTask.install(context);
@@ -668,23 +668,6 @@ public class Start {
                 }
                 updateStatus(" Installation restarting needed", completed, failed, skipped, InstallationState.FINALIZING);
 
-                for (String id : restarters.values()) {
-                    IInstallationTask task = context.getTask(id);
-                    if (task != null) {
-                        try {
-                            InstallationResult result = task.restartService(context);
-                            if (!(result != null && result.getInstallationStatus() != null && result.getInstallationStatus().equals(InstallationStatus.COMPLETED))) {
-                                failed++;
-                                severe("Failed to restart service of: " + task.getId());
-                            } else {
-                                info("Has started the service of: " + task.getId());
-                            }
-                        } catch (Throwable throwable) {
-                            severe("Error while restarting service: " + id);
-                        }
-                    }
-                }
-
                 updateStatus(" Installation finalizing", completed, failed, skipped, InstallationState.FINALIZING);
                 info(" calling finalizers on all tasks");
                 for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
@@ -716,6 +699,13 @@ public class Start {
                         doUpdateUI(installationTask, installationContext);
                     } catch (Throwable throwable) {
                         severe("Error while cleanup task run " + installationTask.getName());
+                    }
+                }
+                //ugly, we need to have one Installation task for the operation
+                if (context.getiInstallationTasks().size()!=0) {
+                    InstallationTask task = (InstallationTask) context.getiInstallationTasks().values().toArray()[0];
+                    for (String service : restarters.values()) {
+                        task.setServiceToStart(service,"runner finalizing");
                     }
                 }
                 if (failed == 0) {

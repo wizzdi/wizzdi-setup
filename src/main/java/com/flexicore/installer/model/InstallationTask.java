@@ -3,10 +3,12 @@ package com.flexicore.installer.model;
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.utilities.CopyFileVisitor;
 import com.flexicore.installer.utilities.StreamGobbler;
+import com.wizzdi.installer.*;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.zeroturnaround.zip.ZipUtil;
+
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.GroupPrincipal;
@@ -36,13 +38,13 @@ public class InstallationTask implements IInstallationTask {
     private boolean admin = false;
     public boolean stop = false;
     private Service service;
-    private int filesCopied=0;
-    private int filesFailed=0;
-    private int foldersCopied=0;
-    private int foldersFailed=0;
+    private int filesCopied = 0;
+    private int filesFailed = 0;
+    private int foldersCopied = 0;
+    private int foldersFailed = 0;
     private int totalFiles;
     private int totalFolders;
-    private boolean progressOnFolders=false;
+    private boolean progressOnFolders = false;
 
     public Parameters getPrivateParameters() {
         return null;
@@ -70,34 +72,37 @@ public class InstallationTask implements IInstallationTask {
 
     /**
      * wait for service to stop
+     *
      * @param serviceName
      * @param owner
      * @param waitTimeMS
      * @return
      */
-    public boolean waitForServiceToStop(String serviceName,String owner,boolean stopit,long waitTimeMS) {
-        if (stopit) setServiceToStop(serviceName,owner);
-        long started=System.currentTimeMillis();
+    public boolean waitForServiceToStop(String serviceName, String owner, boolean stopit, long waitTimeMS) {
+        if (stopit) setServiceToStop(serviceName, owner);
+        long started = System.currentTimeMillis();
         do {
             if (testServiceRunning(serviceName, "loop while waiting for service to stop", false)) {
                 try {
                     Thread.sleep(20);
                 } catch (InterruptedException e) {
-                   return false;
+                    return false;
                 }
             } else {
-                info("Service has stopped after "+(System.currentTimeMillis()-started+" milliseconds"));
+                info("Service has stopped after " + (System.currentTimeMillis() - started + " milliseconds"));
                 return true;
             }
-        } while ((System.currentTimeMillis()-started)<waitTimeMS);
-        info("Service has NOT stopped after "+(System.currentTimeMillis()-started+" milliseconds"));
+        } while ((System.currentTimeMillis() - started) < waitTimeMS);
+        info("Service has NOT stopped after " + (System.currentTimeMillis() - started + " milliseconds"));
         return false;
     }
+
     /**
      * check of a service by a known name is running.
+     *
      * @param serviceName
-     * @param ownerName , for logging purposes (name)
-     * @param wait wait for a defined time (now second) before declaring service not running, useful when the service has just started
+     * @param ownerName   , for logging purposes (name)
+     * @param wait        wait for a defined time (now second) before declaring service not running, useful when the service has just started
      * @return
      */
     public boolean testServiceRunning(String serviceName, String ownerName, boolean wait) {
@@ -135,6 +140,7 @@ public class InstallationTask implements IInstallationTask {
 
     /**
      * Windows only, set service to run on startup
+     *
      * @param serviceName
      * @param ownerName
      * @return
@@ -148,6 +154,7 @@ public class InstallationTask implements IInstallationTask {
 
     /**
      * old method of informing UI
+     *
      * @param phase
      * @param severity
      * @param message
@@ -164,6 +171,7 @@ public class InstallationTask implements IInstallationTask {
 
     /**
      * Stop service, this is required when updating
+     *
      * @param serviceName
      * @param ownerName
      * @return
@@ -175,17 +183,19 @@ public class InstallationTask implements IInstallationTask {
             return executeCommand("service  " + serviceName + " stop", "", "Set Service To Stop " + serviceName);
         }
     }
-//todo: check that Linux version works.
+
+    //todo: check that Linux version works.
     public boolean setServiceToStart(String serviceName, String ownerName) {
         if (isWindows()) {
             return executeCommand("sc start " + serviceName, "START_PENDING", "Set Service To Stop " + serviceName);
-        }else {
-            return executeCommand("service  " + serviceName+" restart", "", "Set Service To restart  " + serviceName);
+        } else {
+            return executeCommand("service  " + serviceName + " restart", "", "Set Service To restart  " + serviceName);
         }
     }
 
     /**
      * check if path exists
+     *
      * @param file String, name of path
      * @return
      */
@@ -220,6 +230,29 @@ public class InstallationTask implements IInstallationTask {
 
             return false;
         }
+    }
+
+    public boolean createLink(String sourceLocation, String shortcutTargetlocation) {
+        File file = new File(sourceLocation);
+        if (file.exists()) {
+            ShellLink sl = ShellLink.createLink(sourceLocation)
+                    .setWorkingDir(file.getParent())
+                    .setIconLocation("%SystemRoot%\\system32\\SHELL32.dll");
+            sl.getHeader().setIconIndex(128);
+            sl.getConsoleData()
+                    .setFont(com.wizzdi.installer.extra.ConsoleData.Font.Consolas)
+                    .setFontSize(24)
+                    .setTextColor(5);
+
+            try {
+                sl.saveTo(shortcutTargetlocation);
+                return true;
+            } catch (IOException e) {
+                severe("Error while creating shortcut", e);
+            }
+        }
+        return false;
+
     }
 
     public boolean executeBashScriptLocal(String name, String toFind, String ownerName) {
@@ -558,6 +591,7 @@ public class InstallationTask implements IInstallationTask {
 
     /**
      * list of ids we need to restart.
+     *
      * @return
      */
     @Override
@@ -574,8 +608,6 @@ public class InstallationTask implements IInstallationTask {
     public Set<String> getSoftPrerequisitesTask() {
         return Collections.emptySet();
     } //todo:: check if this is the best solution
-
-
 
 
     @Override
@@ -811,13 +843,14 @@ public class InstallationTask implements IInstallationTask {
 
     }
 
-    public boolean copySingleFile(String source,String target) throws IOException {
+    public boolean copySingleFile(String source, String target) throws IOException {
         if (exists(source)) {
-            Files.copy(Paths.get(source) ,Paths.get(target),StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(Paths.get(source), Paths.get(target), StandardCopyOption.REPLACE_EXISTING);
             return true;
         }
         return false;
     }
+
     /**
      * @param installationDir source of the copy
      * @param targetDir       target of the copy
@@ -837,7 +870,7 @@ public class InstallationTask implements IInstallationTask {
                 ensureTarget(targetDir);
                 try {
                     CopyFileVisitor copyFileVisitor = null;
-                     if (!dry) {
+                    if (!dry) {
                         Files.walkFileTree(sourcePath, copyFileVisitor = new CopyFileVisitor(targetPath).setInstallationTask(this).setContext(getContext()).setCopyOver(true));
                     }
                     addMessage(ownerName + " copying server", "info", "copy finished " + ((copyFileVisitor == null) ? "" : ((copyFileVisitor.getCount() + "  files copied" + (copyFileVisitor.getErrors() == 0 ? "" : "  Errors: " + copyFileVisitor.getErrors())))));
@@ -1120,18 +1153,20 @@ public class InstallationTask implements IInstallationTask {
         }
         return true;
     }
-    public boolean addToPath(String path,String owner) {
+
+    public boolean addToPath(String path, String owner) {
         boolean result = false;
         if (isWindows()) {
             if (exists(path)) {
                 result = executeCommandByRuntime("setx path  \"" + "%PATH%;" + path + "\"", owner);
                 if (result) {
-                    info ("have added "+path+" to path variable ");
+                    info("have added " + path + " to path variable ");
                 }
             }
         }
         return result;
     }
+
     /**
      * @param path
      * @param existingString from a previous call, saves time in open/close file sequence, all stages but one in memory
