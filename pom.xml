@@ -152,6 +152,15 @@
                                 </module>
                                 <module>
                                     <artifact>
+                                        <groupId>com.wizzdi.installer</groupId>
+                                        <artifactId>shortcuts</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>shortcuts</name>
+                                    </moduleInfo>
+                                </module>
+                                <module>
+                                    <artifact>
                                         <groupId>org.apache.commons</groupId>
                                         <artifactId>commons-lang3</artifactId>
                                     </artifact>
