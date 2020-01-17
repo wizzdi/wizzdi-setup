@@ -719,7 +719,7 @@ public class Start {
                 } else {
                     updateStatus("done, some tasks failed", completed, failed, skipped, InstallationState.PARTLYCOMPLETED);
                 }
-                if (!uiFoundandRun) stopped=true;
+                if (!uiFoundandRun) stopped=true; //command line will execute here
             });
             thread.start();
             installRunning = false;
