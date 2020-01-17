@@ -43,7 +43,7 @@ public class Start {
 
     public static void main(String[] args) throws MissingInstallationTaskDependency, ParseException, InterruptedException {
 
-        System.out.println(System.getProperty("user.dir"));
+
 
         Options options = initOptions();
         CommandLineParser parser = new DefaultParser();
@@ -143,6 +143,11 @@ public class Start {
             }
 
         }
+        for(IInstallationTask task:softNeed) {
+            if (!installationContext.getiInstallationTasks().containsKey(task.getId())) {
+                handleTask(installationContext, task, mainCmd, args, parser);
+            }
+        }
         for (IInstallationTask task : finalizers) {
             task.setOrder(order++);
             handleTask(installationContext, task, mainCmd, args, parser);
@@ -153,7 +158,7 @@ public class Start {
             updateParameters(false, task, installationContext, taskOptions, args, parser);
         }
         if (installationContext.getParamaters() != null) installationContext.getParamaters().sort();
-        boolean stopped = false;
+
         loadUiComponents();  //currently asynchronous
         if (!uiFoundandRun) {
             if (installationContext.getParamaters().getBooleanValue("install")) {
@@ -162,25 +167,25 @@ public class Start {
                 info(" there is no 'install' parameter set to true that will start installation");
             }
         } else {
-            boolean displayed = false;
-            while (!stopped) {
 
-                Thread.sleep(2000);
-                if (!displayed) {
-                    displayed = true;
-                    informUI("Installation ready", InstallationState.READY);
-                }
-
-            }
         }
+        boolean displayed = false;
+        while (!stopped) {
 
+            Thread.sleep(300);
+            if (!displayed) {
+                displayed = true;
+                informUI("Installation ready", InstallationState.READY);
+            }
+
+        }
         // stop and unload all plugins
         pluginManager.stopPlugins();
         cleanSnoopers();
         exit(0);
 
     }
-
+    static boolean stopped = false;
     /**
      * adds a task if matches the current operating system.
      *
@@ -714,6 +719,7 @@ public class Start {
                 } else {
                     updateStatus("done, some tasks failed", completed, failed, skipped, InstallationState.PARTLYCOMPLETED);
                 }
+                if (!uiFoundandRun) stopped=true;
             });
             thread.start();
             installRunning = false;

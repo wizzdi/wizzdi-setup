@@ -12,6 +12,10 @@
         <slf4j.version>1.7.26</slf4j.version>
         <log4j.version>2.12.0</log4j.version>
         <java.main.version>11</java.main.version>
+        <!-- select target platform for image generation, support for 2 os and 3 platforms-->
+        <windows>version=11,vendor=openjdk,platform=windows</windows>
+        <linuxAMD64>version=11,vendor=openjdk,platform=Linux_x86_64</linuxAMD64>
+        <linuxARM64>version=11,vendor=openjdk,platform=arm_64</linuxARM64>
     </properties>
     <dependencies>
 
@@ -332,10 +336,7 @@
                                 <path>${project.build.directory}/${artifactId}-${version}.jar</path>
 
                             </modulePath>
-
-                            <!--                            <baseJdk>version=11,vendor=openjdk,platform=Linux_x86_64</baseJdk>-->
-                            <!--                            <baseJdk>version=11,vendor=openjdk,platform=arm_64</baseJdk>-->
-                            <baseJdk>version=11,vendor=openjdk,platform=windows</baseJdk>
+                           <baseJdk>${linuxARM64}</baseJdk>
                             <modules>
                                 <module>flexicore.installer</module>
 
