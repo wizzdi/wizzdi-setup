@@ -190,6 +190,21 @@ public class Parameter {
         this.setHidden(hidden);
 
     }
+    public Parameter(String name, String description, boolean hasValue, String defaultValue,
+                     ParameterType parameterType, ParameterSource parameterSource,int ordinal, Parameter.parameterValidator validator,boolean autoCreate,boolean hidden,OperatingSystem os) {
+        this.type=parameterType;
+        this.hasValue = hasValue;
+        this.name = name;
+        this.description = description;
+        this.defaultValue = defaultValue;
+        this.source=parameterSource;
+        this.setOrdinal(ordinal);
+        this.parameterValidator=validator;
+        this.autocreate=autoCreate;
+        this.setHidden(hidden);
+        this.os=os;
+
+    }
 
     /**
      *
