@@ -226,7 +226,7 @@ public class InstallationTask implements IInstallationTask {
             }
         } else {
 
-            severe("******Cannot dry script: " + script);
+            severe("******Cannot find script: " + script);
 
             return false;
         }

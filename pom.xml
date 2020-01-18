@@ -336,7 +336,7 @@
                                 <path>${project.build.directory}/${artifactId}-${version}.jar</path>
 
                             </modulePath>
-                           <baseJdk>${windows}</baseJdk>
+                           <baseJdk>${linuxARM64}</baseJdk>
                             <modules>
                                 <module>flexicore.installer</module>
 
