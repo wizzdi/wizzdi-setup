@@ -67,7 +67,7 @@ public class InstallationContext {
     public int getFailedToInstall() {
         return failedToInstall;
     }
-
+    private OperatingSystem operatingSystem;
     public Parameters getParamaters() {
         return parameters;
     }
@@ -277,6 +277,15 @@ public class InstallationContext {
 
     public InstallationContext setFilesProgress(Start.installerFilesProgress filesProgress) {
         this.filesProgress = filesProgress;
+        return this;
+    }
+
+    public OperatingSystem getOperatingSystem() {
+        return operatingSystem;
+    }
+
+    public InstallationContext setOperatingSystem(OperatingSystem operatingSystem) {
+        this.operatingSystem = operatingSystem;
         return this;
     }
 }

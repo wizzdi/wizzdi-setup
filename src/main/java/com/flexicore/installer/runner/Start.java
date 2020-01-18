@@ -54,6 +54,8 @@ public class Start {
         logger = initLogger("Installer", mainCmd.getOptionValue(LOG_PATH_OPT, "logs"));
         installationContext = new InstallationContext()
                 .setLogger(logger).setParameters(new Parameters()).
+                        setOperatingSystem(InstallationTask.isWindows ?
+                                OperatingSystem.Windows : ( InstallationTask.isLinux ? OperatingSystem.Linux : OperatingSystem.OSX)).
                         setUiQuit(Start::uiComponentQuit).
                         setUiPause(Start::uiComponentPause).
                         setUiResume(Start::uiComponentResume).

@@ -16,8 +16,7 @@ public class Parameter {
     private String nonTranslatedValue;
     private String referencedParameter;
     private int ordinal=-1;
-
-
+    private OperatingSystem os=OperatingSystem.All;
     private String originalValue =null;
     private ParameterSource originalSource=null;
     private Integer minValue=0;
@@ -47,12 +46,28 @@ public class Parameter {
         return this;
     }
 
+    /**
+     *
+     * @param name
+     * @param description
+     * @param hasValue
+     * @param defaultValue
+     */
     public Parameter(String name, String description, boolean hasValue, String defaultValue) {
         this.hasValue = hasValue;
         this.name = name;
         this.description = description;
         this.defaultValue = defaultValue;
     }
+
+    /**
+     *
+     * @param name
+     * @param description
+     * @param hasValue
+     * @param defaultValue
+     * @param parameterType
+     */
     public Parameter(String name, String description, boolean hasValue, String defaultValue,ParameterType parameterType) {
         this.type=parameterType;
         this.hasValue = hasValue;
@@ -62,6 +77,17 @@ public class Parameter {
 
 
     }
+
+    /**
+     *
+     * @param name
+     * @param description
+     * @param hasValue
+     * @param defaultValue
+     * @param parameterType
+     * @param options
+     * @param validator
+     */
     public Parameter(String name, String description, boolean hasValue, String defaultValue, ParameterType parameterType, ArrayList<String> options, parameterValidator validator) {
         this.type=parameterType;
         this.hasValue = hasValue;
@@ -71,6 +97,18 @@ public class Parameter {
         this.listOptions=options;
         this.parameterValidator=validator;
     }
+
+    /**
+     *
+     * @param name
+     * @param description
+     * @param hasValue
+     * @param defaultValue
+     * @param parameterType
+     * @param options
+     * @param parameterSource
+     * @param validator
+     */
     public Parameter(String name, String description, boolean hasValue,
                      String defaultValue,ParameterType parameterType,ArrayList<String> options,ParameterSource parameterSource,Parameter.parameterValidator validator) {
         this.type = parameterType;
@@ -84,7 +122,16 @@ public class Parameter {
 
     }
 
-
+    /**
+     *
+     * @param name
+     * @param description
+     * @param hasValue
+     * @param defaultValue
+     * @param parameterType
+     * @param parameterSource
+     * @param validator
+     */
     public Parameter(String name, String description, boolean hasValue, String defaultValue, ParameterType parameterType, ParameterSource parameterSource, Parameter.parameterValidator validator) {
         this.type=parameterType;
         this.hasValue = hasValue;
@@ -95,6 +142,18 @@ public class Parameter {
         this.parameterValidator=validator;
 
     }
+
+    /**
+     *
+     * @param name
+     * @param description
+     * @param hasValue
+     * @param defaultValue
+     * @param parameterType
+     * @param parameterSource
+     * @param validator
+     * @param autoCreate
+     */
     public Parameter(String name, String description, boolean hasValue, String defaultValue, ParameterType parameterType, ParameterSource parameterSource, Parameter.parameterValidator validator,boolean autoCreate) {
         this.type=parameterType;
         this.hasValue = hasValue;
@@ -107,6 +166,18 @@ public class Parameter {
 
     }
 
+    /**
+     *
+     * @param name
+     * @param description
+     * @param hasValue
+     * @param defaultValue
+     * @param parameterType
+     * @param parameterSource
+     * @param validator
+     * @param autoCreate
+     * @param hidden
+     */
     public Parameter(String name, String description, boolean hasValue, String defaultValue, ParameterType parameterType, ParameterSource parameterSource, Parameter.parameterValidator validator,boolean autoCreate,boolean hidden) {
         this.type=parameterType;
         this.hasValue = hasValue;
@@ -119,6 +190,17 @@ public class Parameter {
         this.setHidden(hidden);
 
     }
+
+    /**
+     *
+     * @param name
+     * @param description
+     * @param hasValue
+     * @param defaultValue
+     * @param parameterType
+     * @param validator
+     * @param autoCreate
+     */
     public Parameter(String name, String description,
                      boolean hasValue, String defaultValue, ParameterType parameterType,
                      Parameter.parameterValidator validator, boolean autoCreate) {
@@ -132,6 +214,18 @@ public class Parameter {
 
 
     }
+
+    /**
+     *
+     * @param name
+     * @param description
+     * @param hasValue
+     * @param defaultValue
+     * @param parameterType
+     * @param validator
+     * @param autoCreate
+     * @param hidden
+     */
     public Parameter(String name, String description,
                      boolean hasValue, String defaultValue, ParameterType parameterType,
                      Parameter.parameterValidator validator, boolean autoCreate,boolean hidden) {
@@ -145,6 +239,19 @@ public class Parameter {
         this.hidden=hidden;
 
     }
+
+    /**
+     *
+     * @param name
+     * @param description
+     * @param hasValue
+     * @param defaultValue
+     * @param parameterType
+     * @param validator
+     * @param ordinal
+     * @param autoCreate
+     * @param hidden
+     */
     public Parameter(String name, String description,
                      boolean hasValue, String defaultValue, ParameterType parameterType, Parameter.parameterValidator validator, int ordinal, boolean autoCreate,boolean hidden) {
         this.type=parameterType;
@@ -181,6 +288,10 @@ public class Parameter {
         return this;
     }
 
+    /**
+     * name of the parameter
+     * @return
+     */
     public String getName() {
         return name;
     }
@@ -190,6 +301,10 @@ public class Parameter {
         return this;
     }
 
+    /**
+     * current value of this parameter.
+     * @return
+     */
     public String getValue() {
         return value != null ? value : (defaultValue != null ? defaultValue : "");
     }
@@ -243,6 +358,10 @@ public class Parameter {
         return this;
     }
 
+    /**
+     * get Parameter type.
+     * @return
+     */
     public ParameterType getType() {
         return type;
     }
@@ -362,6 +481,14 @@ public class Parameter {
         transformParameters.clear();
     }
 
+    /**
+     * validate if email is in the correct format
+     * @param context
+     * @param parameter
+     * @param newValue
+     * @param validationMessage
+     * @return
+     */
     public static boolean validateEmail(InstallationContext context,Parameter parameter, Object newValue, ValidationMessage validationMessage) {
         String email=newValue.toString();
         email = email.trim();
@@ -410,6 +537,15 @@ public class Parameter {
         if (!result) validationMessage.setMessage("URL is not a valid URL");
         return result;
     }
+
+    /**
+     * validate if new value is in a list
+     * @param context
+     * @param parameter
+     * @param newValue
+     * @param validationMessage
+     * @return
+     */
     public static boolean validateList(InstallationContext context,Parameter parameter,Object newValue, ValidationMessage validationMessage) {
         if (parameter.getListOptions()!=null) {
             if (parameter.getListOptions().contains(newValue)) {
@@ -420,6 +556,15 @@ public class Parameter {
         }
         return true;
     }
+
+    /**
+     * Validate if folder exists.
+     * @param context
+     * @param parameter
+     * @param newValue
+     * @param validationMessage
+     * @return
+     */
     public static boolean validateExistingFolder(InstallationContext context,Parameter parameter,Object newValue, ValidationMessage validationMessage) {
         File file=new File(getReplaced(context,newValue.toString(),parameter,null));
         if (!file.exists()) {
@@ -435,6 +580,15 @@ public class Parameter {
         }
         return true;
     }
+
+    /**
+     * validate of file exists
+     * @param context
+     * @param parameter
+     * @param newValue
+     * @param validationMessage
+     * @return
+     */
     public static boolean validateExistingFile(InstallationContext context,Parameter parameter,Object newValue, ValidationMessage validationMessage) {
         File file=new File(getReplaced(context,newValue.toString(),parameter,null));
         if (!file.exists()) {
@@ -456,6 +610,15 @@ public class Parameter {
         }
         return true;
     }
+
+    /**
+     * simple validator for heap size todo:check available memory
+     * @param context
+     * @param parameter
+     * @param newValue
+     * @param validationMessage
+     * @return
+     */
     public static boolean validateHeap(InstallationContext context,Parameter parameter,Object newValue, ValidationMessage validationMessage) {
         try {
             int heap= Integer.parseInt(newValue.toString());
@@ -488,7 +651,16 @@ public class Parameter {
         return this;
     }
 
-    public static String getReplaced(InstallationContext installationContext, String result, Parameter parameter,Parameter onlyParameter) {
+    public OperatingSystem getOs() {
+        return os;
+    }
+
+    public Parameter setOs(OperatingSystem os) {
+        this.os = os;
+        return this;
+    }
+
+    public static String getReplaced(InstallationContext installationContext, String result, Parameter parameter, Parameter onlyParameter) {
         Logger logger=installationContext.getLogger();
         logger.info("got to replace: "+result);
         int a = result.indexOf("&");
