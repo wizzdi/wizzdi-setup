@@ -44,7 +44,6 @@ public class Start {
     public static void main(String[] args) throws MissingInstallationTaskDependency, ParseException, InterruptedException {
 
 
-
         Options options = initOptions();
         CommandLineParser parser = new DefaultParser();
         String[] trueArgs = getTrueArgs(args, options);
@@ -55,7 +54,7 @@ public class Start {
         installationContext = new InstallationContext()
                 .setLogger(logger).setParameters(new Parameters()).
                         setOperatingSystem(InstallationTask.isWindows ?
-                                OperatingSystem.Windows : ( InstallationTask.isLinux ? OperatingSystem.Linux : OperatingSystem.OSX)).
+                                OperatingSystem.Windows : (InstallationTask.isLinux ? OperatingSystem.Linux : OperatingSystem.OSX)).
                         setUiQuit(Start::uiComponentQuit).
                         setUiPause(Start::uiComponentPause).
                         setUiResume(Start::uiComponentResume).
@@ -145,7 +144,7 @@ public class Start {
             }
 
         }
-        for(IInstallationTask task:softNeed) {
+        for (IInstallationTask task : softNeed) {
             if (!installationContext.getiInstallationTasks().containsKey(task.getId())) {
                 handleTask(installationContext, task, mainCmd, args, parser);
             }
@@ -163,6 +162,7 @@ public class Start {
 
         loadUiComponents();  //currently asynchronous
         if (!uiFoundandRun) {
+            checkHelp(mainCmd);
             if (installationContext.getParamaters().getBooleanValue("install")) {
                 install(installationContext);
             } else {
@@ -187,7 +187,15 @@ public class Start {
         exit(0);
 
     }
+
+    private static void checkHelp(CommandLine mainCmd) {
+        if (mainCmd.hasOption(HELP)) {
+            exit(0);
+        }
+    }
+
     static boolean stopped = false;
+
     /**
      * adds a task if matches the current operating system.
      *
@@ -222,21 +230,14 @@ public class Start {
 
         if (mainCmd.hasOption(HELP)) {
             if (taskOptions.getOptions().size() != 0) {
-
+                InstallationTask installationTask = (InstallationTask) task;
                 System.out.println("command line options for: " + task.getId() + "  " + task.getDescription());
                 if (task.getPrerequisitesTask().size() != 0) {
                     System.out.println("Requires: " + task.getPrerequisitesTask());
                 }
 
                 HelpFormatter formatter = new HelpFormatter();
-                formatter.printHelp("Start.bat ", taskOptions);
-
-                System.out.println("Task default parameters:");
-                for (Parameter p : task.getParameters(installationContext).getValues()) {
-                    System.out.println(p);
-
-                }
-
+                formatter.printHelp(installationTask.isWindows() ? "Start.bat " : "/.Start", taskOptions);
             }
         }
         return true;
@@ -407,6 +408,14 @@ public class Start {
                 if (reallyAdd) {
                     installationContext.getParamaters().addParameter(parameter, task);
                     count++;
+                }
+                //special case here
+
+                if (name.equals("extralogs")) {
+                    installationContext.setExtraLogs(((InstallationTask) task).isExtraLogs());
+                }
+                if (name.equals("h")) {
+                    installationContext.setHelpRunning(true);
                 }
             }
             info("Have added " + count + " parameters to installation task: " + task.getId() + " ->>" + task.getDescription());
@@ -721,7 +730,7 @@ public class Start {
                 } else {
                     updateStatus("done, some tasks failed", completed, failed, skipped, InstallationState.PARTLYCOMPLETED);
                 }
-                if (!uiFoundandRun) stopped=true; //command line will execute here
+                if (!uiFoundandRun) stopped = true; //command line will execute here
             });
             thread.start();
             installRunning = false;

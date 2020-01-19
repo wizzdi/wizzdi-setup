@@ -233,11 +233,12 @@ public class InstallationTask implements IInstallationTask {
     }
 
     /**
-     *Creates a shortcut, Windows only
-     * @param targetLocation the file (executable or other) that is the target of the link
+     * Creates a shortcut, Windows only
+     *
+     * @param targetLocation   the file (executable or other) that is the target of the link
      * @param shortcutLocation the location of the shortcut, can be System.getProperty("user.home")+"/Desktop/"+"shortcut.lnk" (example)
-     * @param iconIndex index in the SystemRoot%\system32\SHELL32.dll icons
-     * @param workingDir the working directory for the target file.
+     * @param iconIndex        index in the SystemRoot%\system32\SHELL32.dll icons
+     * @param workingDir       the working directory for the target file.
      * @return
      */
     public boolean createLink(String targetLocation, String shortcutLocation, int iconIndex, String workingDir) {
@@ -250,7 +251,7 @@ public class InstallationTask implements IInstallationTask {
             sl.getHeader().setIconIndex(iconIndex);
             try {
                 sl.saveTo(shortcutLocation);
-                info("Have successfully created a shortcut at: "+shortcutLocation);
+                info("Have successfully created a shortcut at: " + shortcutLocation);
                 return true;
             } catch (IOException e) {
                 severe("Error while creating shortcut", e);
@@ -281,8 +282,6 @@ public class InstallationTask implements IInstallationTask {
 
 
             Boolean result = contWithProcess(process, toFind, false, ownerName);
-
-            if (!result) debuglines(command, false);
             return result;
 
         } catch (IOException e) {
@@ -317,23 +316,24 @@ public class InstallationTask implements IInstallationTask {
 
     void debuglines(String command, boolean force) {
 
-        if (errorLines.size() != 0 && (force || context.getParamaters().getBooleanValue("debug"))) {
-            info("debug lines from E stream  while executing OS shell command or script");
+        if (errorLines.size() != 0 ) {
+            info("------ errors from command: " + command);
             for (String message : errorLines) {
                 if (!message.isEmpty()) {
 
-                    info("****** debug line  : " + command + ": " + message);
+                    info(message);
                 }
             }
+            info("------ END errors from command: " + command);
         }
-        if (lines.size() != 0 && (force || context.getParamaters().getBooleanValue("debug"))) {
-            info("normal lines from E stream  while executing OS shell command or script");
+        if (lines.size() != 0 && (force || isExtraLogs())) {
+            if (lines.size()!=0) info("------ output from command: " + command);
             for (String message : lines) {
                 if (!message.isEmpty()) {
-
-                    info("****** debug line  : " + command + ": " + message);
+                   info(message);
                 }
             }
+            if (lines.size()!=0) info("------ end output from command: " + command);
         }
     }
 
@@ -375,7 +375,7 @@ public class InstallationTask implements IInstallationTask {
             errorLines.addAll(errorGobbler.getLines());
             lines.clear();
             lines.addAll(outputGobbler.getLines()); //for debugging purposes
-            debuglines(ownerName, true || exitVal != 0); //write debug lines when exit val is not zero
+            debuglines(ownerName, exitVal != 0); //write debug lines when exit val is not zero
             if (!isWindows && exitVal == 4) {
                 return false; //seems to be the response when looking for a non-existent service. TODO:make sure that this is the case
             } else {
@@ -838,6 +838,14 @@ public class InstallationTask implements IInstallationTask {
 
     }
 
+    public boolean isExtraLogs() {
+        return getContext().getParamaters().getBooleanValue("extralogs");
+
+    }
+    public boolean isHelpRunning() {
+        return getContext().getParamaters().getBooleanValue("h");
+
+    }
     public String getScriptsPath() {
         return getContext().getParamaters().getValue("scriptspath") + "/";
 

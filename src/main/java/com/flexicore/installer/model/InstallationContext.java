@@ -11,6 +11,8 @@ import java.util.logging.Logger;
 public class InstallationContext {
 
     private Logger logger;
+    private boolean extraLogs=false;
+    private boolean helpRunning=false;
     private Parameters parameters;
     private Properties properties;
     private LinkedHashMap<String,IInstallationTask> iInstallationTasks =new LinkedHashMap<>();
@@ -286,6 +288,24 @@ public class InstallationContext {
 
     public InstallationContext setOperatingSystem(OperatingSystem operatingSystem) {
         this.operatingSystem = operatingSystem;
+        return this;
+    }
+
+    public boolean isExtraLogs() {
+        return extraLogs;
+    }
+
+    public InstallationContext setExtraLogs(boolean extraLogs) {
+        this.extraLogs = extraLogs;
+        return this;
+    }
+
+    public boolean isHelpRunning() {
+        return helpRunning;
+    }
+
+    public InstallationContext setHelpRunning(boolean helpRunning) {
+        this.helpRunning = helpRunning;
         return this;
     }
 }
