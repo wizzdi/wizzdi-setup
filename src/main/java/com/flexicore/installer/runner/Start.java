@@ -412,9 +412,9 @@ public class Start {
                 //special case here
 
                 if (name.equals("extralogs")) {
-                    installationContext.setExtraLogs(((InstallationTask) task).isExtraLogs());
+                    installationContext.setExtraLogs(Boolean.valueOf(cmd.getOptionValue("extralogs")));
                 }
-                if (name.equals("h")) {
+                if (name.equals(HELP)) {
                     installationContext.setHelpRunning(true);
                 }
             }
@@ -466,7 +466,7 @@ public class Start {
                 }
             }
             parameter.setSource(ParameterSource.PROPERTIES_FILE);
-            info("Parameter " + parameter.getName() + " default value will be taken from a properties file");
+          if (installationContext.isExtraLogs())  info("Parameter " + parameter.getName() + " default value will be taken from a properties file");
         }
         if (result.contains("&")) {
             parameter.setNonTranslatedValue(result);

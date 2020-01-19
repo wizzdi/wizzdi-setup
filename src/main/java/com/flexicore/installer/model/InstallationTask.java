@@ -46,8 +46,8 @@ public class InstallationTask implements IInstallationTask {
     private int totalFolders;
     private boolean progressOnFolders = false;
 
-    public Parameters getPrivateParameters() {
-        return null;
+    public Parameters getPrivateParameters(InstallationContext installationContext) {
+        return new Parameters();
     }
 
 
