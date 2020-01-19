@@ -317,23 +317,22 @@ public class InstallationTask implements IInstallationTask {
     void debuglines(String command, boolean force) {
 
         if (errorLines.size() != 0 ) {
-            info("------ errors from command: " + command);
+
             for (String message : errorLines) {
                 if (!message.isEmpty()) {
-
-                    info(message);
+                   info(message);
                 }
             }
-            info("------ END errors from command: " + command);
+
         }
         if (lines.size() != 0 && (force || isExtraLogs())) {
-            if (lines.size()!=0) info("------ output from command: " + command);
+
             for (String message : lines) {
                 if (!message.isEmpty()) {
                    info(message);
                 }
             }
-            if (lines.size()!=0) info("------ end output from command: " + command);
+
         }
     }
 
