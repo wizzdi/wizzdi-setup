@@ -418,7 +418,7 @@ public class Start {
                     installationContext.setHelpRunning(true);
                 }
             }
-            info("Have added " + count + " parameters to installation task: " + task.getId() + " ->>" + task.getDescription());
+           if (installationContext.isExtraLogs()) info("Have added " + count + " parameters to installation task: " + task.getId() + " ->>" + task.getDescription());
         } catch (ParseException e) {
             logger.log(Level.SEVERE, "error while parsing command line", e);
             return false;
