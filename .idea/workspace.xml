@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5a5edd4e-73f9-41ab-925c-ed8a5f34bf28" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/debug.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/runConfigurations/debug.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -94,7 +94,10 @@
       <workItem from="1578828743597" duration="598000" />
       <workItem from="1578846038743" duration="1048000" />
       <workItem from="1578972785190" duration="16344000" />
-      <workItem from="1579024088961" duration="682000" />
+      <workItem from="1579024088961" duration="1873000" />
+      <workItem from="1579054901206" duration="31000" />
+      <workItem from="1579054959831" duration="720000" />
+      <workItem from="1579081882562" duration="46000" />
     </task>
     <task id="LOCAL-00001" summary="first">
       <created>1577453423358</created>
@@ -187,7 +190,14 @@
       <option name="project" value="LOCAL" />
       <updated>1579005290431</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="added support for deployment wait">
+      <created>1579026955333</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1579026955333</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -200,10 +210,10 @@
     <option name="LAST_COMMIT_MESSAGE" value="added support for deployment wait" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="225" y="68" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1578990902714">
+    <state x="225" y="68" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1579027235068">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state x="225" y="68" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1536.764@0.0.1536.764" timestamp="1578990902714" />
+    <state x="225" y="68" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1536.764@0.0.1536.764" timestamp="1579027235068" />
     <state x="575" y="122" key="#com.intellij.ide.util.MemberChooser" timestamp="1579026896867">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
@@ -212,47 +222,47 @@
       <screen x="0" y="0" width="1536" height="764" />
     </state>
     <state x="450" y="141" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/0.0.1536.764@0.0.1536.764" timestamp="1578992473676" />
-    <state x="356" y="0" key="CommitChangelistDialog2" timestamp="1579005288774">
+    <state x="356" y="0" key="CommitChangelistDialog2" timestamp="1579026954639">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state x="356" y="0" key="CommitChangelistDialog2/0.0.1536.764@0.0.1536.764" timestamp="1579005288774" />
+    <state x="356" y="0" key="CommitChangelistDialog2/0.0.1536.764@0.0.1536.764" timestamp="1579026954639" />
     <state x="549" y="156" key="FileChooserDialogImpl" timestamp="1578989269951">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
     <state x="549" y="156" key="FileChooserDialogImpl/0.0.1536.764@0.0.1536.764" timestamp="1578989269951" />
     <state x="549" y="166" key="FileChooserDialogImpl/0.0.1536.814@0.0.1536.814" timestamp="1575691439737" />
-    <state width="1493" height="167" key="GridCell.Tab.0.bottom" timestamp="1579006881321">
+    <state width="1493" height="167" key="GridCell.Tab.0.bottom" timestamp="1579054875840">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state width="1493" height="167" key="GridCell.Tab.0.bottom/0.0.1536.764@0.0.1536.764" timestamp="1579006881321" />
-    <state width="1493" height="167" key="GridCell.Tab.0.center" timestamp="1579006881321">
+    <state width="1493" height="167" key="GridCell.Tab.0.bottom/0.0.1536.764@0.0.1536.764" timestamp="1579054875840" />
+    <state width="1493" height="167" key="GridCell.Tab.0.center" timestamp="1579054875840">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state width="1493" height="167" key="GridCell.Tab.0.center/0.0.1536.764@0.0.1536.764" timestamp="1579006881321" />
-    <state width="1493" height="167" key="GridCell.Tab.0.left" timestamp="1579006881321">
+    <state width="1493" height="167" key="GridCell.Tab.0.center/0.0.1536.764@0.0.1536.764" timestamp="1579054875840" />
+    <state width="1493" height="167" key="GridCell.Tab.0.left" timestamp="1579054875840">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state width="1493" height="167" key="GridCell.Tab.0.left/0.0.1536.764@0.0.1536.764" timestamp="1579006881321" />
-    <state width="1493" height="167" key="GridCell.Tab.0.right" timestamp="1579006881321">
+    <state width="1493" height="167" key="GridCell.Tab.0.left/0.0.1536.764@0.0.1536.764" timestamp="1579054875840" />
+    <state width="1493" height="167" key="GridCell.Tab.0.right" timestamp="1579054875840">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state width="1493" height="167" key="GridCell.Tab.0.right/0.0.1536.764@0.0.1536.764" timestamp="1579006881321" />
-    <state width="1493" height="167" key="GridCell.Tab.1.bottom" timestamp="1579006881067">
+    <state width="1493" height="167" key="GridCell.Tab.0.right/0.0.1536.764@0.0.1536.764" timestamp="1579054875840" />
+    <state width="1493" height="167" key="GridCell.Tab.1.bottom" timestamp="1579054875841">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state width="1493" height="167" key="GridCell.Tab.1.bottom/0.0.1536.764@0.0.1536.764" timestamp="1579006881067" />
-    <state width="1493" height="167" key="GridCell.Tab.1.center" timestamp="1579006881067">
+    <state width="1493" height="167" key="GridCell.Tab.1.bottom/0.0.1536.764@0.0.1536.764" timestamp="1579054875841" />
+    <state width="1493" height="167" key="GridCell.Tab.1.center" timestamp="1579054875841">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state width="1493" height="167" key="GridCell.Tab.1.center/0.0.1536.764@0.0.1536.764" timestamp="1579006881067" />
-    <state width="1493" height="167" key="GridCell.Tab.1.left" timestamp="1579006881067">
+    <state width="1493" height="167" key="GridCell.Tab.1.center/0.0.1536.764@0.0.1536.764" timestamp="1579054875841" />
+    <state width="1493" height="167" key="GridCell.Tab.1.left" timestamp="1579054875841">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state width="1493" height="167" key="GridCell.Tab.1.left/0.0.1536.764@0.0.1536.764" timestamp="1579006881067" />
-    <state width="1493" height="167" key="GridCell.Tab.1.right" timestamp="1579006881067">
+    <state width="1493" height="167" key="GridCell.Tab.1.left/0.0.1536.764@0.0.1536.764" timestamp="1579054875841" />
+    <state width="1493" height="167" key="GridCell.Tab.1.right" timestamp="1579054875841">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state width="1493" height="167" key="GridCell.Tab.1.right/0.0.1536.764@0.0.1536.764" timestamp="1579006881067" />
+    <state width="1493" height="167" key="GridCell.Tab.1.right/0.0.1536.764@0.0.1536.764" timestamp="1579054875841" />
     <state x="441" y="112" key="NewModule_or_Project.wizard" timestamp="1578989272592">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
@@ -261,10 +271,10 @@
       <screen x="0" y="0" width="1536" height="764" />
     </state>
     <state x="250" y="0" key="SettingsEditor/0.0.1536.764@0.0.1536.764" timestamp="1577430668225" />
-    <state x="362" y="146" key="Vcs.Push.Dialog.v2" timestamp="1579005292498">
+    <state x="362" y="146" key="Vcs.Push.Dialog.v2" timestamp="1579026958434">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state x="362" y="146" key="Vcs.Push.Dialog.v2/0.0.1536.764@0.0.1536.764" timestamp="1579005292498" />
+    <state x="362" y="146" key="Vcs.Push.Dialog.v2/0.0.1536.764@0.0.1536.764" timestamp="1579026958434" />
     <state x="332" y="149" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2" timestamp="1578821946451">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
@@ -281,6 +291,11 @@
           <url>file://$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java</url>
           <line>78</line>
           <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java</url>
+          <line>109</line>
+          <option name="timeStamp" value="3" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

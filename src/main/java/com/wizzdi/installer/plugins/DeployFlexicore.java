@@ -49,13 +49,14 @@ public class DeployFlexicore extends InstallationTask {
      *
      * @return
      */
-    public Parameters getPrivateParameters() {
+    @Override
+    public Parameters getPrivateParameters(InstallationContext context) {
 
         Parameters result = new Parameters();
 
         for (Parameter parameter : preDefined) {
             result.addParameter(parameter, this);
-            logger.info("Got a default parameter: " + parameter.toString());
+          if (context.isExtraLogs())  logger.info("Got a default parameter: " + parameter.toString());
         }
 
         return result;
@@ -67,7 +68,7 @@ public class DeployFlexicore extends InstallationTask {
         super.getParameters(installationContext);
         logger = installationContext.getLogger();
         logger.info("Getting parameters for " + this.toString());
-        return getPrivateParameters();
+        return getPrivateParameters(installationContext);
     }
 
     /**
