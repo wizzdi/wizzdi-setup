@@ -210,6 +210,7 @@ public class Start {
                                       IInstallationTask task,
                                       CommandLine mainCmd, String[] args, CommandLineParser parser) {
         boolean found = false;
+        task.setContext(installationContext);
         OperatingSystem cos = task.getCurrentOperatingSystem();
         for (OperatingSystem os : task.getOperatingSystems()) {
 
@@ -637,7 +638,6 @@ public class Start {
                     doUpdateUI(installationTask, installationContext);
                     try {
                         long start = System.currentTimeMillis();
-                        installationTask.setContext(context);
                         if (!installationTask.isSnooper()) {
                             if (!installationTask.getNeedRestartTasks().isEmpty()) {
                                 for (String service : installationTask.getNeedRestartTasks()) {

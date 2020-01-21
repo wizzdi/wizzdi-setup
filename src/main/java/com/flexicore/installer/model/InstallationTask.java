@@ -353,6 +353,30 @@ public class InstallationTask implements IInstallationTask {
 
     }
 
+    /**
+     * get latest version , assuming version numbering increases the lexical location
+     * @param path where to find the files
+     * @param startwith common start string for all files.
+     * @return
+     */
+    public String getLatestVersion(String path,String startwith) {
+        String result = null;
+        if (exists(path)) {
+            File folder=new File(path);
+            File[] files=folder.listFiles();
+            for (File file:files) {
+                if (!file.getName().startsWith(startwith)) continue;
+                if (result==null) {
+                    result=file.getAbsolutePath();
+                }else {
+                    if (file.getAbsolutePath().compareTo(result)>0) {
+                        result=file.getAbsolutePath();
+                    }
+                }
+            }
+        }
+        return result;
+    }
 
     private boolean contWithProcess(Process process, String toFind, boolean notToFind, String ownerName) {
         try {
