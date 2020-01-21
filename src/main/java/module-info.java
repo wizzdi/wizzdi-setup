@@ -18,7 +18,7 @@ module flexicore.installer {
     exports com.flexicore.installer.exceptions;
     exports com.flexicore.installer.model;
     exports com.flexicore.installer.utilities;
-    exports com.flexicore.installer.localtasksfortests;
+
     exports com.flexicore.installer.runner;
     exports com.flexicore.installer.interfaces;
 

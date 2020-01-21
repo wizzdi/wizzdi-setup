@@ -1179,7 +1179,7 @@ public class InstallationTask implements IInstallationTask {
             String previousContent = "";
             int i = parameters.size();
             for (Parameter parameter : parameters) {
-                previousContent = editFile(path, previousContent, parameter.getName(), parameter.getValue(), false, false, --i == 0);
+                previousContent = editFile(path, previousContent, parameter.getName(), parameter.getValue(), false, false, --i == 0,false);
 
             }
         } catch (Exception e) {
@@ -1211,9 +1211,11 @@ public class InstallationTask implements IInstallationTask {
      * @param warning
      * @param reverseSlash
      * @param close          , if false returns the content as string to be passed to a next call in existingString
+     * @param allowRepeat, if replacing string already there do no generate an error
      * @return
      */
-    public String editFile(String path, String existingString, String toFind, String toReplace, boolean warning, boolean reverseSlash, boolean close) {
+    public String editFile(String path, String existingString, String toFind,
+                           String toReplace, boolean warning, boolean reverseSlash, boolean close,boolean allowRepeat) {
         if (!new File(path).exists()) {
             if (warning) {
                 addMessage("Edit file", "severe", "Cannot open the file: " + path + " for editing");
@@ -1253,7 +1255,7 @@ public class InstallationTask implements IInstallationTask {
         }
         if (fileAsString != null) {
             info("[Edit file] [Edit file]  file as string is not null");
-            if (!fileAsString.contains(toFind)) {
+            if (!fileAsString.contains(toFind) && !allowRepeat) {
                 info("[Edit file] [Edit file]  file as string doesn't contain: " + toFind);
                 return null;
             }
@@ -1523,7 +1525,7 @@ public class InstallationTask implements IInstallationTask {
      * @return
      */
     public boolean fixFlexicoreConfig(String path) {
-        return editFile(path, "", "/home/flexicore", flexicoreHome, false, false, true) != null;
+        return editFile(path, "", "/home/flexicore", flexicoreHome, false, false, true,false) != null;
     }
 
     public void incrementFiles() {
