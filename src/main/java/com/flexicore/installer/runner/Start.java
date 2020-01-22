@@ -81,7 +81,7 @@ public class Start {
         pluginManager.startPlugins();
         Object o = pluginManager.getExtensions(IInstallationTask.class);
         Map<String, IInstallationTask> installationTasks = pluginManager.getExtensions(IInstallationTask.class).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
-
+        installationTasks.values().forEach(iInstallationTask -> iInstallationTask.initialize(installationContext));
 
         // handle parameters and command line options here. do it at the dependency order.
         int order = 1;

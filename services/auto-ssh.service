@@ -1,0 +1,13 @@
+[Unit]
+Description=Keep a tunnel to 'shekel-cloud' open
+After=network-online.target
+
+[Service]
+Environment=AUTOSSH_PIDFILE=/tmp/autossh.pid
+User=autossh
+ExecStart= /usr/local/bin/autossh -M 0 x.x.x.x -N  -o "ExitOnForwardFailure=yes" -o "ServerAliveInterval 60" -o "ServerAliveCountMax 3" -R yyyy:localhost:22
+ExecStop=/usr/bin/pkill autossh
+Restart = always
+PIDFile=/tmp/autossh.pid
+[Install]
+WantedBy=multi-user.target

@@ -209,14 +209,14 @@ public class InstallationTask implements IInstallationTask {
      * @param ownerName
      * @return
      */
-    public boolean executeBashScript(String script, String toFind, String ownerName) {
+    public boolean executeBashScript(String script, String toFind, String ownerName,boolean setCurrentFolder) {
 
         if (new File(script).exists() && !isWindows()) {
 
             executeCommand("chmod +x " + script, "", "change mode to execute");
             String[] cmd = new String[]{"/bin/sh", script};
             try {
-                boolean result = executeCommandByBuilder(cmd, toFind, false, ownerName);
+                boolean result = executeCommandByBuilder(cmd, toFind, false, ownerName,setCurrentFolder);
 
                 info("Result from script execution was: " + result);
                 return result;
@@ -263,7 +263,7 @@ public class InstallationTask implements IInstallationTask {
 
     public boolean executeBashScriptLocal(String name, String toFind, String ownerName) {
 
-        return executeBashScript(getScriptsPath() + "/" + name, toFind, ownerName);
+        return executeBashScript(getScriptsPath() + "/" + name, toFind, ownerName,true);
     }
 
     public boolean executeCommand(String command, String toFind, String ownerName) {
@@ -341,13 +341,16 @@ public class InstallationTask implements IInstallationTask {
 
     }
 
-    public boolean executeCommandByBuilder(String[] args, String toFind, boolean notToFind, String ownerName) throws IOException {
+    public boolean executeCommandByBuilder(String[] args, String toFind, boolean notToFind, String ownerName,boolean setCurrentFolder) throws IOException {
         if (args[0].equals("msiexec")) {
             args[1] = args[1].replace("/", "\\");
         }
         ProcessBuilder pb = new ProcessBuilder(args);
+        if (setCurrentFolder) pb.directory(new File(args[0]).getParentFile());
+
         Process process;
         process = pb.start();
+
         return contWithProcess(process, toFind, notToFind, ownerName);
 
 
@@ -503,7 +506,7 @@ public class InstallationTask implements IInstallationTask {
                 String path = getScriptsPath() + "/setadmin.bat";
                 if (new File(path).exists()) {
                     try {
-                        if (executeCommandByBuilder(new String[]{path}, "", false, "")) {
+                        if (executeCommandByBuilder(new String[]{path}, "", false, "",false)) {
                             admin = true;
 
                         }
@@ -703,6 +706,12 @@ public class InstallationTask implements IInstallationTask {
     }
 
     @Override
+    public boolean initialize(InstallationContext context) {
+        setContext(context);
+        return true;
+    }
+
+    @Override
     public LocalDateTime getEnded() {
         return ended;
     }
@@ -820,7 +829,7 @@ public class InstallationTask implements IInstallationTask {
         boolean result = false;
         try {
             if (isWindows) {
-                result = executeCommandByBuilder(new String[]{"cmd", "/C", "move", source, target}, "", false, "move server sources");
+                result = executeCommandByBuilder(new String[]{"cmd", "/C", "move", source, target}, "", false, "move server sources",false);
             }
         } catch (IOException e) {
             severe("Error while moving server sources", e);

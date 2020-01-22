@@ -60,7 +60,7 @@ public interface IInstallationTask extends ExtensionPoint {
     Service getService();
     IInstallationTask setService(Service service);
     LocalDateTime getStarted();
-
+    boolean initialize(InstallationContext context);
     IInstallationTask setStarted(LocalDateTime started);
 
     LocalDateTime getEnded();
