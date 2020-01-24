@@ -121,7 +121,22 @@ public class Parameter {
         this.parameterValidator=validator;
 
     }
+    public Parameter(String name, String description, boolean hasValue,
+                     String defaultValue,ParameterType parameterType,ArrayList<String> options,
+                     ParameterSource parameterSource,Parameter.parameterValidator validator,int ordinal,boolean autoCreate, boolean hidden) {
+        this.type = parameterType;
+        this.hasValue = hasValue;
+        this.name = name;
+        this.description = description;
+        this.defaultValue = defaultValue;
+        this.listOptions = options;
+        this.source=parameterSource;
+        this.parameterValidator=validator;
+        this.ordinal=ordinal;
+        this.autocreate=autoCreate;
+        this.hidden=hidden;
 
+    }
     /**
      *
      * @param name
@@ -572,6 +587,30 @@ public class Parameter {
         return true;
     }
 
+    /**
+     * check if the new value is left or right side of a pair
+     * @param context
+     * @param parameter
+     * @param newValue
+     * @param validationMessage
+     * @return
+     */
+    public static boolean validateDualList(InstallationContext context,Parameter parameter,Object newValue, ValidationMessage validationMessage) {
+        if (parameter.getListOptions()!=null) {
+            for (String option: parameter.getListOptions()) {
+                if (option.contains(":")) {
+                    String[] split=option.split(":");
+                    if (split[0].equals(newValue) || split[1].equals(newValue)) return true;
+                }
+            }
+            if (parameter.getListOptions().contains(newValue)) {
+                return true;
+            }
+            validationMessage.setMessage("The value: <"+newValue +"> is not one of the possible values in the list");
+            return false;
+        }
+        return true;
+    }
     /**
      * Validate if folder exists.
      * @param context

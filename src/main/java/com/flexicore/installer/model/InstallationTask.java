@@ -214,7 +214,7 @@ public class InstallationTask implements IInstallationTask {
         if (new File(script).exists() && !isWindows()) {
 
             executeCommand("chmod +x " + script, "", "change mode to execute");
-            String[] cmd = new String[]{"/bin/sh", script};
+            String[] cmd = new String[]{"/bin/sh",script};
             try {
                 boolean result = executeCommandByBuilder(cmd, toFind, false, ownerName,setCurrentFolder);
 
@@ -342,11 +342,20 @@ public class InstallationTask implements IInstallationTask {
     }
 
     public boolean executeCommandByBuilder(String[] args, String toFind, boolean notToFind, String ownerName,boolean setCurrentFolder) throws IOException {
+
         if (args[0].equals("msiexec")) {
             args[1] = args[1].replace("/", "\\");
         }
+
+
         ProcessBuilder pb = new ProcessBuilder(args);
-        if (setCurrentFolder) pb.directory(new File(args[0]).getParentFile());
+        if (setCurrentFolder){
+            if (args[0].equals("/bin/sh")) {
+                pb.directory(new File(args[1]).getParentFile()); //set current directory to the actual location of the script
+            }else {
+                pb.directory(new File(args[0]).getParentFile());
+            }
+        }
 
         Process process;
         process = pb.start();
@@ -829,7 +838,8 @@ public class InstallationTask implements IInstallationTask {
         boolean result = false;
         try {
             if (isWindows) {
-                result = executeCommandByBuilder(new String[]{"cmd", "/C", "move", source, target}, "", false, "move server sources",false);
+                result = executeCommandByBuilder(new String[]{"cmd", "/C", "move", source, target},
+                        "", false, "move server sources",false);
             }
         } catch (IOException e) {
             severe("Error while moving server sources", e);
@@ -1236,31 +1246,7 @@ public class InstallationTask implements IInstallationTask {
         toFind = toFind.replace("\\", "/");
         String fileAsString = existingString;
         if (existingString == null || existingString.isEmpty()) {
-            InputStream is;
-
-            try {
-                is = new FileInputStream(path);
-
-                BufferedReader buf = new BufferedReader(new InputStreamReader(is));
-                String line = buf.readLine();
-                StringBuilder sb = new StringBuilder();
-                while (line != null) {
-                    sb.append(line).append("\n");
-                    line = buf.readLine();
-                }
-                fileAsString = sb.toString();
-                if (fileAsString.length() == 0) {
-                    is.close();
-                    severe("[Edit file]  file was empty");
-                    return null;
-                }
-
-
-                is.close();
-            } catch (IOException e) {
-                severe("Error while reading file", e);
-                return null;
-            }
+            fileAsString=getFile(path);
         }
         if (fileAsString != null) {
             info("[Edit file] [Edit file]  file as string is not null");
@@ -1304,6 +1290,35 @@ public class InstallationTask implements IInstallationTask {
         }
         info("[Edit file] [Edit file] ->" + fileAsString);
         return fileAsString;
+    }
+
+    public  String getFile(String path) {
+        String result;
+        try {
+
+            FileInputStream is = new FileInputStream(path);
+
+            BufferedReader buf = new BufferedReader(new InputStreamReader(is));
+            String line = buf.readLine();
+            StringBuilder sb = new StringBuilder();
+            while (line != null) {
+                sb.append(line).append("\n");
+                line = buf.readLine();
+            }
+            result = sb.toString();
+            if (result.length() == 0) {
+                is.close();
+                severe("[Edit file]  file was empty");
+                return null;
+            }
+
+
+            is.close();
+        } catch (IOException e) {
+            severe("Error while reading file", e);
+            return null;
+        }
+        return result;
     }
 
     @Override
