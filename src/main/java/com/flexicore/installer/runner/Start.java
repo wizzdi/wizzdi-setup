@@ -232,7 +232,7 @@ public class Start {
         if (mainCmd.hasOption(HELP)) {
             if (taskOptions.getOptions().size() != 0) {
                 InstallationTask installationTask = (InstallationTask) task;
-                System.out.println("command line options for: " + task.getId() + "  " + task.getDescription());
+                System.out.println("\n\n\ncommand line options for: " + task.getId() + "  " + task.getDescription());
                 if (task.getPrerequisitesTask().size() != 0) {
                     System.out.println("Requires: " + task.getPrerequisitesTask());
                 }
