@@ -898,7 +898,8 @@ public class InstallationTask implements IInstallationTask {
 
     }
     public String getIoTPath() {
-        return getContext().getParamaters().getValue("iotpath") + "/";
+        String value=context.getParameter("iotpath").getValue();
+        return value + "/";
 
     }
     public boolean copySingleFile(String source, String target) throws IOException {
