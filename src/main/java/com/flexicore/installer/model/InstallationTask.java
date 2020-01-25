@@ -1323,7 +1323,28 @@ public class InstallationTask implements IInstallationTask {
         }
         return result;
     }
+    public boolean editPorperties(String path, String key, String value) {
+        Properties properties=new Properties();
+        if (exists(path)) {
+            try {
+                FileInputStream is=new FileInputStream(path);
+                properties.load(is);
+                is.close();
+                if (!properties.get(key).equals(value) ){
+                    properties.setProperty(key, value);
+                    FileWriter fileWriter=new FileWriter(path);
+                    properties.store(fileWriter,"Written on: " +LocalDateTime.now());
+                    fileWriter.close();
 
+                }
+            return true;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+        return false;
+    }
     @Override
     public InstallationTask setVersion(String version) {
         this.version = version;
