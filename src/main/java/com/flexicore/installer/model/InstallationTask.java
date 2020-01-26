@@ -871,7 +871,7 @@ public class InstallationTask implements IInstallationTask {
 
 
     public String getServerPath() {
-        return getContext().getParamaters().getValue("serverpath"+"/");
+        return getContext().getParamaters().getValue("serverpath")+"/";
     }
 
 
