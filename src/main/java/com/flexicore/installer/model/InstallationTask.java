@@ -457,7 +457,7 @@ public class InstallationTask implements IInstallationTask {
     @Override
     public InstallationResult install(InstallationContext installationContext) throws Throwable {
         context = installationContext;
-        flexicoreSource = getServerPath() + "/flexicore";
+        flexicoreSource = getServerPath() + "flexicore";
         flexicoreHome = getFlexicoreHome();
         dry = getContext().getParamaters().getBooleanValue("dry");
         update = getContext().getParamaters().getBooleanValue("update");
@@ -871,7 +871,7 @@ public class InstallationTask implements IInstallationTask {
 
 
     public String getServerPath() {
-        return getContext().getParamaters().getValue("serverpath");
+        return getContext().getParamaters().getValue("serverpath"+"/");
     }
 
 
@@ -1495,7 +1495,10 @@ public class InstallationTask implements IInstallationTask {
     }
 
     public String getWildflyHome() {
-        return getContext().getParamaters().getValue("wildflyhome");
+        Parameter parameter= getContext().getParameter("wildflyhome");
+        if (parameter!=null) return parameter.getValue();
+        if (isLinux) return "/opt/wildfly/";
+        return null;
 
     }
 
