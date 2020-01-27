@@ -6,8 +6,14 @@
 
     <groupId>com.flexicore</groupId>
     <artifactId>flexicore-installer</artifactId>
-    <version>1.0.16</version>
-
+    <version>1.0.17</version>
+    <distributionManagement>
+        <repository>
+            <id>flexicore-local</id>
+            <name>flexicore-local</name>
+            <url>https://artifactory.wizzdi.com/artifactory/flexicore-local</url>
+        </repository>
+    </distributionManagement>
     <properties>
         <slf4j.version>1.7.26</slf4j.version>
         <log4j.version>2.12.0</log4j.version>
@@ -336,7 +342,7 @@
                                 <path>${project.build.directory}/${artifactId}-${version}.jar</path>
 
                             </modulePath>
-                           <baseJdk>${windows}</baseJdk>
+                           <baseJdk>${linuxARM64}</baseJdk>
                             <modules>
                                 <module>flexicore.installer</module>
 

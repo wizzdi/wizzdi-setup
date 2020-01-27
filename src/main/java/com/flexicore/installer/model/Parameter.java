@@ -20,7 +20,7 @@ public class Parameter {
     private String originalValue =null;
     private ParameterSource originalSource=null;
     private Integer minValue=0;
-    private Integer maxValue=1000;
+    private Integer maxValue=256*256-1;
     private ParameterType type=ParameterType.STRING;
 
     private ParameterSource source=ParameterSource.CODE;
@@ -651,7 +651,7 @@ public class Parameter {
         }
         return true;
     }
-    public static boolean validatePort(InstallationContext context,Parameter parameter,Object newValue, ValidationMessage validationMessage) {
+    public static boolean validateHttpPort(InstallationContext context,Parameter parameter,Object newValue, ValidationMessage validationMessage) {
         try {
             int p= Integer.parseInt(newValue.toString());
             if (p!=80 && ( p>8085 || p<8079 )) {
@@ -664,7 +664,19 @@ public class Parameter {
         }
         return true;
     }
-
+    public static boolean validatePort(InstallationContext context,Parameter parameter,Object newValue, ValidationMessage validationMessage) {
+        try {
+            int p= Integer.parseInt(newValue.toString());
+            if ( p<1000 || p<65535 ) {
+                validationMessage.setMessage("Port must be greater than 1000 and lower than 65535, value is: "+p);
+                return false;
+            }
+        }catch ( Exception e) {
+            validationMessage.setMessage("Port must be either 80 or between 8080 and 8085 \n, provided value is: "+newValue.toString());
+            return false;
+        }
+        return true;
+    }
     /**
      * simple validator for heap size todo:check available memory
      * @param context
