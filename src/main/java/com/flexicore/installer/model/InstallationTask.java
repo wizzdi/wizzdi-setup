@@ -184,6 +184,39 @@ public class InstallationTask implements IInstallationTask {
         }
     }
 
+    /**
+     * install service from a service file, Linux only
+     * @param serviceLocation
+     * @param serviceName
+     * @param ownerName
+     * @return
+     */
+    public boolean installService(String serviceLocation, String serviceName, String ownerName) {
+        if (isWindows) return false;
+        try {
+            if (testServiceRunning(serviceName, ownerName, false)) {
+                setServiceToStop(serviceName, ownerName);
+            }
+            Files.copy(Paths.get(serviceLocation), Paths.get("/etc/systemd/system/" + serviceName + ".service"), StandardCopyOption.REPLACE_EXISTING);
+
+            if (executeCommand("systemctl enable " + serviceName, "", "Set " + serviceName + " to start automatically")) {
+                updateProgress(getContext(), serviceName + " service will automatically start");
+
+                if (executeCommand("systemctl daemon-reload", "", "setting service" + serviceName)) {
+                    if (setServiceToStart(serviceName, ownerName)) {
+                        if (testServiceRunning(serviceName, ownerName, true)) {
+                            updateProgress(getContext(), serviceName + " service has been started");
+                            return true;
+                        }
+                    }
+                }
+
+            }
+        } catch (Exception ex) {
+            severe("Exception while starting service: " + serviceName);
+        }
+        return false;
+    }
     //todo: check that Linux version works.
     public boolean setServiceToStart(String serviceName, String ownerName) {
         if (isWindows()) {
