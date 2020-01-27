@@ -14,6 +14,7 @@ module flexicore.installer {
     requires jdk.jdwp.agent;
     requires java.sql;
     requires shortcuts;
+    requires jdk.crypto.ec;
 
     exports com.flexicore.installer.exceptions;
     exports com.flexicore.installer.model;

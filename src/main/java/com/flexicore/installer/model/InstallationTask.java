@@ -192,6 +192,7 @@ public class InstallationTask implements IInstallationTask {
      * @return
      */
     public boolean installService(String serviceLocation, String serviceName, String ownerName) {
+
         if (isWindows) return false;
         try {
             if (testServiceRunning(serviceName, ownerName, false)) {
@@ -207,10 +208,18 @@ public class InstallationTask implements IInstallationTask {
                         if (testServiceRunning(serviceName, ownerName, true)) {
                             updateProgress(getContext(), serviceName + " service has been started");
                             return true;
+                        } else {
+                            info ("Cannot start service: "+serviceName);
                         }
+                    }else {
+                        info ("Cannot start service: "+serviceName);
                     }
+                }else {
+                    info ("Cannot reload systemctl daemon: "+serviceName);
                 }
 
+            }else {
+                info ("Cannot enable service: "+serviceName);
             }
         } catch (Exception ex) {
             severe("Exception while starting service: " + serviceName);
@@ -237,7 +246,7 @@ public class InstallationTask implements IInstallationTask {
     }
 
     /**
-     * @param script
+     * @param script execute a bash script. it includes setting the script to X flag
      * @param toFind
      * @param ownerName
      * @return
@@ -293,12 +302,19 @@ public class InstallationTask implements IInstallationTask {
         return false;
 
     }
-
+    @Deprecated
     public boolean executeBashScriptLocal(String name, String toFind, String ownerName) {
 
         return executeBashScript(getScriptsPath() + "/" + name, toFind, ownerName,true);
     }
 
+    /**
+     * execute an os command
+     * @param command
+     * @param toFind
+     * @param ownerName
+     * @return true if successful
+     */
     public boolean executeCommand(String command, String toFind, String ownerName) {
 
 
@@ -330,6 +346,11 @@ public class InstallationTask implements IInstallationTask {
         }
     }
 
+    /**
+     * write an error to the log file
+     * @param message
+     * @param e
+     */
     public void error(String message, Throwable e) {
         if (context != null) {
             if (context.getLogger() != null) context.getLogger().log(Level.SEVERE, message, e);
@@ -374,6 +395,16 @@ public class InstallationTask implements IInstallationTask {
 
     }
 
+    /**
+     * execute 
+     * @param args
+     * @param toFind
+     * @param notToFind
+     * @param ownerName
+     * @param setCurrentFolder
+     * @return
+     * @throws IOException
+     */
     public boolean executeCommandByBuilder(String[] args, String toFind, boolean notToFind, String ownerName,boolean setCurrentFolder) throws IOException {
 
         if (args[0].equals("msiexec")) {
@@ -725,7 +756,10 @@ public class InstallationTask implements IInstallationTask {
         return false;
     }
 
-
+    /**
+     * called when installation is beyond finalizing.
+     * @return
+     */
     @Override
     public boolean cleanup() {
         return false;
@@ -857,6 +891,10 @@ public class InstallationTask implements IInstallationTask {
         file.setLastModified(timestamp);
     }
 
+    /**
+     * make sure a target folder is created if it doesn't exist
+     * @param targetDir
+     */
     public void ensureTarget(String targetDir) {
         File target = new File(targetDir);
         if (!target.exists()) {
@@ -935,6 +973,14 @@ public class InstallationTask implements IInstallationTask {
         return value + "/";
 
     }
+
+    /**
+     * copy a single file.
+     * @param source
+     * @param target
+     * @return
+     * @throws IOException
+     */
     public boolean copySingleFile(String source, String target) throws IOException {
         if (exists(source)) {
             Files.copy(Paths.get(source), Paths.get(target), StandardCopyOption.REPLACE_EXISTING);
@@ -944,6 +990,7 @@ public class InstallationTask implements IInstallationTask {
     }
 
     /**
+     * recursively copy folders
      * @param installationDir source of the copy
      * @param targetDir       target of the copy
      * @param ownerName       this is for logging purposes only
@@ -1074,9 +1121,9 @@ public class InstallationTask implements IInstallationTask {
 
     }
 
-    /**
-     * @param installationDir
-     * @param targetDir
+    /** recursively copy folders
+     * @param installationDir copy source folder
+     * @param targetDir copy target folder
      * @param context
      * @return
      * @throws InterruptedException
@@ -1357,6 +1404,14 @@ public class InstallationTask implements IInstallationTask {
         }
         return result;
     }
+
+    /**
+     * change a property in a Java compatible properties file
+     * @param path
+     * @param key
+     * @param value
+     * @return
+     */
     public boolean editPorperties(String path, String key, String value) {
         Properties properties=new Properties();
         if (exists(path)) {
