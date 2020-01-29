@@ -11,7 +11,13 @@
     <artifactId>deploy-flexicore</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
-
+    <distributionManagement>
+        <repository>
+            <id>flexicore-local</id>
+            <name>flexicore-local</name>
+            <url>https://artifactory.wizzdi.com/artifactory/flexicore-local</url>
+        </repository>
+    </distributionManagement>
     <dependencies>
         <dependency>
             <groupId>com.flexicore</groupId>
