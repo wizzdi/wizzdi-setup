@@ -34,6 +34,7 @@ public class InstallationContext {
     private Start.InstallerProgress installerProgress;
     private Start.UpdateService updateService;
     private Start.installerFilesProgress filesProgress;
+    private Start.UpdateSingleComponent updateSingleComponent;
     private ProgressConsumer consumer;
     private int successFullyInstalled=0;
     private int failedToInstall=0;
@@ -306,6 +307,15 @@ public class InstallationContext {
 
     public InstallationContext setHelpRunning(boolean helpRunning) {
         this.helpRunning = helpRunning;
+        return this;
+    }
+
+    public Start.UpdateSingleComponent getUpdateSingleComponent() {
+        return updateSingleComponent;
+    }
+
+    public InstallationContext setUpdateSingleComponent(Start.UpdateSingleComponent updateSingleComponent) {
+        this.updateSingleComponent = updateSingleComponent;
         return this;
     }
 }

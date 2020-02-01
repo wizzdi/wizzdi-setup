@@ -602,6 +602,7 @@ public class InstallationTask implements IInstallationTask {
         info(message);
     }
 
+
     public boolean updateService(InstallationContext context, Service service, IInstallationTask task) {
 
         return context.getUpdateService().serviceProgress(context, service, this);
@@ -1578,13 +1579,13 @@ public class InstallationTask implements IInstallationTask {
      * @return
      */
     public String getFlexicoreHome() {
-        return getContext().getParamaters().getValue("flexicorehome");
+        return getContext().getParamaters().getValue("flexicorehome")+"/";
 
     }
 
     public String getWildflyHome() {
         Parameter parameter= getContext().getParameter("wildflyhome");
-        if (parameter!=null) return parameter.getValue();
+        if (parameter!=null) return parameter.getValue()+"/";
         if (isLinux) return "/opt/wildfly/";
         return null;
 

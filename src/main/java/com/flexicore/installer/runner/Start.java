@@ -65,7 +65,7 @@ public class Start {
                         setInstallerProgress(Start::InstallerProgress).
                         setUpdateService(Start::uiUpdateService).
                         setFilesProgress(Start::updateFilesProgress).
-                        setUiToggle(Start::uiComponentToggle);
+                        setUiToggle(Start::uiComponentToggle).setUpdateSingleComponent(Start::doUpdateComponent);
 
 
         File pluginRoot = new File(mainCmd.getOptionValue(INSTALLATION_TASKS_FOLDER, "tasks"));
@@ -81,7 +81,7 @@ public class Start {
         pluginManager.startPlugins();
         Object o = pluginManager.getExtensions(IInstallationTask.class);
         Map<String, IInstallationTask> installationTasks = pluginManager.getExtensions(IInstallationTask.class).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
-        installationTasks.values().forEach(iInstallationTask -> iInstallationTask.initialize(installationContext));
+        //installationTasks.values().forEach(iInstallationTask -> iInstallationTask.initialize(installationContext));
 
         // handle parameters and command line options here. do it at the dependency order.
         int order = 1;
@@ -159,7 +159,7 @@ public class Start {
             updateParameters(false, task, installationContext, taskOptions, args, parser);
         }
         if (installationContext.getParamaters() != null) installationContext.getParamaters().sort();
-
+        installationTasks.values().forEach(iInstallationTask -> iInstallationTask.initialize(installationContext));
         loadUiComponents();  //currently asynchronous
         if (!uiFoundandRun) {
             checkHelp(mainCmd);
@@ -187,6 +187,8 @@ public class Start {
         exit(0);
 
     }
+
+
 
     private static void checkHelp(CommandLine mainCmd) {
         if (mainCmd.hasOption(HELP)) {
@@ -305,6 +307,21 @@ public class Start {
         }
     }
 
+    /**
+     * support for one component to change another component value
+     * @param installationContext
+     * @param task
+     * @param parameter
+     * @return
+     */
+    private static boolean doUpdateComponent(InstallationContext installationContext, IInstallationTask task, Parameter parameter) {
+        List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
+
+        for (IUIComponent component : filtered) {
+            component.refreshFilesCount(installationContext, task);
+        }
+        return true;
+    }
     /**
      * Update service status on UI
      *
@@ -945,7 +962,10 @@ public class Start {
     public static interface UpdateService {
         boolean serviceProgress(InstallationContext context, Service service, IInstallationTask task);
     }
-
+    @FunctionalInterface
+    public static interface UpdateSingleComponent {
+        boolean updateComponent(InstallationContext context, IInstallationTask task,Parameter parameter);
+    }
 }
 
 

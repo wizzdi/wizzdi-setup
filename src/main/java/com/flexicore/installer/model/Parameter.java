@@ -30,6 +30,7 @@ public class Parameter {
     private ArrayList<String> listOptions=new ArrayList<>();
     private boolean autocreate=false;
     private boolean hidden=false;
+    private Parameter dependentParameter;
 
 
     /**
@@ -757,5 +758,17 @@ public class Parameter {
         return result;
     }
 
+    /**
+     * A Parameter that should be refreshed when there is a change in value.
+     * @return
+     */
+    public Parameter getDependentParameter() {
+        return dependentParameter;
+    }
+
+    public Parameter setDependentParameter(Parameter dependentParameter) {
+        this.dependentParameter = dependentParameter;
+        return this;
+    }
 }
 
