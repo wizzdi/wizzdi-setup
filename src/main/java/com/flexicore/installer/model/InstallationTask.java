@@ -795,7 +795,7 @@ public class InstallationTask implements IInstallationTask {
 
     @Override
     public void setSubscribers() {
-        
+
     }
 
     @Override

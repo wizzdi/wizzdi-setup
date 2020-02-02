@@ -767,6 +767,28 @@ public class Parameter {
         return os;
     }
 
+    /**
+     * add subscription using parameter names of subscriber and subscribe to.
+     * @param context
+     * @param subscriber
+     * @param subscribeTo
+     * @return
+     */
+    public static boolean subscribe(InstallationContext context,String subscriber,String subscribeTo) {
+        if (context != null) {
+            Parameter parameterSubscriber = context.getParameter(subscriber);
+            if (parameterSubscriber != null) {
+                Parameter parameterSubscribeto = context.getParameter(subscribeTo);
+                if (parameterSubscribeto != null) {
+                    parameterSubscribeto.addSubscriber(parameterSubscriber);
+                    return true;
+                }
+            }
+
+
+        }
+        return false;
+    }
     public Parameter setOs(OperatingSystem os) {
         this.os = os;
         return this;
