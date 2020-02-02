@@ -72,7 +72,7 @@ public interface IInstallationTask extends ExtensionPoint {
     /**
      * connect this task parameters to changes in other parameters
      */
-    void setSubscribers();
+    void setSubscribers(InstallationContext installationContext);
     void parameterChanged(Parameter parameter);
     IInstallationTask setStarted(LocalDateTime started);
 

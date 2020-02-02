@@ -794,7 +794,7 @@ public class InstallationTask implements IInstallationTask {
     }
 
     @Override
-    public void setSubscribers() {
+    public void setSubscribers(InstallationContext installationContext) {
 
     }
 
