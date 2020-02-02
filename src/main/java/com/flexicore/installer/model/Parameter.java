@@ -350,19 +350,22 @@ public class Parameter {
             }
         }
         if (value != this.value) {
-
             this.value = value;
+            informSubscribers();
+
 
         }
         return this;
     }
     private void informSubscribers() {
-        if (subscribers != null &&  !preventCircular) {
+        if ( !preventCircular) {
             preventCircular = true;
             for (Parameter parameter:subscribers) {
                 parameter.refreshData();
             }
             preventCircular = false;
+        }else {
+            // TODO: 02-Feb-20 add logging for circular dependency cases. 
         }
     }
     /**
