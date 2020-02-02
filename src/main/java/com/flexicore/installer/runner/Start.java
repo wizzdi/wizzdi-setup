@@ -318,7 +318,7 @@ public class Start {
         List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
 
         for (IUIComponent component : filtered) {
-           //todo: add action here
+           component.updateWidget(installationContext,task,parameter);
         }
         return true;
     }
