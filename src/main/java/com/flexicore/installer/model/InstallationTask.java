@@ -794,6 +794,11 @@ public class InstallationTask implements IInstallationTask {
     }
 
     @Override
+    public void setSubscribers() {
+        
+    }
+
+    @Override
     public void parameterChanged(Parameter parameter) {
 
     }

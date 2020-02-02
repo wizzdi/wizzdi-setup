@@ -68,6 +68,11 @@ public interface IInstallationTask extends ExtensionPoint {
      * @return
      */
     boolean refreshData(InstallationContext installationContext,Parameter parameter);
+
+    /**
+     * connect this task parameters to changes in other parameters
+     */
+    void setSubscribers();
     void parameterChanged(Parameter parameter);
     IInstallationTask setStarted(LocalDateTime started);
 
