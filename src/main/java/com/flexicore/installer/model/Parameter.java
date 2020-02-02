@@ -352,17 +352,19 @@ public class Parameter {
         if (value != this.value) {
 
             this.value = value;
-            if (subscribers != null &&  !preventCircular) {
-                preventCircular = true;
-                for (Parameter parameter:subscribers) {
-                    parameter.refreshData();
-                }
-                preventCircular = false;
-            }
+
         }
         return this;
     }
-
+    private void informSubscribers() {
+        if (subscribers != null &&  !preventCircular) {
+            preventCircular = true;
+            for (Parameter parameter:subscribers) {
+                parameter.refreshData();
+            }
+            preventCircular = false;
+        }
+    }
     /**
      * trigger datarefresh in a task parameter. task may inform UI (if there is any) of the change.
      */
@@ -814,7 +816,9 @@ public class Parameter {
     public void removeSubscriber(Parameter parameter) {
         if (subscribers.contains(parameter)) subscribers.remove(parameter);
     }
-
+    public void testSubscribers() {
+        informSubscribers();
+    }
     public IInstallationTask getiInstallationTask() {
         return iInstallationTask;
     }
