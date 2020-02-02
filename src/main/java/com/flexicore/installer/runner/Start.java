@@ -1,5 +1,4 @@
 package com.flexicore.installer.runner;
-
 import com.flexicore.installer.exceptions.MissingInstallationTaskDependency;
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.interfaces.IUIComponent;
@@ -11,7 +10,6 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 import org.pf4j.DefaultPluginManager;
 import org.pf4j.PluginManager;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -84,10 +82,10 @@ public class Start {
         //installationTasks.values().forEach(iInstallationTask -> iInstallationTask.initialize(installationContext));
 
         // handle parameters and command line options here. do it at the dependency order.
-        int order = 1;
+
         for (IInstallationTask task : installationTasks.values()) {
             if (task.isSnooper()) {
-                task.setOrder(order++);
+
                 installationContext.addTask(task);
             }
         }
@@ -127,14 +125,14 @@ public class Start {
                     needThis.add(needingTask); //these tasks will be added after this task
                 }
             }
-            task.setOrder(order++);
+
             if (!handleTask(installationContext, task, mainCmd, args, parser)) {
                 exit(0);
             }
 
             for (IInstallationTask needingTask : needThis) {
                 if (needingTask.getSoftPrerequisitesTask().size() == 1) { //task will be added only if all soft have been added so far
-                    needingTask.setOrder(order++);
+
                     if (!handleTask(installationContext, needingTask, mainCmd, args, parser)) {
                         exit(0);
                     }
@@ -150,7 +148,7 @@ public class Start {
             }
         }
         for (IInstallationTask task : finalizers) {
-            task.setOrder(order++);
+
             handleTask(installationContext, task, mainCmd, args, parser);
         }
         //do pass two, brute force second pass on all parameters we cannot fix references unless we have them all.
@@ -159,7 +157,9 @@ public class Start {
             updateParameters(false, task, installationContext, taskOptions, args, parser);
         }
         if (installationContext.getParamaters() != null) installationContext.getParamaters().sort();
-        installationTasks.values().forEach(iInstallationTask -> iInstallationTask.initialize(installationContext));
+        installationContext.getiInstallationTasks().values().forEach(iInstallationTask -> iInstallationTask.initialize(installationContext));
+        int order=1;
+        for (IInstallationTask task:installationContext.getiInstallationTasks().values()) task.setOrder(order++);
         loadUiComponents();  //currently asynchronous
         if (!uiFoundandRun) {
             checkHelp(mainCmd);
@@ -318,7 +318,7 @@ public class Start {
         List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
 
         for (IUIComponent component : filtered) {
-            component.refreshFilesCount(installationContext, task);
+           //todo: add action here
         }
         return true;
     }

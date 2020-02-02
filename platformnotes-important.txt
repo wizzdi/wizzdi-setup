@@ -1,0 +1,7 @@
+The platform is selected in one place in flexicore-installer  project see:
+   <baseJdk>${linuxARM64}</baseJdk>
+   in pom.xml file
+
+   when UI is active. the
+           <javafx.classifier>arm</javafx.classifier>
+           in MainInstallerUI project pom file can be switch between arm and win (todo: check Linux AMD64 classifier)

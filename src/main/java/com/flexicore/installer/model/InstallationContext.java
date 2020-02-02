@@ -318,6 +318,9 @@ public class InstallationContext {
         this.updateSingleComponent = updateSingleComponent;
         return this;
     }
+
+    public void refreshData(Parameter dependentParameter) {
+    }
 }
 
 

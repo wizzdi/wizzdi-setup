@@ -789,6 +789,16 @@ public class InstallationTask implements IInstallationTask {
     }
 
     @Override
+    public boolean refreshData(InstallationContext context,Parameter parameter) {
+        return false;
+    }
+
+    @Override
+    public void parameterChanged(Parameter parameter) {
+
+    }
+
+    @Override
     public LocalDateTime getEnded() {
         return ended;
     }

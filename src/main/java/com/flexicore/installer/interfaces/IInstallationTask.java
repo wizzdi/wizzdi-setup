@@ -61,6 +61,14 @@ public interface IInstallationTask extends ExtensionPoint {
     IInstallationTask setService(Service service);
     LocalDateTime getStarted();
     boolean initialize(InstallationContext context);
+
+    /**
+     * allows one task to force refresh of data on another task
+     * @param parameter
+     * @return
+     */
+    boolean refreshData(InstallationContext installationContext,Parameter parameter);
+    void parameterChanged(Parameter parameter);
     IInstallationTask setStarted(LocalDateTime started);
 
     LocalDateTime getEnded();

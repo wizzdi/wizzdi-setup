@@ -1,7 +1,6 @@
 # Wizzdi Installer
-## Cross Platform Installer based on plugins.
-## User interface based on JavaFX
-## Requires no prerequisites installation, no Java installation is required.
+###### Cross Platform Installer based on plugins.
+###### Requires no prerequisites installation, no Java installation is required.
 # h1 Heading 8-)
 ## h2 Heading
 ### h3 Heading
