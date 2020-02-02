@@ -32,7 +32,7 @@ public class Parameter {
     private ArrayList<String> listOptions = new ArrayList<>();
     private boolean autocreate = false;
     private boolean hidden = false;
-    private Parameter dependentParameter;
+    private ArrayList<Parameter> subscribers=new ArrayList<>();
     private IInstallationTask iInstallationTask;
     private InstallationContext installationContext;
 
@@ -352,9 +352,11 @@ public class Parameter {
         if (value != this.value) {
 
             this.value = value;
-            if (dependentParameter != null && !preventCircular) {
+            if (subscribers != null &&  !preventCircular) {
                 preventCircular = true;
-                dependentParameter.refreshData();
+                for (Parameter parameter:subscribers) {
+                    parameter.refreshData();
+                }
                 preventCircular = false;
             }
         }
@@ -805,13 +807,12 @@ public class Parameter {
      *
      * @return
      */
-    public Parameter getDependentParameter() {
-        return dependentParameter;
-    }
 
-    public Parameter setDependentParameter(Parameter dependentParameter) {
-        this.dependentParameter = dependentParameter;
-        return this;
+    public void addSubscriber(Parameter parameter) {
+        if (!subscribers.contains(parameter)) subscribers.add(parameter);
+    }
+    public void removeSubscriber(Parameter parameter) {
+        if (subscribers.contains(parameter)) subscribers.remove(parameter);
     }
 
     public IInstallationTask getiInstallationTask() {
