@@ -2,6 +2,7 @@ package com.flexicore.installer.model;
 
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.utilities.CopyFileVisitor;
+import com.flexicore.installer.utilities.FolderCompression;
 import com.flexicore.installer.utilities.StreamGobbler;
 import com.wizzdi.installer.*;
 import org.apache.commons.lang3.SystemUtils;
@@ -1093,6 +1094,14 @@ public class InstallationTask implements IInstallationTask {
             return true;
         }
         return false;
+    }
+    public boolean zipFolder(String foldername,String output) {
+        File parent;
+        if (!(parent=new File(output).getParentFile()).exists()) {
+             parent.mkdirs();
+        }
+        return FolderCompression.zipFolder(foldername,output,getContext().getLogger());
+
     }
 
     public boolean zipFiles(File[] files, File zipFile) {
