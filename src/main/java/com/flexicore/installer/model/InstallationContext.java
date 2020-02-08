@@ -319,8 +319,7 @@ public class InstallationContext {
         return this;
     }
 
-    public void refreshData(Parameter dependentParameter) {
-    }
+
 }
 
 

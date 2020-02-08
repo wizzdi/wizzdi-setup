@@ -315,10 +315,12 @@ public class Start {
      * @return
      */
     private static boolean doUpdateComponent(InstallationContext installationContext, IInstallationTask task, Parameter parameter) {
-        List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
+        if (uiComponents!=null) {
+            List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
 
-        for (IUIComponent component : filtered) {
-           component.updateWidget(installationContext,task,parameter);
+            for (IUIComponent component : filtered) {
+                component.updateWidget(installationContext, task, parameter);
+            }
         }
         return true;
     }

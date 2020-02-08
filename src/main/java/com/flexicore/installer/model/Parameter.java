@@ -35,6 +35,7 @@ public class Parameter {
     private ArrayList<Parameter> subscribers=new ArrayList<>();
     private IInstallationTask iInstallationTask;
     private InstallationContext installationContext;
+    private boolean editable=true;
 
 
     /**
@@ -859,6 +860,15 @@ public class Parameter {
 
     public Parameter setInstallationContext(InstallationContext installationContext) {
         this.installationContext = installationContext;
+        return this;
+    }
+
+    public boolean isEditable() {
+        return editable;
+    }
+
+    public Parameter setEditable(boolean editable) {
+        this.editable = editable;
         return this;
     }
 }
