@@ -30,6 +30,10 @@ public class InstallationTask implements IInstallationTask {
     private String id;
     private String version = "1.0.0";
     private boolean enabled = true;
+    private boolean wrongOS=false;
+
+
+
     private InstallationStatus status = InstallationStatus.CREATED;
     private String description = "no description";
     private String message = "";
@@ -818,6 +822,11 @@ public class InstallationTask implements IInstallationTask {
     public InstallationTask setStarted(LocalDateTime started) {
         this.started = started;
         return this;
+    }
+
+    @Override
+    public boolean isWrongOS() {
+         return wrongOS;
     }
 
     @Override
@@ -1713,6 +1722,11 @@ public class InstallationTask implements IInstallationTask {
         xp, vista, seven, eight, ten
     }
 
+
+    public InstallationTask setWrongOS(boolean wrongOS) {
+        this.wrongOS = wrongOS;
+        return this;
+    }
     public static WindowsVersion getWindowsVersion() {
         if (System.getProperty("os.name").toLowerCase().contains("windows") && System.getProperty("os.name").toLowerCase().contains("xp")) {
             return WindowsVersion.xp;

@@ -75,7 +75,7 @@ public interface IInstallationTask extends ExtensionPoint {
     void setSubscribers(InstallationContext installationContext);
     void parameterChanged(Parameter parameter);
     IInstallationTask setStarted(LocalDateTime started);
-
+    boolean isWrongOS();
     LocalDateTime getEnded();
 
     IInstallationTask setEnded(LocalDateTime ended);

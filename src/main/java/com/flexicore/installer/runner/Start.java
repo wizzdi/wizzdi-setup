@@ -36,6 +36,7 @@ public class Start {
     private static InstallationContext installationContext = null;
     static boolean uiFoundandRun = false;
     static String currentStatus = "";
+
     static Map<String, Set<String>> missingDependencies = new HashMap<>();
 
 
@@ -221,7 +222,7 @@ public class Start {
                 break;
             }
         }
-        if (!found) return true;
+        ((InstallationTask) task).setWrongOS(!found);
 
         installationContext.addTask(task);
 
@@ -234,10 +235,7 @@ public class Start {
         if (mainCmd.hasOption(HELP)) {
             if (taskOptions.getOptions().size() != 0) {
                 InstallationTask installationTask = (InstallationTask) task;
-                System.out.println("\n\n\ncommand line options for: " + task.getId() + "  " + task.getDescription());
-                if (task.getPrerequisitesTask().size() != 0) {
-                    System.out.println("Requires: " + task.getPrerequisitesTask());
-                }
+
 
                 HelpFormatter formatter = new HelpFormatter();
                 formatter.printHelp(installationTask.isWindows() ? "Start.bat " : "/.Start", taskOptions);
@@ -643,7 +641,7 @@ public class Start {
                 handleInspections(context);
                 HashMap<String, String> restarters = new HashMap<>();
                 for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
-                    if (!installationTask.isEnabled()) {
+                    if (!installationTask.isEnabled() && !installationTask.isWrongOS()) {
                         info("task " + installationTask.getName() + " is disabled, skipping");
                         skipped++;
                         updateStatus(" installation status", completed, failed, skipped, InstallationState.RUNNING);
