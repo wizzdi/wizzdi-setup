@@ -544,6 +544,11 @@ public class InstallationTask implements IInstallationTask {
         return new InstallationResult().setInstallationStatus(InstallationStatus.CONTINUE);
     }
 
+    @Override
+    public InstallationResult update(InstallationContext installationContext) throws Throwable {
+        return new InstallationResult().setInstallationStatus(InstallationStatus.CONTINUE);
+    }
+
     /**
      * this is optionally handled by an installation plugin once all plugins have been installed. can be used for restarting a service
      *

@@ -625,7 +625,18 @@ public class Start {
         }
         return true;
     }
+    private static boolean update(InstallationContext context) {
+        boolean result=false;
+        Parameter updateParameter = context.getParameter("update");
+        if (updateParameter!=null) {
+            String oldUpdate = updateParameter.getValue();
+            updateParameter.setValue("true");
+            result=install(context);
+            updateParameter.setValue(oldUpdate);
+        }
 
+        return result;
+    }
     private static boolean install(InstallationContext context) {
 
         if (!installRunning) {
@@ -850,6 +861,11 @@ public class Start {
     private static boolean uiComponentInstall(IUIComponent component, InstallationContext context) {
         return install(context);
     }
+    private static boolean uiComponentUpdate(IUIComponent component, InstallationContext context) {
+        return update(context);
+    }
+
+
 
     private static boolean uiComponentToggle(IUIComponent component, InstallationContext context) {
         return toggle(context);
@@ -918,7 +934,11 @@ public class Start {
         boolean uiComponentInstall(IUIComponent uiComponent, InstallationContext context);
 
     }
+    @FunctionalInterface
+    public static interface UIAccessInterfaceUpdate {
+        boolean uiComponentUpdate(IUIComponent uiComponent, InstallationContext context);
 
+    }
     @FunctionalInterface
     public static interface UIAccessInterfaceToggle {
         boolean uiComponentToggle(IUIComponent uiComponent, InstallationContext context);
