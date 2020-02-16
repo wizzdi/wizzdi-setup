@@ -30,8 +30,7 @@ public class InstallationTask implements IInstallationTask {
     private String id;
     private String version = "1.0.0";
     private boolean enabled = true;
-    private boolean wrongOS=false;
-
+    private boolean wrongOS = false;
 
 
     private InstallationStatus status = InstallationStatus.CREATED;
@@ -191,6 +190,7 @@ public class InstallationTask implements IInstallationTask {
 
     /**
      * install service from a service file, Linux only
+     *
      * @param serviceLocation
      * @param serviceName
      * @param ownerName
@@ -214,23 +214,24 @@ public class InstallationTask implements IInstallationTask {
                             updateProgress(getContext(), serviceName + " service has been started");
                             return true;
                         } else {
-                            info ("Cannot start service: "+serviceName);
+                            info("Cannot start service: " + serviceName);
                         }
-                    }else {
-                        info ("Cannot start service: "+serviceName);
+                    } else {
+                        info("Cannot start service: " + serviceName);
                     }
-                }else {
-                    info ("Cannot reload systemctl daemon: "+serviceName);
+                } else {
+                    info("Cannot reload systemctl daemon: " + serviceName);
                 }
 
-            }else {
-                info ("Cannot enable service: "+serviceName);
+            } else {
+                info("Cannot enable service: " + serviceName);
             }
         } catch (Exception ex) {
             severe("Exception while starting service: " + serviceName);
         }
         return false;
     }
+
     //todo: check that Linux version works.
     public boolean setServiceToStart(String serviceName, String ownerName) {
         if (isWindows()) {
@@ -251,19 +252,19 @@ public class InstallationTask implements IInstallationTask {
     }
 
     /**
-     * @param script execute a bash script. it includes setting the script to X flag
+     * @param script    execute a bash script. it includes setting the script to X flag
      * @param toFind
      * @param ownerName
      * @return
      */
-    public boolean executeBashScript(String script, String toFind, String ownerName,boolean setCurrentFolder) {
+    public boolean executeBashScript(String script, String toFind, String ownerName, boolean setCurrentFolder) {
 
         if (new File(script).exists() && !isWindows()) {
 
             executeCommand("chmod +x " + script, "", "change mode to execute");
-            String[] cmd = new String[]{"/bin/sh",script};
+            String[] cmd = new String[]{"/bin/sh", script};
             try {
-                boolean result = executeCommandByBuilder(cmd, toFind, false, ownerName,setCurrentFolder);
+                boolean result = executeCommandByBuilder(cmd, toFind, false, ownerName, setCurrentFolder);
 
                 info("Result from script execution was: " + result);
                 return result;
@@ -307,14 +308,16 @@ public class InstallationTask implements IInstallationTask {
         return false;
 
     }
+
     @Deprecated
     public boolean executeBashScriptLocal(String name, String toFind, String ownerName) {
 
-        return executeBashScript(getScriptsPath() + "/" + name, toFind, ownerName,true);
+        return executeBashScript(getScriptsPath() + "/" + name, toFind, ownerName, true);
     }
 
     /**
      * execute an os command
+     *
      * @param command
      * @param toFind
      * @param ownerName
@@ -353,6 +356,7 @@ public class InstallationTask implements IInstallationTask {
 
     /**
      * write an error to the log file
+     *
      * @param message
      * @param e
      */
@@ -375,11 +379,11 @@ public class InstallationTask implements IInstallationTask {
 
     void debuglines(String command, boolean force) {
 
-        if (errorLines.size() != 0 ) {
+        if (errorLines.size() != 0) {
 
             for (String message : errorLines) {
                 if (!message.isEmpty()) {
-                   info(message);
+                    info(message);
                 }
             }
 
@@ -388,7 +392,7 @@ public class InstallationTask implements IInstallationTask {
 
             for (String message : lines) {
                 if (!message.isEmpty()) {
-                   info(message);
+                    info(message);
                 }
             }
 
@@ -401,7 +405,8 @@ public class InstallationTask implements IInstallationTask {
     }
 
     /**
-     * execute 
+     * execute
+     *
      * @param args
      * @param toFind
      * @param notToFind
@@ -410,7 +415,7 @@ public class InstallationTask implements IInstallationTask {
      * @return
      * @throws IOException
      */
-    public boolean executeCommandByBuilder(String[] args, String toFind, boolean notToFind, String ownerName,boolean setCurrentFolder) throws IOException {
+    public boolean executeCommandByBuilder(String[] args, String toFind, boolean notToFind, String ownerName, boolean setCurrentFolder) throws IOException {
 
         if (args[0].equals("msiexec")) {
             args[1] = args[1].replace("/", "\\");
@@ -418,10 +423,10 @@ public class InstallationTask implements IInstallationTask {
 
 
         ProcessBuilder pb = new ProcessBuilder(args);
-        if (setCurrentFolder){
+        if (setCurrentFolder) {
             if (args[0].equals("/bin/sh")) {
                 pb.directory(new File(args[1]).getParentFile()); //set current directory to the actual location of the script
-            }else {
+            } else {
                 pb.directory(new File(args[0]).getParentFile());
             }
         }
@@ -436,22 +441,23 @@ public class InstallationTask implements IInstallationTask {
 
     /**
      * get latest version , assuming version numbering increases the lexical location
-     * @param path where to find the files
+     *
+     * @param path      where to find the files
      * @param startwith common start string for all files.
      * @return
      */
-    public String getLatestVersion(String path,String startwith) {
+    public String getLatestVersion(String path, String startwith) {
         String result = null;
         if (exists(path)) {
-            File folder=new File(path);
-            File[] files=folder.listFiles();
-            for (File file:files) {
+            File folder = new File(path);
+            File[] files = folder.listFiles();
+            for (File file : files) {
                 if (!file.getName().startsWith(startwith)) continue;
-                if (result==null) {
-                    result=file.getAbsolutePath();
-                }else {
-                    if (file.getAbsolutePath().compareTo(result)>0) {
-                        result=file.getAbsolutePath();
+                if (result == null) {
+                    result = file.getAbsolutePath();
+                } else {
+                    if (file.getAbsolutePath().compareTo(result) > 0) {
+                        result = file.getAbsolutePath();
                     }
                 }
             }
@@ -584,7 +590,7 @@ public class InstallationTask implements IInstallationTask {
                 String path = getScriptsPath() + "/setadmin.bat";
                 if (new File(path).exists()) {
                     try {
-                        if (executeCommandByBuilder(new String[]{path}, "", false, "",false)) {
+                        if (executeCommandByBuilder(new String[]{path}, "", false, "", false)) {
                             admin = true;
 
                         }
@@ -764,6 +770,7 @@ public class InstallationTask implements IInstallationTask {
 
     /**
      * called when installation is beyond finalizing.
+     *
      * @return
      */
     @Override
@@ -794,7 +801,7 @@ public class InstallationTask implements IInstallationTask {
     }
 
     @Override
-    public boolean refreshData(InstallationContext context,Parameter parameter) {
+    public boolean refreshData(InstallationContext context, Parameter parameter) {
         return false;
     }
 
@@ -826,7 +833,7 @@ public class InstallationTask implements IInstallationTask {
 
     @Override
     public boolean isWrongOS() {
-         return wrongOS;
+        return wrongOS;
     }
 
     @Override
@@ -919,6 +926,7 @@ public class InstallationTask implements IInstallationTask {
 
     /**
      * make sure a target folder is created if it doesn't exist
+     *
      * @param targetDir
      */
     public void ensureTarget(String targetDir) {
@@ -936,7 +944,7 @@ public class InstallationTask implements IInstallationTask {
         try {
             if (isWindows) {
                 result = executeCommandByBuilder(new String[]{"cmd", "/C", "move", source, target},
-                        "", false, "move server sources",false);
+                        "", false, "move server sources", false);
             }
         } catch (IOException e) {
             severe("Error while moving server sources", e);
@@ -968,7 +976,7 @@ public class InstallationTask implements IInstallationTask {
 
 
     public String getServerPath() {
-        return getContext().getParamaters().getValue("serverpath")+"/";
+        return getContext().getParamaters().getValue("serverpath") + "/";
     }
 
 
@@ -981,10 +989,12 @@ public class InstallationTask implements IInstallationTask {
         return getContext().getParamaters().getBooleanValue("extralogs");
 
     }
+
     public boolean isHelpRunning() {
         return getContext().getParamaters().getBooleanValue("h");
 
     }
+
     public String getScriptsPath() {
         return getContext().getParamaters().getValue("scriptspath") + "/";
 
@@ -994,14 +1004,16 @@ public class InstallationTask implements IInstallationTask {
         return getContext().getParamaters().getValue("servicespath") + "/";
 
     }
+
     public String getIoTPath() {
-        String value=context.getParameter("iotpath").getValue();
+        String value = context.getParameter("iotpath").getValue();
         return value + "/";
 
     }
 
     /**
      * copy a single file.
+     *
      * @param source
      * @param target
      * @return
@@ -1017,6 +1029,7 @@ public class InstallationTask implements IInstallationTask {
 
     /**
      * recursively copy folders
+     *
      * @param installationDir source of the copy
      * @param targetDir       target of the copy
      * @param ownerName       this is for logging purposes only
@@ -1104,12 +1117,13 @@ public class InstallationTask implements IInstallationTask {
         }
         return false;
     }
-    public boolean zipFolder(String foldername,String output) {
+
+    public boolean zipFolder(String foldername, String output) {
         File parent;
-        if (!(parent=new File(output).getParentFile()).exists()) {
-             parent.mkdirs();
+        if (!(parent = new File(output).getParentFile()).exists()) {
+            parent.mkdirs();
         }
-        return FolderCompression.zipFolder(foldername,output,getContext().getLogger());
+        return FolderCompression.zipFolder(foldername, output, getContext().getLogger());
 
     }
 
@@ -1155,9 +1169,11 @@ public class InstallationTask implements IInstallationTask {
 
     }
 
-    /** recursively copy folders
+    /**
+     * recursively copy folders
+     *
      * @param installationDir copy source folder
-     * @param targetDir copy target folder
+     * @param targetDir       copy target folder
      * @param context
      * @return
      * @throws InterruptedException
@@ -1316,7 +1332,7 @@ public class InstallationTask implements IInstallationTask {
             String previousContent = "";
             int i = parameters.size();
             for (Parameter parameter : parameters) {
-                previousContent = editFile(path, previousContent, parameter.getName(), parameter.getValue(), false, false, --i == 0,false);
+                previousContent = editFile(path, previousContent, parameter.getName(), parameter.getValue(), false, false, --i == 0, false);
 
             }
         } catch (Exception e) {
@@ -1341,6 +1357,43 @@ public class InstallationTask implements IInstallationTask {
     }
 
     /**
+     * Add line to existing file, will not add if already there or if cannot find the location after specified file
+     * @param path path to file
+     * @param existingString allow editing on a string so file operations reduced
+     * @param afterLine location after line
+     * @param line the line to insert
+     * @param warning
+     * @param reverseSlash fix windows backslash
+     * @param close close the file.
+     * @return null or the changed string to be used on subsequent similar actions
+     */
+    public String addLine(String path, String existingString, String afterLine,
+                          String line, boolean warning, boolean reverseSlash, boolean close) {
+        String fileAsString = existingString;
+        if (existingString == null || existingString.isEmpty()) {
+            fileAsString = getFile(path);
+        }
+        if (!fileAsString.contains(line) ) {
+            if (fileAsString.contains(afterLine)) {
+                fileAsString.replaceAll(afterLine,afterLine+"\n"+line);
+            }else {
+                info("[addLine] cannot fine the preceding line!!");
+            }
+        }else {
+            info("[addLine] no need to add line, it exists");
+
+        }
+        if (isWindows() && reverseSlash) {
+            fileAsString = fixWindows(fileAsString);
+        }
+        if (close) {
+            writeFile(path,fileAsString);
+        }
+       // info("[addline file] [addline file] ->" + fileAsString);
+        return fileAsString;
+    }
+
+    /**
      * @param path
      * @param existingString from a previous call, saves time in open/close file sequence, all stages but one in memory
      * @param toFind
@@ -1348,11 +1401,11 @@ public class InstallationTask implements IInstallationTask {
      * @param warning
      * @param reverseSlash
      * @param close          , if false returns the content as string to be passed to a next call in existingString
-     * @param allowRepeat, if replacing string already there do no generate an error
+     * @param allowRepeat,   if replacing string already there do no generate an error
      * @return
      */
     public String editFile(String path, String existingString, String toFind,
-                           String toReplace, boolean warning, boolean reverseSlash, boolean close,boolean allowRepeat) {
+                           String toReplace, boolean warning, boolean reverseSlash, boolean close, boolean allowRepeat) {
         if (!new File(path).exists()) {
             if (warning) {
                 addMessage("Edit file", "severe", "Cannot open the file: " + path + " for editing");
@@ -1364,53 +1417,63 @@ public class InstallationTask implements IInstallationTask {
         toFind = toFind.replace("\\", "/");
         String fileAsString = existingString;
         if (existingString == null || existingString.isEmpty()) {
-            fileAsString=getFile(path);
+            fileAsString = getFile(path);
         }
         if (fileAsString != null) {
             info("[Edit file] [Edit file]  file as string is not null");
             if (!fileAsString.contains(toFind) && !allowRepeat) {
-                info("[Edit file] [Edit file]  file as string doesn't contain: " + toFind);
+                //info("[Edit file] [Edit file]  file as string doesn't contain: " + toFind);
                 return null;
             }
             fileAsString = fileAsString.replaceAll(toFind, toReplace);
             if (isWindows() && reverseSlash) {
-                info("Fixing Windows backslash");
-                fileAsString = fileAsString.replaceAll("/", "\\\\");
-                String lines[] = fileAsString.split("\n");
-                boolean replaced = false;
-                String[] newLines = new String[lines.length];
-                int i = 0;
-                for (String line : lines) {
-                    String eq[] = line.split("=");
-                    if (eq.length == 2) {
-                        if (eq[1].trim().startsWith("\\")) {
-                            line = eq[0] + "=" + "c:" + eq[1];
-                            replaced = true;
-                        }
-                    }
-                    newLines[i++] = line;
-                }
-                if (replaced) {
-                    StringBuilder sb = new StringBuilder();
-                    for (String line : newLines) {
-                        sb.append(line).append("\n");
-                    }
-                    fileAsString = sb.toString();
-                }
+                fileAsString = fixWindows(fileAsString);
             }
         }
         if (close) {
-            try {
-                Files.write(Paths.get(path), fileAsString.getBytes());
-            } catch (IOException e) {
-                severe("Error while writing file", e);
-            }
+            writeFile(path, fileAsString);
+            return "";
         }
-        info("[Edit file] [Edit file] ->" + fileAsString);
+       // info("[Edit file] [Edit file] ->" + fileAsString);
         return fileAsString;
     }
 
-    public  String getFile(String path) {
+    private void writeFile(String path, String fileAsString) {
+        try {
+            Files.write(Paths.get(path), fileAsString.getBytes());
+        } catch (IOException e) {
+            severe("Error while writing file", e);
+        }
+    }
+
+    private String fixWindows(String fileAsString) {
+        info("Fixing Windows backslash");
+        fileAsString = fileAsString.replaceAll("/", "\\\\");
+        String lines[] = fileAsString.split("\n");
+        boolean replaced = false;
+        String[] newLines = new String[lines.length];
+        int i = 0;
+        for (String line : lines) {
+            String eq[] = line.split("=");
+            if (eq.length == 2) {
+                if (eq[1].trim().startsWith("\\")) {
+                    line = eq[0] + "=" + "c:" + eq[1];
+                    replaced = true;
+                }
+            }
+            newLines[i++] = line;
+        }
+        if (replaced) {
+            StringBuilder sb = new StringBuilder();
+            for (String line : newLines) {
+                sb.append(line).append("\n");
+            }
+            fileAsString = sb.toString();
+        }
+        return fileAsString;
+    }
+
+    public String getFile(String path) {
         String result;
         try {
 
@@ -1441,26 +1504,27 @@ public class InstallationTask implements IInstallationTask {
 
     /**
      * change a property in a Java compatible properties file
+     *
      * @param path
      * @param key
      * @param value
      * @return
      */
     public boolean editPorperties(String path, String key, String value) {
-        Properties properties=new Properties();
+        Properties properties = new Properties();
         if (exists(path)) {
             try {
-                FileInputStream is=new FileInputStream(path);
+                FileInputStream is = new FileInputStream(path);
                 properties.load(is);
                 is.close();
-                if (!properties.get(key).equals(value) ){
+                if (!properties.get(key).equals(value)) {
                     properties.setProperty(key, value);
-                    FileWriter fileWriter=new FileWriter(path);
-                    properties.store(fileWriter,"Written on: " +LocalDateTime.now());
+                    FileWriter fileWriter = new FileWriter(path);
+                    properties.store(fileWriter, "Written on: " + LocalDateTime.now());
                     fileWriter.close();
 
                 }
-            return true;
+                return true;
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -1468,6 +1532,7 @@ public class InstallationTask implements IInstallationTask {
         }
         return false;
     }
+
     @Override
     public InstallationTask setVersion(String version) {
         this.version = version;
@@ -1612,13 +1677,13 @@ public class InstallationTask implements IInstallationTask {
      * @return
      */
     public String getFlexicoreHome() {
-        return getContext().getParamaters().getValue("flexicorehome")+"/";
+        return getContext().getParamaters().getValue("flexicorehome") + "/";
 
     }
 
     public String getWildflyHome() {
-        Parameter parameter= getContext().getParameter("wildflyhome");
-        if (parameter!=null) return parameter.getValue()+"/";
+        Parameter parameter = getContext().getParameter("wildflyhome");
+        if (parameter != null) return parameter.getValue() + "/";
         if (isLinux) return "/opt/wildfly/";
         return null;
 
@@ -1699,7 +1764,7 @@ public class InstallationTask implements IInstallationTask {
      * @return
      */
     public boolean fixFlexicoreConfig(String path) {
-        return editFile(path, "", "/home/flexicore", flexicoreHome, false, false, true,false) != null;
+        return editFile(path, "", "/home/flexicore", flexicoreHome, false, false, true, false) != null;
     }
 
     public void incrementFiles() {
@@ -1727,6 +1792,7 @@ public class InstallationTask implements IInstallationTask {
         this.wrongOS = wrongOS;
         return this;
     }
+
     public static WindowsVersion getWindowsVersion() {
         if (System.getProperty("os.name").toLowerCase().contains("windows") && System.getProperty("os.name").toLowerCase().contains("xp")) {
             return WindowsVersion.xp;

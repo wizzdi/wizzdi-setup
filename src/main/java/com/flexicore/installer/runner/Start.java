@@ -707,13 +707,15 @@ public class Start {
                 for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
                     if (!installationTask.isSnooper()) {
                         try {
-                            if (installationTask.finalizeInstallation(context).getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
-                                completed++;
-                                updateStatus("finalizing  status", completed, failed, skipped, InstallationState.FINALIZING);
-                            } else {
-                                failed++;
-                                info("-----------Failed task while finalizing: " + installationTask.getName());
-                                updateStatus("finalizing  status", completed, failed, skipped, InstallationState.FINALIZING);
+                            if (installationTask.isEnabled()) {
+                                if (installationTask.finalizeInstallation(context).getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
+                                    completed++;
+                                    updateStatus("finalizing  status", completed, failed, skipped, InstallationState.FINALIZING);
+                                } else {
+                                    failed++;
+                                    info("-----------Failed task while finalizing: " + installationTask.getName());
+                                    updateStatus("finalizing  status", completed, failed, skipped, InstallationState.FINALIZING);
+                                }
                             }
                         } catch (Throwable throwable) {
                             severe("Error while finalizing task: " + installationTask.getName());
@@ -737,9 +739,14 @@ public class Start {
                 }
                 //ugly, we need to have one Installation task for the operation
                 if (context.getiInstallationTasks().size() != 0) {
-                    InstallationTask task = (InstallationTask) context.getiInstallationTasks().values().toArray()[0];
+                    InstallationTask task = (InstallationTask) context.getiInstallationTasks().values().toArray()[0]; //use first task, as the function
                     for (String service : restarters.values()) {
-                        task.setServiceToStart(service, "runner finalizing");
+
+                       if (task.setServiceToStart(service, "runner finalizing")) {
+                           info("Have started service: "+service);
+                       }else {
+                           severe("Have failed to start service: "+service);
+                       }
                     }
                 }
                 if (failed == 0) {
