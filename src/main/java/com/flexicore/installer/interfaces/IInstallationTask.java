@@ -10,6 +10,7 @@ import java.util.Set;
 public interface IInstallationTask extends ExtensionPoint {
     InspectionResult inspect(InstallationContext context);
     InstallationResult install(InstallationContext installationContext) throws Throwable;
+    InstallationResult unInstall(InstallationContext installationContext) throws Throwable;
     InstallationResult update(InstallationContext installationContext) throws Throwable;
     InstallationResult finalizeInstallation(InstallationContext installationContext) throws Throwable;
     InstallationResult restartService(InstallationContext installationContext) throws Throwable;

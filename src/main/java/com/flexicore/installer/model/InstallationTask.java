@@ -545,6 +545,11 @@ public class InstallationTask implements IInstallationTask {
     }
 
     @Override
+    public InstallationResult unInstall(InstallationContext installationContext) throws Throwable {
+        return new InstallationResult().setInstallationStatus(InstallationStatus.CONTINUE);
+    }
+
+    @Override
     public InstallationResult update(InstallationContext installationContext) throws Throwable {
         return new InstallationResult().setInstallationStatus(InstallationStatus.CONTINUE);
     }
@@ -1693,7 +1698,9 @@ public class InstallationTask implements IInstallationTask {
         return null;
 
     }
-
+   public String getStandaloneConfiguration() {
+        return getWildflyHome()+"standalone/configuration/standalone.xml";
+   }
     public String getWildflySource() {
         return getContext().getParamaters().getValue("wildflysourcepath");
 
