@@ -24,6 +24,8 @@ public class InstallationContext {
     private Start.UIAccessInterfaceQuit uiQuit;
     private Start.UIAccessInterfaceInstallDry uiInstallDry;
     private Start.UIAccessInterfaceInstall uiInstall;
+    private Start.UIAccessInterfaceUnInstall uiUninstall;
+    private Start.UIAccessInterfaceUpdate uiUpdate;
     private Start.UIAccessInterfacePause uiPause;
     private Start.UIAccessInterfaceResume uiResume;
     private Start.UIAccessInterfaceToggle uiToggle;
@@ -121,6 +123,24 @@ public class InstallationContext {
 
     public InstallationContext setUiInstall(Start.UIAccessInterfaceInstall uiInstall) {
         this.uiInstall = uiInstall;
+        return this;
+    }
+
+    public Start.UIAccessInterfaceUnInstall getUiUninstall() {
+        return uiUninstall;
+    }
+
+    public InstallationContext setUiUninstall(Start.UIAccessInterfaceUnInstall uiUninstall) {
+        this.uiUninstall = uiUninstall;
+        return this;
+    }
+
+    public Start.UIAccessInterfaceUpdate getUiUpdate() {
+        return uiUpdate;
+    }
+
+    public InstallationContext setUiUpdate(Start.UIAccessInterfaceUpdate uiUpdate) {
+        this.uiUpdate = uiUpdate;
         return this;
     }
 

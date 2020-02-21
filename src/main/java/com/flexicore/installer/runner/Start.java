@@ -1,4 +1,5 @@
 package com.flexicore.installer.runner;
+
 import com.flexicore.installer.exceptions.MissingInstallationTaskDependency;
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.interfaces.IUIComponent;
@@ -10,6 +11,7 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.traverse.TopologicalOrderIterator;
 import org.pf4j.DefaultPluginManager;
 import org.pf4j.PluginManager;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -38,6 +40,8 @@ public class Start {
     static String currentStatus = "";
 
     static Map<String, Set<String>> missingDependencies = new HashMap<>();
+    private static String oldUpdate="false";
+    private static Parameter updateParameter=null;
 
 
     public static void main(String[] args) throws MissingInstallationTaskDependency, ParseException, InterruptedException {
@@ -58,6 +62,8 @@ public class Start {
                         setUiPause(Start::uiComponentPause).
                         setUiResume(Start::uiComponentResume).
                         setUiInstall(Start::uiComponentInstall).
+                        setUiUninstall(Start::uiComponentUnInstall).
+                        setUiUpdate(Start::uiComponentUpdate).
                         setUiShowLogs(Start::uiComponentShowLogs).
                         setUiAbout(Start::UIAccessAbout).
                         setUiStopInstall(Start::UIAccessInterfaceStop).
@@ -159,13 +165,13 @@ public class Start {
         }
         if (installationContext.getParamaters() != null) installationContext.getParamaters().sort();
         installationContext.getiInstallationTasks().values().forEach(iInstallationTask -> iInstallationTask.initialize(installationContext));
-        int order=1;
-        for (IInstallationTask task:installationContext.getiInstallationTasks().values()) task.setOrder(order++);
+        int order = 1;
+        for (IInstallationTask task : installationContext.getiInstallationTasks().values()) task.setOrder(order++);
         loadUiComponents();  //currently asynchronous
         if (!uiFoundandRun) {
             checkHelp(mainCmd);
             if (installationContext.getParamaters().getBooleanValue("install")) {
-                install(installationContext);
+                install(installationContext, false);
             } else {
                 info(" there is no 'install' parameter set to true that will start installation");
             }
@@ -188,7 +194,6 @@ public class Start {
         exit(0);
 
     }
-
 
 
     private static void checkHelp(CommandLine mainCmd) {
@@ -307,13 +312,14 @@ public class Start {
 
     /**
      * support for one component to change another component value
+     *
      * @param installationContext
      * @param task
      * @param parameter
      * @return
      */
     private static boolean doUpdateComponent(InstallationContext installationContext, IInstallationTask task, Parameter parameter) {
-        if (uiComponents!=null) {
+        if (uiComponents != null) {
             List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
 
             for (IUIComponent component : filtered) {
@@ -322,6 +328,7 @@ public class Start {
         }
         return true;
     }
+
     /**
      * Update service status on UI
      *
@@ -436,7 +443,8 @@ public class Start {
                     installationContext.setHelpRunning(true);
                 }
             }
-           if (installationContext.isExtraLogs()) info("Have added " + count + " parameters to installation task: " + task.getId() + " ->>" + task.getDescription());
+            if (installationContext.isExtraLogs())
+                info("Have added " + count + " parameters to installation task: " + task.getId() + " ->>" + task.getDescription());
         } catch (ParseException e) {
             logger.log(Level.SEVERE, "error while parsing command line", e);
             return false;
@@ -484,7 +492,8 @@ public class Start {
                 }
             }
             parameter.setSource(ParameterSource.PROPERTIES_FILE);
-          if (installationContext.isExtraLogs())  info("Parameter " + parameter.getName() + " default value will be taken from a properties file");
+            if (installationContext.isExtraLogs())
+                info("Parameter " + parameter.getName() + " default value will be taken from a properties file");
         }
         if (result.contains("&")) {
             parameter.setNonTranslatedValue(result);
@@ -625,19 +634,25 @@ public class Start {
         }
         return true;
     }
+
     private static boolean update(InstallationContext context) {
-        boolean result=false;
-        Parameter updateParameter = context.getParameter("update");
-        if (updateParameter!=null) {
-            String oldUpdate = updateParameter.getValue();
+        boolean result = false;
+         updateParameter = context.getParameter("update");
+        if (updateParameter != null) {
+             oldUpdate = updateParameter.getValue();
             updateParameter.setValue("true");
-            result=install(context);
-            updateParameter.setValue(oldUpdate);
+            result = install(context, false);
+
         }
 
         return result;
     }
-    private static boolean install(InstallationContext context) {
+
+    private static boolean Uninstall(InstallationContext context) {
+        return install(context, true);
+    }
+
+    private static boolean install(InstallationContext context, boolean unInstall) {
 
         if (!installRunning) {
             installRunning = true;
@@ -651,11 +666,12 @@ public class Start {
                 int completed = 0;
                 handleInspections(context);
                 HashMap<String, String> restarters = new HashMap<>();
+                String mainStatusMessage = unInstall ? "Uninstallation status" : "installation status";
                 for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
                     if (!installationTask.isEnabled() && !installationTask.isWrongOS()) {
                         info("task " + installationTask.getName() + " is disabled, skipping");
                         skipped++;
-                        updateStatus(" installation status", completed, failed, skipped, InstallationState.RUNNING);
+                        updateStatus(mainStatusMessage, completed, failed, skipped, InstallationState.RUNNING);
                         continue;
 
                     }
@@ -672,7 +688,7 @@ public class Start {
                                     restarters.put(service, service);
                                 }
                             }
-                            InstallationResult result = installationTask.install(context);
+                            InstallationResult result = unInstall ? installationTask.unInstall(context) : installationTask.install(context);
                             if (result.getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
                                 completed++;
                                 updateStatus(" installation running: ", completed, failed, skipped, InstallationState.RUNNING);
@@ -682,7 +698,7 @@ public class Start {
                             } else {
                                 info("-----------Failed task: " + installationTask.getName());
                                 failed++;
-                                updateStatus(" installation status", completed, failed, skipped, InstallationState.RUNNING);
+                                updateStatus(mainStatusMessage, completed, failed, skipped, InstallationState.RUNNING);
                                 installationTask.setProgress(0).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.FAILED);
                                 info("Have unsuccessfully finished installation task: " + installationTask.getName() + " after " + getSeconds(start) + " Seconds");
 
@@ -691,9 +707,9 @@ public class Start {
                         } else {
                             Thread snooper = new Thread(() -> {
                                 try {
-                                    InstallationResult result = installationTask.install(context);
+                                    InstallationResult result = unInstall ? installationTask.unInstall(context) : installationTask.install(context);
                                 } catch (Throwable throwable) {
-                                    // severe("Exception while running a snooper",throwable);
+                                    severe("Exception while running a snooper", throwable);
                                 }
                             });
                             snooper.setName(installationTask.getId());
@@ -711,25 +727,27 @@ public class Start {
                     }
                     // installTask(installationTask, context);
                 }
-                updateStatus(" Installation restarting needed", completed, failed, skipped, InstallationState.FINALIZING);
 
-                updateStatus(" Installation finalizing", completed, failed, skipped, InstallationState.FINALIZING);
+
+                updateStatus(mainStatusMessage + " finalizing", completed, failed, skipped, InstallationState.FINALIZING);
                 info(" calling finalizers on all tasks");
-                for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
-                    if (!installationTask.isSnooper()) {
-                        try {
-                            if (installationTask.isEnabled()) {
-                                if (installationTask.finalizeInstallation(context).getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
-                                    completed++;
-                                    updateStatus("finalizing  status", completed, failed, skipped, InstallationState.FINALIZING);
-                                } else {
-                                    failed++;
-                                    info("-----------Failed task while finalizing: " + installationTask.getName());
-                                    updateStatus("finalizing  status", completed, failed, skipped, InstallationState.FINALIZING);
+                if (!unInstall) {
+                    for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
+                        if (!installationTask.isSnooper()) {
+                            try {
+                                if (installationTask.isEnabled()) {
+                                    if (installationTask.finalizeInstallation(context).getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
+                                        completed++;
+                                        updateStatus("finalizing  status", completed, failed, skipped, InstallationState.FINALIZING);
+                                    } else {
+                                        failed++;
+                                        info("-----------Failed task while finalizing: " + installationTask.getName());
+                                        updateStatus("finalizing  status", completed, failed, skipped, InstallationState.FINALIZING);
+                                    }
                                 }
+                            } catch (Throwable throwable) {
+                                severe("Error while finalizing task: " + installationTask.getName());
                             }
-                        } catch (Throwable throwable) {
-                            severe("Error while finalizing task: " + installationTask.getName());
                         }
                     }
                 }
@@ -748,16 +766,18 @@ public class Start {
                         severe("Error while cleanup task run " + installationTask.getName());
                     }
                 }
-                //ugly, we need to have one Installation task for the operation
-                if (context.getiInstallationTasks().size() != 0) {
-                    InstallationTask task = (InstallationTask) context.getiInstallationTasks().values().toArray()[0]; //use first task, as the function
-                    for (String service : restarters.values()) {
+                //ugly, we need to have one Installation task for the operation of starting required services.
+                if (!unInstall) {
+                    if (context.getiInstallationTasks().size() != 0) {
+                        InstallationTask task = (InstallationTask) context.getiInstallationTasks().values().toArray()[0]; //use first task, as the function
+                        for (String service : restarters.values()) {
 
-                       if (task.setServiceToStart(service, "runner finalizing")) {
-                           info("Have started service: "+service);
-                       }else {
-                           severe("Have failed to start service: "+service);
-                       }
+                            if (task.setServiceToStart(service, "runner finalizing")) {
+                                info("Have started service: " + service);
+                            } else {
+                                severe("Have failed to start service: " + service);
+                            }
+                        }
                     }
                 }
                 if (failed == 0) {
@@ -765,6 +785,7 @@ public class Start {
                 } else {
                     updateStatus("done, some tasks failed", completed, failed, skipped, InstallationState.PARTLYCOMPLETED);
                 }
+               if (updateParameter!=null) updateParameter.setValue(oldUpdate);
                 if (!uiFoundandRun) stopped = true; //command line will execute here
             });
             thread.start();
@@ -859,12 +880,19 @@ public class Start {
     }
 
     private static boolean uiComponentInstall(IUIComponent component, InstallationContext context) {
-        return install(context);
+        updateParameter=null;
+        return install(context, false);
     }
+
+    private static boolean uiComponentUnInstall(IUIComponent component, InstallationContext context) {
+        updateParameter=null;
+        return Uninstall(context);
+    }
+
+
     private static boolean uiComponentUpdate(IUIComponent component, InstallationContext context) {
         return update(context);
     }
-
 
 
     private static boolean uiComponentToggle(IUIComponent component, InstallationContext context) {
@@ -934,11 +962,19 @@ public class Start {
         boolean uiComponentInstall(IUIComponent uiComponent, InstallationContext context);
 
     }
+
+    @FunctionalInterface
+    public static interface UIAccessInterfaceUnInstall {
+        boolean uiComponentUnInstall(IUIComponent uiComponent, InstallationContext context);
+
+    }
+
     @FunctionalInterface
     public static interface UIAccessInterfaceUpdate {
         boolean uiComponentUpdate(IUIComponent uiComponent, InstallationContext context);
 
     }
+
     @FunctionalInterface
     public static interface UIAccessInterfaceToggle {
         boolean uiComponentToggle(IUIComponent uiComponent, InstallationContext context);
@@ -989,9 +1025,10 @@ public class Start {
     public static interface UpdateService {
         boolean serviceProgress(InstallationContext context, Service service, IInstallationTask task);
     }
+
     @FunctionalInterface
     public static interface UpdateSingleComponent {
-        boolean updateComponent(InstallationContext context, IInstallationTask task,Parameter parameter);
+        boolean updateComponent(InstallationContext context, IInstallationTask task, Parameter parameter);
     }
 }
 

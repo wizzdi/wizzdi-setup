@@ -6,7 +6,7 @@
 
     <groupId>com.flexicore</groupId>
     <artifactId>flexicore-installer</artifactId>
-    <version>1.0.17</version>
+    <version>1.0.18</version>
     <distributionManagement>
         <repository>
             <id>flexicore-local</id>
@@ -31,6 +31,7 @@
             <artifactId>pf4j</artifactId>
             <version>3.0.1</version>
         </dependency>
+
         <dependency>
             <groupId>com.wizzdi.installer</groupId>
             <artifactId>shortcuts</artifactId>
@@ -160,6 +161,7 @@
                                         <name>commons.cli</name>
                                     </moduleInfo>
                                 </module>
+
                                 <module>
                                     <artifact>
                                         <groupId>com.wizzdi.installer</groupId>

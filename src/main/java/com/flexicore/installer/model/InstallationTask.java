@@ -5,6 +5,8 @@ import com.flexicore.installer.utilities.CopyFileVisitor;
 import com.flexicore.installer.utilities.FolderCompression;
 import com.flexicore.installer.utilities.StreamGobbler;
 import com.wizzdi.installer.*;
+import jpowershell.PowerShell;
+import jpowershell.PowerShellResponse;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -398,7 +400,18 @@ public class InstallationTask implements IInstallationTask {
 
         }
     }
+    public String executePowerShellCommand(String command) {
+        PowerShellResponse response = PowerShell.executeSingleCommand(command);
+        return response.getCommandOutput();
+    }
+    public boolean uninstallByName(String name) {
+        String data = "Get-WmiObject -Class Win32_Product | Where-Object{$_.Name -eq \"" + name+"\"}";
+        System.out.println(data);
+        PowerShellResponse response = PowerShell.executeSingleCommand(data);
+        int a=3;
 
+        return false;
+    }
     public boolean executeCommandByRuntime(String target, String ownerName) {
         return executeCommand(target, "", ownerName);
 
@@ -1368,13 +1381,14 @@ public class InstallationTask implements IInstallationTask {
 
     /**
      * Add line to existing file, will not add if already there or if cannot find the location after specified file
-     * @param path path to file
+     *
+     * @param path           path to file
      * @param existingString allow editing on a string so file operations reduced
-     * @param afterLine location after line
-     * @param line the line to insert
+     * @param afterLine      location after line
+     * @param line           the line to insert
      * @param warning
-     * @param reverseSlash fix windows backslash
-     * @param close close the file.
+     * @param reverseSlash   fix windows backslash
+     * @param close          close the file.
      * @return null or the changed string to be used on subsequent similar actions
      */
     public String addLine(String path, String existingString, String afterLine,
@@ -1383,13 +1397,13 @@ public class InstallationTask implements IInstallationTask {
         if (existingString == null || existingString.isEmpty()) {
             fileAsString = getFile(path);
         }
-        if (!fileAsString.contains(line) ) {
+        if (!fileAsString.contains(line)) {
             if (fileAsString.contains(afterLine)) {
-                fileAsString.replaceAll(afterLine,afterLine+"\n"+line);
-            }else {
-                info("[addLine] cannot fine the preceding line!!");
+                fileAsString = fileAsString.replaceAll(afterLine, afterLine + "\n" + line);
+            } else {
+                info("[addLine] cannot find the preceding line!!");
             }
-        }else {
+        } else {
             info("[addLine] no need to add line, it exists");
 
         }
@@ -1397,9 +1411,9 @@ public class InstallationTask implements IInstallationTask {
             fileAsString = fixWindows(fileAsString);
         }
         if (close) {
-            writeFile(path,fileAsString);
+            writeFile(path, fileAsString);
         }
-       // info("[addline file] [addline file] ->" + fileAsString);
+        // info("[addline file] [addline file] ->" + fileAsString);
         return fileAsString;
     }
 
@@ -1444,7 +1458,7 @@ public class InstallationTask implements IInstallationTask {
             writeFile(path, fileAsString);
             return "";
         }
-       // info("[Edit file] [Edit file] ->" + fileAsString);
+        // info("[Edit file] [Edit file] ->" + fileAsString);
         return fileAsString;
     }
 
@@ -1698,9 +1712,11 @@ public class InstallationTask implements IInstallationTask {
         return null;
 
     }
-   public String getStandaloneConfiguration() {
-        return getWildflyHome()+"standalone/configuration/standalone.xml";
-   }
+
+    public String getStandaloneConfiguration() {
+        return getWildflyHome() + "standalone/configuration/standalone.xml";
+    }
+
     public String getWildflySource() {
         return getContext().getParamaters().getValue("wildflysourcepath");
 

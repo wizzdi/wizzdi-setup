@@ -16,6 +16,7 @@ module flexicore.installer {
     requires shortcuts;
     requires jdk.crypto.ec;
 
+
     exports com.flexicore.installer.exceptions;
     exports com.flexicore.installer.model;
     exports com.flexicore.installer.utilities;
@@ -24,3 +25,4 @@ module flexicore.installer {
     exports com.flexicore.installer.interfaces;
 
 }
+
