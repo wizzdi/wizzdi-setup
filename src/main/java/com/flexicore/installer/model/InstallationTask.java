@@ -192,22 +192,19 @@ public class InstallationTask implements IInstallationTask {
     }
 
     public boolean removeService(String serviceName, String ownerName) {
+        if (!waitForServiceToStop(serviceName, ownerName, true, 10000)) {
+            info("Could not stop service: " + serviceName);
+            return false;
+        }
         if (isWindows) {
             boolean result;
-            if (executeCommand("sc stop " + serviceName, "STOP_PENDING", "Set Service To Stop " + serviceName)) {
-                if (!testServiceRunning(serviceName, ownerName, false)) {
-                    result = executeCommand("sc remove " + serviceName, "", "remove service " + serviceName);
-                    return result;
-                }
-            }
-
+            result = executeCommand("sc remove " + serviceName, "", "remove service " + serviceName);
+            return result;
         } else {
-            if (executeCommand("service  " + serviceName + " stop", "", "Set Service To Stop " + serviceName)) {
-                if (executeCommand("systemctl disable " + serviceName, "", ownerName)) {
-                    if (executeCommand("rm /etc/systemd/system/" + serviceName, "", ownerName)) {
-                        if (executeCommand(" systemctl daemon-reload", "", ownerName)) {
-                            return (executeCommand(" systemctl reset-failed", "", ownerName));
-                        }
+            if (executeCommand("systemctl disable " + serviceName, "", ownerName)) {
+                if (executeCommand("rm /etc/systemd/system/" + serviceName, "", ownerName)) {
+                    if (executeCommand(" systemctl daemon-reload", "", ownerName)) {
+                        return (executeCommand(" systemctl reset-failed", "", ownerName));
                     }
                 }
             }
@@ -1041,6 +1038,41 @@ public class InstallationTask implements IInstallationTask {
                 .forEach(File::delete);
     }
 
+    /**
+     * delete with wildcard including folders, folders will be deleted completely if name matches
+     * @param path
+     * @param regex
+     * @param context
+     * @return
+     */
+    public static int deleteFilesByPattern(String path, String regex,InstallationContext context) {
+        File folder=new File(path);
+        if (folder.exists()) {
+            final File[] files = folder.listFiles(new FilenameFilter() {
+                @Override
+                public boolean accept(final File dir,
+                                      final String name) {
+                    return name.matches(regex);
+                }
+            });
+            int i=0;
+            for (final File file : files) {
+                if (file.isDirectory()) {
+                    try {
+                        deleteDirectoryStream(file.getAbsolutePath());
+                        i++;
+                    } catch (IOException e) {
+                       context.getLogger().severe("Failed to delete folder: "+e.toString());
+                    }
+                }else {
+                    if (!file.delete()) {
+                        System.err.println("Can't remove " + file.getAbsolutePath());
+                    } else i++;
+                }
+            }
+            return i;
+        }else return -1;
+    }
     public void setOwnerFolder(Path path, String userName, String group) throws IOException {
         if (!isWindows()) {
             info("Setting owner on path: " + path);
@@ -1844,6 +1876,12 @@ public class InstallationTask implements IInstallationTask {
         if (isLinux) return "/opt/wildfly/";
         return null;
 
+    }
+    public String getStandalone() {
+        return getWildflyHome()+"standalone";
+    }
+    public String getDeployments() {
+        return getStandalone()+"/deployments";
     }
 
     public String getStandaloneConfiguration() {
