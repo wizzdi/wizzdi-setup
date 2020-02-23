@@ -215,6 +215,19 @@ public class DeployFlexicore extends InstallationTask {
     }
 
     @Override
+    public InstallationResult unInstall(InstallationContext installationContext) throws Throwable {
+        waitForServiceToStop(serviceName,"Flexicore uninstall",true,10000);
+        int result=deleteFilesByPattern(getDeployments(),"Flexi*",installationContext);
+
+        deleteDirectoryStream(getWildflyHome()+"standalone/deployments/FlexiCore.war");
+        if (result>=0) {
+            updateProgress(installationContext,"Have deleted :"+result);
+            return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
+        }
+        return new InstallationResult().setInstallationStatus(InstallationStatus.FAILED);
+    }
+
+    @Override
     public String getName() {
         return "deploy-flexicore";
     }
