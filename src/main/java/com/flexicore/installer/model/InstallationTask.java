@@ -77,6 +77,19 @@ public class InstallationTask implements IInstallationTask {
         return OperatingSystem.Linux;
     }
 
+    public boolean stopWildfly(String ownerName) {
+        if (testServiceRunning("wildfly", ownerName, false)) {
+            waitForServiceToStop("wildfly", ownerName, true, 30000);
+            if (!testServiceRunning("wildfly", ownerName, false)) {
+                return true;
+            }
+        } else {
+            info("Wildfly service was not running, no need to stop it.");
+            return true;
+        }
+        return false;
+    }
+
     /**
      * wait for service to stop
      *
@@ -1040,13 +1053,14 @@ public class InstallationTask implements IInstallationTask {
 
     /**
      * delete with wildcard including folders, folders will be deleted completely if name matches
+     *
      * @param path
      * @param regex
      * @param context
      * @return
      */
-    public static int deleteFilesByPattern(String path, String regex,InstallationContext context) {
-        File folder=new File(path);
+    public static int deleteFilesByPattern(String path, String regex, InstallationContext context) {
+        File folder = new File(path);
         if (folder.exists()) {
             final File[] files = folder.listFiles(new FilenameFilter() {
                 @Override
@@ -1057,24 +1071,25 @@ public class InstallationTask implements IInstallationTask {
                     return result;
                 }
             });
-            int i=0;
+            int i = 0;
             for (final File file : files) {
                 if (file.isDirectory()) {
                     try {
                         deleteDirectoryStream(file.getAbsolutePath());
                         i++;
                     } catch (IOException e) {
-                       context.getLogger().severe("Failed to delete folder: "+e.toString());
+                        context.getLogger().severe("Failed to delete folder: " + e.toString());
                     }
-                }else {
+                } else {
                     if (!file.delete()) {
                         System.err.println("Can't remove " + file.getAbsolutePath());
                     } else i++;
                 }
             }
             return i;
-        }else return -1;
+        } else return -1;
     }
+
     public void setOwnerFolder(Path path, String userName, String group) throws IOException {
         if (!isWindows()) {
             info("Setting owner on path: " + path);
@@ -1879,11 +1894,13 @@ public class InstallationTask implements IInstallationTask {
         return null;
 
     }
+
     public String getStandalone() {
-        return getWildflyHome()+"standalone";
+        return getWildflyHome() + "standalone";
     }
+
     public String getDeployments() {
-        return getStandalone()+"/deployments";
+        return getStandalone() + "/deployments";
     }
 
     public String getStandaloneConfiguration() {

@@ -655,15 +655,7 @@ public class Start {
 
         return result;
     }
-//    public static void testFunctionalExample() {
-//        System.out.println("testFunctionalExample");
-//        if (OSDetector.isWindows()) {
-//            PowerShell.openSession()
-//                    .executeCommandAndChain("Get-Process", (res -> System.out.println("List Processes:" + res.getCommandOutput())))
-//                    .executeCommandAndChain("Get-WmiObject Win32_BIOS", (res -> System.out.println("BIOS information:" + res.getCommandOutput())))
-//                    .close();
-//        }
-//    }
+
     private static boolean Uninstall(InstallationContext context) {
         return install(context, true);
     }
@@ -691,7 +683,8 @@ public class Start {
                         continue;
 
                     }
-                    info("will now install " + installationTask.getName() + " id: " + installationTask.getId());
+
+                    info("will now "+ (unInstall ? "uninstall" : "install ") + installationTask.getName() + " id: " + installationTask.getId());
                     info("details: " + installationTask.getDescription());
 
                     installationTask.setProgress(0).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now()).setMessage(" Started installation, may take some time");
@@ -707,8 +700,8 @@ public class Start {
                             InstallationResult result = unInstall ? installationTask.unInstall(context) : installationTask.install(context);
                             if (result.getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
                                 completed++;
-                                updateStatus(" installation running: ", completed, failed, skipped, InstallationState.RUNNING);
-                                info("Have successfully finished installation task: " + installationTask.getName() + " after " + getSeconds(start) + " Seconds");
+                                updateStatus((unInstall ? "un-installation": "installation is ") +"running: ", completed, failed, skipped, InstallationState.RUNNING);
+                                info("Have successfully finished "+(unInstall ? "un-installation task: " : "installation task: ") + installationTask.getName() + " after " + getSeconds(start) + " Seconds");
                                 installationTask.setProgress(100).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.COMPLETED);
 
                             } else {
@@ -716,7 +709,7 @@ public class Start {
                                 failed++;
                                 updateStatus(mainStatusMessage, completed, failed, skipped, InstallationState.RUNNING);
                                 installationTask.setProgress(0).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.FAILED);
-                                info("Have unsuccessfully finished installation task: " + installationTask.getName() + " after " + getSeconds(start) + " Seconds");
+                                info("Have unsuccessfully finished "+(unInstall? "un-installation task" : " installation task: ") + installationTask.getName() + " after " + getSeconds(start) + " Seconds");
 
                             }
                             doUpdateUI(installationTask, installationContext);
