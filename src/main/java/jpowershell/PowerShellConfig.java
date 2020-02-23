@@ -16,6 +16,7 @@
 package jpowershell;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -33,8 +34,10 @@ final class PowerShellConfig {
     public static Properties getConfig() {
         if (config == null) {
             config = new Properties();
+
             try {
                 //load a properties file from class path, inside static method
+
                 config.load(PowerShellConfig.class.getClassLoader().getResourceAsStream(CONFIG_FILENAME));
             } catch (IOException ex) {
                 java.util.logging.Logger.getLogger(PowerShell.class.getName())

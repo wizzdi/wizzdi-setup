@@ -18,7 +18,7 @@ package jpowershell;
  *
  * @author Javier Garcia Alonso
  */
-class OSDetector {
+public class OSDetector {
 
     private static final String OS = System.getProperty("os.name").toLowerCase();
 

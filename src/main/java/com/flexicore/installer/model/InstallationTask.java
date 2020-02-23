@@ -1,5 +1,6 @@
 package com.flexicore.installer.model;
 
+
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.utilities.CopyFileVisitor;
 import com.flexicore.installer.utilities.FolderCompression;
@@ -188,6 +189,30 @@ public class InstallationTask implements IInstallationTask {
         } else {
             return executeCommand("service  " + serviceName + " stop", "", "Set Service To Stop " + serviceName);
         }
+    }
+
+    public boolean removeService(String serviceName, String ownerName) {
+        if (isWindows) {
+            boolean result;
+            if (executeCommand("sc stop " + serviceName, "STOP_PENDING", "Set Service To Stop " + serviceName)) {
+                if (!testServiceRunning(serviceName, ownerName, false)) {
+                    result = executeCommand("sc remove " + serviceName, "", "remove service " + serviceName);
+                    return result;
+                }
+            }
+
+        } else {
+            if (executeCommand("service  " + serviceName + " stop", "", "Set Service To Stop " + serviceName)) {
+                if (executeCommand("systemctl disable " + serviceName, "", ownerName)) {
+                    if (executeCommand("rm /etc/systemd/system/" + serviceName, "", ownerName)) {
+                        if (executeCommand(" systemctl daemon-reload", "", ownerName)) {
+                            return (executeCommand(" systemctl reset-failed", "", ownerName));
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -400,18 +425,123 @@ public class InstallationTask implements IInstallationTask {
 
         }
     }
-    public String executePowerShellCommand(String command) {
+
+    public static PowerShellResponse executePowerShellCommand(String command, Integer maxWait, Integer waitPause) {
+
+        Map<String, String> myConfig = new HashMap<>();
+        myConfig.put("maxWait", maxWait.toString());
+        myConfig.put("waitPause", waitPause.toString());
         PowerShellResponse response = PowerShell.executeSingleCommand(command);
-        return response.getCommandOutput();
+        return response;
     }
+
+
     public boolean uninstallByName(String name) {
-        String data = "Get-WmiObject -Class Win32_Product | Where-Object{$_.Name -eq \"" + name+"\"}";
-        System.out.println(data);
-        PowerShellResponse response = PowerShell.executeSingleCommand(data);
-        int a=3;
+
+        List<WindowsInstalledComponent> result = getInstalledClasses(name);
+        switch (result.size()) {
+
+            case 1:
+                boolean uninstallResult = uninsatllGUID(result.get(0).getIdentifyingNumber(), result.get(0).getName());
+                if (uninstallResult) {
+                    return true;
+                }
+
+                break;
+            case 0:
+            default:
+
+        }
 
         return false;
     }
+
+    public boolean uninsatllGUID(String identifyingNumber, String name) {
+
+        boolean result = false;
+        String currentFolder = System.getProperty("user.dir");
+        String logFile = currentFolder + "/uninstall-" + name + ".log";
+        logFile = logFile.replace("/", "\\");
+        String[] args = new String[]{"msiexec.exe",
+                "/x",
+                "\"" + identifyingNumber + "\"",
+                "/QN",
+                "/L*V",
+                logFile,
+                "REBOOT=R"};
+
+        try {
+            result = executeCommandByBuilder(args, "", false, "", false);
+        } catch (IOException e) {
+            severe("Error while uninstalling " + name, e);
+        }
+        return result;
+    }
+
+    public List<WindowsInstalledComponent> getInstalledClasses(String pattern) {
+        String command;
+        if (pattern.contains("*")) {
+            command = "Get-WmiObject -Class Win32_Product | Where-Object{$_.Name -like '" + pattern + "'}";
+        } else {
+            command = "Get-WmiObject -Class Win32_Product | Where-Object{$_.Name -like  '*" + pattern + "*'}";
+        }
+        PowerShellResponse response = executePowerShellCommand(command, 120000, 10);
+        List<WindowsInstalledComponent> result = getComponents(response);
+        if (result != null) return result;
+        return null;
+    }
+
+    public List<WindowsInstalledComponent> getallInstalledClasses() {
+        String command = "Get-WmiObject -Class Win32_Product";
+        PowerShellResponse response = executePowerShellCommand(command, 120000, 10);
+        List<WindowsInstalledComponent> result = getComponents(response);
+        if (result != null) return result;
+        return null;
+    }
+
+    private List<WindowsInstalledComponent> getComponents(PowerShellResponse response) {
+        List<WindowsInstalledComponent> result = new ArrayList<>();
+        if (response != null) {
+            String[] split = response.getCommandOutput().split("\n");
+            if (split != null && split.length > 1) {
+                WindowsInstalledComponent component = null;
+                for (String line : split) {
+
+                    String[] parsed = line.split(":");
+                    if (parsed.length == 2) {
+
+                        String key = parsed[0].trim();
+                        String value = parsed[1].trim();
+                        switch (key) {
+                            case "IdentifyingNumber":
+                                component = new WindowsInstalledComponent();
+                                result.add(component);
+                                component.setIdentifyingNumber(value);
+                                break;
+                            case "Name":
+                                component.setName(value);
+                                break;
+                            case "Vendor":
+                                component.setVendor(value);
+                                break;
+                            case "Caption":
+                                component.setCaption(value);
+                                break;
+                            case "Version":
+                                component.setVersion(value);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+            }
+
+
+        }
+        return result;
+    }
+
     public boolean executeCommandByRuntime(String target, String ownerName) {
         return executeCommand(target, "", ownerName);
 
@@ -430,7 +560,7 @@ public class InstallationTask implements IInstallationTask {
      */
     public boolean executeCommandByBuilder(String[] args, String toFind, boolean notToFind, String ownerName, boolean setCurrentFolder) throws IOException {
 
-        if (args[0].equals("msiexec")) {
+        if (args[0].equals("msiexec.exe") && args[1].length() > 3) {
             args[1] = args[1].replace("/", "\\");
         }
 
@@ -446,9 +576,14 @@ public class InstallationTask implements IInstallationTask {
 
         Process process;
         process = pb.start();
-
-        return contWithProcess(process, toFind, notToFind, ownerName);
-
+        int a = 3;
+        boolean result = false;
+        try {
+            result = contWithProcess(process, toFind, notToFind, ownerName);
+        } catch (Exception e) {
+            severe("error", e);
+        }
+        return result;
 
     }
 
@@ -480,9 +615,7 @@ public class InstallationTask implements IInstallationTask {
 
     private boolean contWithProcess(Process process, String toFind, boolean notToFind, String ownerName) {
         try {
-
-            boolean show = ownerName.contains("Update Linux repositories");
-            show = false; //supress output even if updating linux
+            boolean show = false; //supress output even if updating linux
             StreamGobbler errorGobbler = new
                     StreamGobbler(process.getErrorStream(), "ERROR", context.getLogger(), show);
 
@@ -554,12 +687,12 @@ public class InstallationTask implements IInstallationTask {
             info("Dry run  of " + this.getId() + " -> " + this.getDescription() + getParameters(installationContext).toString());
             return new InstallationResult().setInstallationStatus(InstallationStatus.ISDRY);
         }
-        return new InstallationResult().setInstallationStatus(InstallationStatus.CONTINUE);
+        return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
     }
 
     @Override
     public InstallationResult unInstall(InstallationContext installationContext) throws Throwable {
-        return new InstallationResult().setInstallationStatus(InstallationStatus.CONTINUE);
+        return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
     }
 
     @Override

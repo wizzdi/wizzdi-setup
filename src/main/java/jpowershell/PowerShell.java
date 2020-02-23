@@ -92,6 +92,7 @@ public class PowerShell implements AutoCloseable {
                     : PowerShellConfig.getConfig().getProperty("maxWait"));
             this.tempFolder = (config != null && config.get("tempFolder") != null) ? getTempFolder(config.get("tempFolder"))
                     : getTempFolder(PowerShellConfig.getConfig().getProperty("tempFolder"));
+
         } catch (NumberFormatException nfe) {
             logger.log(Level.SEVERE,
                     "Could not read configuration. Using default values.", nfe);
@@ -484,6 +485,6 @@ public class PowerShell implements AutoCloseable {
                 return folder;
             }
         }
-        return null;
+        return  new File(System.getProperty("java.io.tmpdir"));
     }
 }

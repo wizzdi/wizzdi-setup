@@ -4,6 +4,10 @@ import com.flexicore.installer.exceptions.MissingInstallationTaskDependency;
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.interfaces.IUIComponent;
 import com.flexicore.installer.model.*;
+import jpowershell.OSDetector;
+import jpowershell.PowerShell;
+
+import jpowershell.PowerShellResponse;
 import org.apache.commons.cli.*;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -16,6 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.logging.Level;
@@ -24,6 +29,7 @@ import java.util.stream.Collectors;
 
 import static com.flexicore.installer.utilities.LoggerUtilities.initLogger;
 import static java.lang.System.*;
+import static jpowershell.OSDetector.*;
 
 
 public class Start {
@@ -32,6 +38,7 @@ public class Start {
     private static final String LOG_PATH_OPT = "l";
     private static final String INSTALLATION_TASKS_FOLDER = "tasks";
     private static final long PROGRESS_DELAY = 300;
+    private static final String CONFIG_FILENAME = "jpowershell.properties";
     private static Logger logger;
     private static PluginManager pluginManager;
     private static List<IUIComponent> uiComponents;
@@ -46,7 +53,8 @@ public class Start {
 
     public static void main(String[] args) throws MissingInstallationTaskDependency, ParseException, InterruptedException {
 
-
+        //testFunctionalExample();
+     //   PowerShellResponse result = InstallationTask.executePowerShellCommand("get-service", 10000, 10);
         Options options = initOptions();
         CommandLineParser parser = new DefaultParser();
         String[] trueArgs = getTrueArgs(args, options);
@@ -647,7 +655,15 @@ public class Start {
 
         return result;
     }
-
+//    public static void testFunctionalExample() {
+//        System.out.println("testFunctionalExample");
+//        if (OSDetector.isWindows()) {
+//            PowerShell.openSession()
+//                    .executeCommandAndChain("Get-Process", (res -> System.out.println("List Processes:" + res.getCommandOutput())))
+//                    .executeCommandAndChain("Get-WmiObject Win32_BIOS", (res -> System.out.println("BIOS information:" + res.getCommandOutput())))
+//                    .close();
+//        }
+//    }
     private static boolean Uninstall(InstallationContext context) {
         return install(context, true);
     }

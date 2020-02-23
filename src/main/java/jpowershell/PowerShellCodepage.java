@@ -23,7 +23,7 @@ import java.util.Map.Entry;
  *
  * @author Harinus
  */
-class PowerShellCodepage {
+public class PowerShellCodepage {
 
     private static final Map<String, String> codePages = new HashMap<>();
 

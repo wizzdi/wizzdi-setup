@@ -29,7 +29,7 @@ import java.util.logging.Logger;
  *
  * @author Javier Garcia Alonso
  */
-class PowerShellCommandProcessor implements Callable<String> {
+public class PowerShellCommandProcessor implements Callable<String> {
 
     private static final String CRLF = "\r\n";
 
