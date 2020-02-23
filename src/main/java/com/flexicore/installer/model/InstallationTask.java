@@ -1052,7 +1052,9 @@ public class InstallationTask implements IInstallationTask {
                 @Override
                 public boolean accept(final File dir,
                                       final String name) {
-                    return name.matches(regex);
+
+                    boolean result = name.matches(regex);
+                    return result;
                 }
             });
             int i=0;
