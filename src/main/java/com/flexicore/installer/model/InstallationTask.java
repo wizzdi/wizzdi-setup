@@ -23,6 +23,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
 public class InstallationTask implements IInstallationTask {
@@ -466,8 +468,14 @@ public class InstallationTask implements IInstallationTask {
         return false;
     }
 
+    /**
+     * Windows only, uninstall by product guid
+     * @param identifyingNumber
+     * @param name
+     * @return
+     */
     public boolean uninsatllGUID(String identifyingNumber, String name) {
-
+        if (!isWindows()) return false;
         boolean result = false;
         String currentFolder = System.getProperty("user.dir");
         String logFile = currentFolder + "/uninstall-" + name + ".log";
@@ -1055,41 +1063,63 @@ public class InstallationTask implements IInstallationTask {
      * delete with wildcard including folders, folders will be deleted completely if name matches
      *
      * @param path
-     * @param regex
+     * @param regex make sure regex can be used
      * @param context
      * @return
      */
     public static int deleteFilesByPattern(String path, String regex, InstallationContext context) {
-        File folder = new File(path);
-        if (folder.exists()) {
-            final File[] files = folder.listFiles(new FilenameFilter() {
-                @Override
-                public boolean accept(final File dir,
-                                      final String name) {
+        if (isPatternValid(regex)) {
+            File folder = new File(path);
+            if (folder.exists()) {
+                final File[] files = folder.listFiles(new FilenameFilter() {
+                    @Override
+                    public boolean accept(final File dir,
+                                          final String name) {
 
-                    boolean result = name.matches(regex);
-                    return result;
-                }
-            });
-            int i = 0;
-            for (final File file : files) {
-                if (file.isDirectory()) {
-                    try {
-                        deleteDirectoryStream(file.getAbsolutePath());
-                        i++;
-                    } catch (IOException e) {
-                        context.getLogger().severe("Failed to delete folder: " + e.toString());
+                        boolean result = false;
+                        try {
+                            result = name.matches(regex);
+                        } catch (Exception e) {
+                            System.out.println("Error while matching, perhaps regex wrong?");
+                        }
+                        return result;
                     }
-                } else {
-                    if (!file.delete()) {
-                        System.err.println("Can't remove " + file.getAbsolutePath());
-                    } else i++;
+                });
+                int i = 0;
+                if (files.length == 0) return -2;
+                for (final File file : files) {
+                    if (file.isDirectory()) {
+                        try {
+                            deleteDirectoryStream(file.getAbsolutePath());
+                            i++;
+                        } catch (IOException e) {
+                            context.getLogger().severe("Failed to delete folder: " + e.toString());
+                        }
+                    } else {
+                        if (!file.delete()) {
+                            System.err.println("Can't remove " + file.getAbsolutePath());
+                        } else i++;
+                    }
                 }
-            }
-            return i;
-        } else return -1;
+                return i;
+            } else return -1;
+        }else return -2;
     }
 
+    /**
+     * check if regex pattern is valid
+     * @param pattern
+     * @return
+     */
+    public static boolean isPatternValid(String pattern) {
+        try {
+            Pattern.compile(pattern);
+            return true;
+        } catch (PatternSyntaxException exception) {
+
+        }
+        return false;
+    }
     public void setOwnerFolder(Path path, String userName, String group) throws IOException {
         if (!isWindows()) {
             info("Setting owner on path: " + path);
