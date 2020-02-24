@@ -21,7 +21,7 @@ import java.util.logging.Logger;
  */
 public class DeployFlexicore extends InstallationTask {
     static Logger logger;
-    static String serviceName="wildfly";
+    static String serviceName = "wildfly";
     static String currentFolder = System.getProperty("user.dir");
     static String parentFolder = new File(currentFolder).getParent();
     static Parameter[] preDefined = {
@@ -56,7 +56,7 @@ public class DeployFlexicore extends InstallationTask {
 
         for (Parameter parameter : preDefined) {
             result.addParameter(parameter, this);
-          if (context.isExtraLogs())  logger.info("Got a default parameter: " + parameter.toString());
+            if (context.isExtraLogs()) logger.info("Got a default parameter: " + parameter.toString());
         }
 
         return result;
@@ -79,7 +79,7 @@ public class DeployFlexicore extends InstallationTask {
 
         super.install(installationContext);
         try {
-             serviceRunning = testServiceRunning(serviceName, "flexicore deploy", false);
+            serviceRunning = testServiceRunning(serviceName, "flexicore deploy", false);
             String flexicoreSource = getServerPath() + "/flexicore";
             String flexicoreHome = getFlexicoreHome();
             if (!dry) {
@@ -206,22 +206,20 @@ public class DeployFlexicore extends InstallationTask {
     public InstallationResult finalizeInstallation(InstallationContext installationContext) throws Throwable {
         info("Finalizer on deploy flexicore called");
 
-            if (!testServiceRunning(serviceName, "Flexicore deploy finalizer", false)) {
-                setServiceToStart(serviceName, "Flexicore deploy finalizer");
-                info("had to start Wildfly service it was not running");
-            }
+        if (!testServiceRunning(serviceName, "Flexicore deploy finalizer", false)) {
+            setServiceToStart(serviceName, "Flexicore deploy finalizer");
+            info("had to start Wildfly service it was not running");
+        }
 
         return super.finalizeInstallation(installationContext);
     }
 
     @Override
     public InstallationResult unInstall(InstallationContext installationContext) throws Throwable {
-        waitForServiceToStop(serviceName,"Flexicore uninstall",true,10000);
-        int result=deleteFilesByPattern(getDeployments(),"Flexi*",installationContext);
-
-        deleteDirectoryStream(getWildflyHome()+"standalone/deployments/FlexiCore.war");
-        if (result>=0) {
-            updateProgress(installationContext,"Have deleted :"+result);
+        waitForServiceToStop(serviceName, "Flexicore uninstall", true, 10000);
+        int result = deleteDirectoryContent(getDeployments());
+        if (result >= 0) {
+            updateProgress(installationContext, "Have deleted :" + result);
             return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
         }
         return new InstallationResult().setInstallationStatus(InstallationStatus.FAILED);
@@ -272,11 +270,11 @@ public class DeployFlexicore extends InstallationTask {
         result.add("wildfly");
         return result;
     }
+
     @Override
     public IInstallationTask setDescription(String s) {
         return this;
     }
-
 
 
     @Override
