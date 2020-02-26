@@ -221,8 +221,10 @@ public class DeployFlexicore extends InstallationTask {
         if (result >= 0) {
             updateProgress(installationContext, "Have deleted :" + result);
             return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
+        }else {
+            updateProgress(installationContext, "No need to delete deployments, already deleted");
+            return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
         }
-        return new InstallationResult().setInstallationStatus(InstallationStatus.FAILED);
     }
 
     @Override
