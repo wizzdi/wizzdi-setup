@@ -213,7 +213,7 @@ public class InstallationTask implements IInstallationTask {
         }
         if (isWindows) {
             boolean result;
-            result = executeCommand("sc remove " + serviceName, "", "remove service " + serviceName);
+            result = executeCommand("sc delete " + serviceName, "", "remove service " + serviceName);
             return result;
         } else {
             if (executeCommand("systemctl disable " + serviceName, "", ownerName)) {
@@ -578,9 +578,7 @@ public class InstallationTask implements IInstallationTask {
      */
     public boolean executeCommandByBuilder(String[] args, String toFind, boolean notToFind, String ownerName, boolean setCurrentFolder) throws IOException {
 
-        if (args[0].equals("msiexec.exe") && args[1].length() > 3) {
-            args[1] = args[1].replace("/", "\\");
-        }
+
 
 
         ProcessBuilder pb = new ProcessBuilder(args);
@@ -642,7 +640,7 @@ public class InstallationTask implements IInstallationTask {
 
             errorGobbler.start();
             outputGobbler.start();
-
+            info("Process is: "+process.pid());
             int exitVal = process.waitFor();
             info(ownerName + ", Exit Val for script :" + exitVal);
             errorLines.clear();
@@ -1060,6 +1058,33 @@ public class InstallationTask implements IInstallationTask {
     }
 
     /**
+     * delete the content of a folder.
+     * @param path
+     * @return number of files and folders deleted (not recursively)
+     */
+    public int deleteDirectoryContent(String path) {
+        if (exists(path)) {
+            File[] files=new File(path).listFiles();
+            for (File file:files) {
+                if (file.isDirectory()) {
+                    try {
+                        deleteDirectoryStream(Paths.get(file.getAbsolutePath()));
+                    } catch (IOException e) {
+                       severe("Error while deleting folder: "+file.getAbsolutePath(),e);
+                    }
+                }else {
+                    try {
+                        Files.deleteIfExists(Paths.get(file.getAbsolutePath()));
+                    } catch (IOException e) {
+                        severe("Error while deleting file: "+file.getAbsolutePath(),e);
+                    }
+                }
+            }
+            return files.length;
+        }else return -1;
+    }
+//todo:regex doesn't work here
+    /**
      * delete with wildcard including folders, folders will be deleted completely if name matches
      *
      * @param path
@@ -1068,21 +1093,15 @@ public class InstallationTask implements IInstallationTask {
      * @return
      */
     public static int deleteFilesByPattern(String path, String regex, InstallationContext context) {
+
         if (isPatternValid(regex)) {
             File folder = new File(path);
             if (folder.exists()) {
-                final File[] files = folder.listFiles(new FilenameFilter() {
+                final Pattern p = Pattern.compile(regex);
+                File[] files = folder.listFiles(new FileFilter() {
                     @Override
-                    public boolean accept(final File dir,
-                                          final String name) {
-
-                        boolean result = false;
-                        try {
-                            result = name.matches(regex);
-                        } catch (Exception e) {
-                            System.out.println("Error while matching, perhaps regex wrong?");
-                        }
-                        return result;
+                    public boolean accept(File f) {
+                        return p.matcher(f.getName()).matches();
                     }
                 });
                 int i = 0;
@@ -2015,6 +2034,40 @@ public class InstallationTask implements IInstallationTask {
         return editFile(path, "", "/home/flexicore", flexicoreHome, false, false, true, false) != null;
     }
 
+    /**
+     * change "/" to reverse slash, assume C drive (todo:fix to any drive);
+     * @param path
+     * @param existingString
+     * @param close
+     * @return
+     */
+    public String fixWindowsPath(String path, String existingString, boolean close) {
+        String fileAsString = null;
+        if (existingString == null || existingString.isEmpty()) {
+            fileAsString = getFile(path);
+        }
+        if (fileAsString != null) {
+            String[] lines=fileAsString.split("\n");
+            StringBuilder result=new StringBuilder();
+            for (String line:lines) {
+                String[] split=line.split(":");
+                if (split.length==2) {
+                    split[1]=split[1].trim();
+                    if (split[1].startsWith("\"/")) {
+                        split[1]=split[1].replace("\"/","c:\\\\");
+                        split[1]=split[1].replaceAll("/","\\\\");
+                        line=split[0]+": "+split[1];
+                    }
+                }
+                result.append(line).append("\n");
+            }
+            fileAsString=result.toString();
+            if (close) writeFile(path,fileAsString);
+            return fileAsString;
+        }
+        return "";
+
+    }
     public void incrementFiles() {
         filesCopied++;
     }
