@@ -79,17 +79,44 @@ public class InstallationTask implements IInstallationTask {
         return OperatingSystem.Linux;
     }
 
-    public boolean stopWildfly(String ownerName) {
+    public boolean stopWildfly(String ownerName,long wait) {
+
         if (testServiceRunning("wildfly", ownerName, false)) {
-            waitForServiceToStop("wildfly", ownerName, true, 30000);
-            if (!testServiceRunning("wildfly", ownerName, false)) {
-                return true;
+            if (!waitForServiceToStop("wildfly", ownerName, true, wait)) {
+                //was not able to stop the service
+                if (isWindows()) {
+                    forceKillService("java");
+                    info("Killed wildfly by PowerShell command");
+                }
             }
         } else {
             info("Wildfly service was not running, no need to stop it.");
             return true;
         }
         return false;
+    }
+
+    private void forceKillService(String taskManagerName) {
+        PowerShellResponse response = executePowerShellCommand("get-process "+taskManagerName+" -IncludeUserName", 3000, 5);
+        if (!response.isError() && !response.isTimeout()) {
+            String asString = response.getCommandOutput();
+            String[] split=asString.split("\n");
+            for (String line:split) {
+                if (line.contains("NT AUTHORITY")) {
+
+                    split=line.split(" ");
+                    int i=0;
+                    for (String part:split) {
+                        if (part.contains("NT")) {
+                           response=executePowerShellCommand("Stop-process -id "+split[i-1]+" -force",1000,5);
+                           info("Have killed service "+taskManagerName);
+                        }
+                        i++;
+                    }
+                }
+            }
+
+        }
     }
 
     /**
@@ -200,7 +227,9 @@ public class InstallationTask implements IInstallationTask {
      */
     public boolean setServiceToStop(String serviceName, String ownerName) {
         if (isWindows) {
-            return executeCommand("sc stop " + serviceName, "STOP_PENDING", "Set Service To Stop " + serviceName);
+            PowerShellResponse response = executePowerShellCommand("Service-stop " + serviceName, 10000, 5);
+            return true;
+            //return executeCommand("sc stop " + serviceName, "STOP_PENDING", "Set Service To Stop " + serviceName);
         } else {
             return executeCommand("service  " + serviceName + " stop", "", "Set Service To Stop " + serviceName);
         }
@@ -274,7 +303,10 @@ public class InstallationTask implements IInstallationTask {
     //todo: check that Linux version works.
     public boolean setServiceToStart(String serviceName, String ownerName) {
         if (isWindows()) {
-            return executeCommand("sc start " + serviceName, "START_PENDING", "Set Service To Stop " + serviceName);
+            PowerShellResponse response = executePowerShellCommand("Service-start " + serviceName, 10000, 5);
+            return true;
+
+            //return executeCommand("sc start " + serviceName, "START_PENDING", "Set Service To Stop " + serviceName);
         } else {
             return executeCommand("service  " + serviceName + " restart", "", "Set Service To restart  " + serviceName);
         }
@@ -2044,12 +2076,12 @@ public class InstallationTask implements IInstallationTask {
         try {
             if (executeCommandByBuilder(args, "", false, ownerName, false)) {
                 ArrayList<String> list = new ArrayList(errorLines);
-               for (String line:list) {
-                   String[] split= line.split("version");
-                   if (split.length==2) {
-                       return split[1];
-                   }
-               }
+                for (String line : list) {
+                    String[] split = line.split("version");
+                    if (split.length == 2) {
+                        return split[1];
+                    }
+                }
             }
 
         } catch (IOException e) {
@@ -2086,15 +2118,15 @@ public class InstallationTask implements IInstallationTask {
                         line = split[0] + ": " + split[1];
                     }
                 }
-                System.out.println(line);
+               // System.out.println(line);
 
                 result.append(line).append("\n");
             }
             fileAsString = result.toString();
             if (close) {
                 if (writeFile(path, fileAsString)) {
-                    System.out.println("File has been written");
-                    return "";
+
+                    return fileAsString;
                 }
             }
             return fileAsString;
