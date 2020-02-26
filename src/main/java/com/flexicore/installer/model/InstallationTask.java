@@ -470,6 +470,7 @@ public class InstallationTask implements IInstallationTask {
 
     /**
      * Windows only, uninstall by product guid
+     *
      * @param identifyingNumber
      * @param name
      * @return
@@ -579,8 +580,6 @@ public class InstallationTask implements IInstallationTask {
     public boolean executeCommandByBuilder(String[] args, String toFind, boolean notToFind, String ownerName, boolean setCurrentFolder) throws IOException {
 
 
-
-
         ProcessBuilder pb = new ProcessBuilder(args);
         if (setCurrentFolder) {
             if (args[0].equals("/bin/sh")) {
@@ -592,7 +591,7 @@ public class InstallationTask implements IInstallationTask {
 
         Process process;
         process = pb.start();
-        int a = 3;
+
         boolean result = false;
         try {
             result = contWithProcess(process, toFind, notToFind, ownerName);
@@ -640,7 +639,7 @@ public class InstallationTask implements IInstallationTask {
 
             errorGobbler.start();
             outputGobbler.start();
-            info("Process is: "+process.pid());
+            info("Process is: " + process.pid());
             int exitVal = process.waitFor();
             info(ownerName + ", Exit Val for script :" + exitVal);
             errorLines.clear();
@@ -1059,36 +1058,38 @@ public class InstallationTask implements IInstallationTask {
 
     /**
      * delete the content of a folder.
+     *
      * @param path
      * @return number of files and folders deleted (not recursively)
      */
     public int deleteDirectoryContent(String path) {
         if (exists(path)) {
-            File[] files=new File(path).listFiles();
-            for (File file:files) {
+            File[] files = new File(path).listFiles();
+            for (File file : files) {
                 if (file.isDirectory()) {
                     try {
                         deleteDirectoryStream(Paths.get(file.getAbsolutePath()));
                     } catch (IOException e) {
-                       severe("Error while deleting folder: "+file.getAbsolutePath(),e);
+                        severe("Error while deleting folder: " + file.getAbsolutePath(), e);
                     }
-                }else {
+                } else {
                     try {
                         Files.deleteIfExists(Paths.get(file.getAbsolutePath()));
                     } catch (IOException e) {
-                        severe("Error while deleting file: "+file.getAbsolutePath(),e);
+                        severe("Error while deleting file: " + file.getAbsolutePath(), e);
                     }
                 }
             }
             return files.length;
-        }else return -1;
+        } else return -1;
     }
 //todo:regex doesn't work here
+
     /**
      * delete with wildcard including folders, folders will be deleted completely if name matches
      *
      * @param path
-     * @param regex make sure regex can be used
+     * @param regex   make sure regex can be used
      * @param context
      * @return
      */
@@ -1122,11 +1123,12 @@ public class InstallationTask implements IInstallationTask {
                 }
                 return i;
             } else return -1;
-        }else return -2;
+        } else return -2;
     }
 
     /**
      * check if regex pattern is valid
+     *
      * @param pattern
      * @return
      */
@@ -1139,6 +1141,7 @@ public class InstallationTask implements IInstallationTask {
         }
         return false;
     }
+
     public void setOwnerFolder(Path path, String userName, String group) throws IOException {
         if (!isWindows()) {
             info("Setting owner on path: " + path);
@@ -1693,12 +1696,14 @@ public class InstallationTask implements IInstallationTask {
         return fileAsString;
     }
 
-    private void writeFile(String path, String fileAsString) {
+    private boolean writeFile(String path, String fileAsString) {
         try {
             Files.write(Paths.get(path), fileAsString.getBytes());
+            return true;
         } catch (IOException e) {
             severe("Error while writing file", e);
         }
+        return false;
     }
 
     private String fixWindows(String fileAsString) {
@@ -2034,8 +2039,28 @@ public class InstallationTask implements IInstallationTask {
         return editFile(path, "", "/home/flexicore", flexicoreHome, false, false, true, false) != null;
     }
 
+    public String getJavaVersion(String ownerName) {
+        String[] args = {"java", "-version"};
+        try {
+            if (executeCommandByBuilder(args, "", false, ownerName, false)) {
+                ArrayList<String> list = new ArrayList(errorLines);
+               for (String line:list) {
+                   String[] split= line.split("version");
+                   if (split.length==2) {
+                       return split[1];
+                   }
+               }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
     /**
      * change "/" to reverse slash, assume C drive (todo:fix to any drive);
+     *
      * @param path
      * @param existingString
      * @param close
@@ -2047,27 +2072,37 @@ public class InstallationTask implements IInstallationTask {
             fileAsString = getFile(path);
         }
         if (fileAsString != null) {
-            String[] lines=fileAsString.split("\n");
-            StringBuilder result=new StringBuilder();
-            for (String line:lines) {
-                String[] split=line.split(":");
-                if (split.length==2) {
-                    split[1]=split[1].trim();
+            String[] lines = fileAsString.split("\n");
+            StringBuilder result = new StringBuilder();
+            for (String line : lines) {
+                String[] split = line.split(":");
+                if (split.length == 2) {
+                    split[1] = split[1].trim();
                     if (split[1].startsWith("\"/")) {
-                        split[1]=split[1].replace("\"/","c:\\\\");
-                        split[1]=split[1].replaceAll("/","\\\\");
-                        line=split[0]+": "+split[1];
+                        split[1] = split[1].replace("\"/", "c:\\");
+                        split[1] = split[1].replace("//", "/");
+                        split[1] = split[1].replace("/", "\\");
+                        split[1] = split[1].replace("\\", "\\\\");
+                        line = split[0] + ": " + split[1];
                     }
                 }
+                System.out.println(line);
+
                 result.append(line).append("\n");
             }
-            fileAsString=result.toString();
-            if (close) writeFile(path,fileAsString);
+            fileAsString = result.toString();
+            if (close) {
+                if (writeFile(path, fileAsString)) {
+                    System.out.println("File has been written");
+                    return "";
+                }
+            }
             return fileAsString;
         }
         return "";
 
     }
+
     public void incrementFiles() {
         filesCopied++;
     }

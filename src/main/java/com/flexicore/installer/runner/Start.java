@@ -4,10 +4,6 @@ import com.flexicore.installer.exceptions.MissingInstallationTaskDependency;
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.interfaces.IUIComponent;
 import com.flexicore.installer.model.*;
-import jpowershell.OSDetector;
-import jpowershell.PowerShell;
-
-import jpowershell.PowerShellResponse;
 import org.apache.commons.cli.*;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -20,7 +16,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.logging.Level;
@@ -28,8 +23,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static com.flexicore.installer.utilities.LoggerUtilities.initLogger;
-import static java.lang.System.*;
-import static jpowershell.OSDetector.*;
+import static java.lang.System.exit;
 
 
 public class Start {
@@ -52,9 +46,8 @@ public class Start {
 
 
     public static void main(String[] args) throws MissingInstallationTaskDependency, ParseException, InterruptedException {
+;
 
-        //testFunctionalExample();
-     //   PowerShellResponse result = InstallationTask.executePowerShellCommand("get-service", 10000, 10);
         Options options = initOptions();
         CommandLineParser parser = new DefaultParser();
         String[] trueArgs = getTrueArgs(args, options);
@@ -697,6 +690,7 @@ public class Start {
                                     restarters.put(service, service);
                                 }
                             }
+
                             InstallationResult result = unInstall ? installationTask.unInstall(context) : installationTask.install(context);
                             if (result.getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
                                 completed++;
