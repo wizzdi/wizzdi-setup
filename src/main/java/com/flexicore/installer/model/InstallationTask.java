@@ -19,6 +19,7 @@ import java.nio.file.attribute.GroupPrincipal;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -79,7 +80,7 @@ public class InstallationTask implements IInstallationTask {
         return OperatingSystem.Linux;
     }
 
-    public boolean stopWildfly(String ownerName,long wait) {
+    public boolean stopWildfly(String ownerName, long wait) {
 
         if (testServiceRunning("wildfly", ownerName, false)) {
             if (!waitForServiceToStop("wildfly", ownerName, true, wait)) {
@@ -97,19 +98,19 @@ public class InstallationTask implements IInstallationTask {
     }
 
     private void forceKillService(String taskManagerName) {
-        PowerShellResponse response = executePowerShellCommand("get-process "+taskManagerName+" -IncludeUserName", 3000, 5);
+        PowerShellResponse response = executePowerShellCommand("get-process " + taskManagerName + " -IncludeUserName", 3000, 5);
         if (!response.isError() && !response.isTimeout()) {
             String asString = response.getCommandOutput();
-            String[] split=asString.split("\n");
-            for (String line:split) {
+            String[] split = asString.split("\n");
+            for (String line : split) {
                 if (line.contains("NT AUTHORITY")) {
 
-                    split=line.split(" ");
-                    int i=0;
-                    for (String part:split) {
+                    split = line.split(" ");
+                    int i = 0;
+                    for (String part : split) {
                         if (part.contains("NT")) {
-                           response=executePowerShellCommand("Stop-process -id "+split[i-1]+" -force",1000,5);
-                           info("Have killed service "+taskManagerName);
+                            response = executePowerShellCommand("Stop-process -id " + split[i - 1] + " -force", 1000, 5);
+                            info("Have killed service " + taskManagerName);
                         }
                         i++;
                     }
@@ -2090,6 +2091,17 @@ public class InstallationTask implements IInstallationTask {
         return "";
     }
 
+    private static final Random RANDOM = new SecureRandom();
+    private static final String ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+    public static String generatePassword(int length) {
+        StringBuilder returnValue = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            returnValue.append(ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length())));
+        }
+        return new String(returnValue);
+    }
+
     /**
      * change "/" to reverse slash, assume C drive (todo:fix to any drive);
      *
@@ -2118,7 +2130,7 @@ public class InstallationTask implements IInstallationTask {
                         line = split[0] + ": " + split[1];
                     }
                 }
-               // System.out.println(line);
+                // System.out.println(line);
 
                 result.append(line).append("\n");
             }

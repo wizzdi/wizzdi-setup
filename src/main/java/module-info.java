@@ -17,6 +17,7 @@ module flexicore.installer {
     requires jdk.crypto.ec;
 
 
+
     exports com.flexicore.installer.exceptions;
     exports com.flexicore.installer.model;
     exports com.flexicore.installer.utilities;

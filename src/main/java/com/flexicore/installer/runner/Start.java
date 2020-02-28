@@ -661,13 +661,13 @@ public class Start {
             Thread thread = new Thread(() -> {
                 long startAll = System.currentTimeMillis();
                 logger.info("Performing installation of " + context.getiInstallationTasks().size() + " tasks");
-                informUI("Installation running , performed 0, failed 0, skipped 0", InstallationState.RUNNING);
+                informUI(getInstallationMessage(unInstall)+ "  running , performed 0, failed 0, skipped 0", InstallationState.STARTING);
                 int failed = 0;
                 int skipped = 0;
                 int completed = 0;
                 handleInspections(context);
                 HashMap<String, String> restarters = new HashMap<>();
-                String mainStatusMessage = unInstall ? "Uninstallation status" : "installation status";
+                String mainStatusMessage = unInstall ? "Un-installation status" : "installation status";
                 for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
                     if (!installationTask.isEnabled() && !installationTask.isWrongOS()) {
                         info("task " + installationTask.getName() + " is disabled, skipping");
@@ -680,7 +680,7 @@ public class Start {
                     info("will now "+ (unInstall ? "uninstall" : "install ") + installationTask.getName() + " id: " + installationTask.getId());
                     info("details: " + installationTask.getDescription());
 
-                    installationTask.setProgress(0).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now()).setMessage(" Started installation, may take some time");
+                    installationTask.setProgress(0).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now()).setMessage(" Started "+ getInstallationMessage(unInstall)+" it may take some time");
                     doUpdateUI(installationTask, installationContext);
                     try {
                         long start = System.currentTimeMillis();
@@ -798,6 +798,10 @@ public class Start {
             return true;
         }
         return false;
+    }
+
+    private static String getInstallationMessage(boolean unInstall) {
+        return unInstall ? "un-installation" : "installation";
     }
 
     /**
