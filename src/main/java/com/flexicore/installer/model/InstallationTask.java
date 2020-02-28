@@ -304,7 +304,7 @@ public class InstallationTask implements IInstallationTask {
     //todo: check that Linux version works.
     public boolean setServiceToStart(String serviceName, String ownerName) {
         if (isWindows()) {
-            PowerShellResponse response = executePowerShellCommand("Service-start " + serviceName, 10000, 5);
+            PowerShellResponse response = executePowerShellCommand("Service-Start -name " + serviceName, 10000, 5);
             return true;
 
             //return executeCommand("sc start " + serviceName, "START_PENDING", "Set Service To Stop " + serviceName);

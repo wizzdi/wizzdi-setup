@@ -41,12 +41,12 @@ public class Start {
     static String currentStatus = "";
 
     static Map<String, Set<String>> missingDependencies = new HashMap<>();
-    private static String oldUpdate="false";
-    private static Parameter updateParameter=null;
+    private static String oldUpdate = "false";
+    private static Parameter updateParameter = null;
 
 
     public static void main(String[] args) throws MissingInstallationTaskDependency, ParseException, InterruptedException {
-;
+        ;
 
         Options options = initOptions();
         CommandLineParser parser = new DefaultParser();
@@ -638,9 +638,9 @@ public class Start {
 
     private static boolean update(InstallationContext context) {
         boolean result = false;
-         updateParameter = context.getParameter("update");
+        updateParameter = context.getParameter("update");
         if (updateParameter != null) {
-             oldUpdate = updateParameter.getValue();
+            oldUpdate = updateParameter.getValue();
             updateParameter.setValue("true");
             result = install(context, false);
 
@@ -661,7 +661,7 @@ public class Start {
             Thread thread = new Thread(() -> {
                 long startAll = System.currentTimeMillis();
                 logger.info("Performing installation of " + context.getiInstallationTasks().size() + " tasks");
-                informUI(getInstallationMessage(unInstall)+ "  running , performed 0, failed 0, skipped 0", InstallationState.STARTING);
+                informUI(getInstallationMessage(unInstall) + "  running , performed 0, failed 0, skipped 0", InstallationState.STARTING);
                 int failed = 0;
                 int skipped = 0;
                 int completed = 0;
@@ -677,10 +677,10 @@ public class Start {
 
                     }
 
-                    info("will now "+ (unInstall ? "uninstall" : "install ") + installationTask.getName() + " id: " + installationTask.getId());
+                    info("will now " + (unInstall ? "uninstall" : "install ") + installationTask.getName() + " id: " + installationTask.getId());
                     info("details: " + installationTask.getDescription());
 
-                    installationTask.setProgress(0).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now()).setMessage(" Started "+ getInstallationMessage(unInstall)+" it may take some time");
+                    installationTask.setProgress(0).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now()).setMessage(" Started " + getInstallationMessage(unInstall) + " it may take some time");
                     doUpdateUI(installationTask, installationContext);
                     try {
                         long start = System.currentTimeMillis();
@@ -694,8 +694,8 @@ public class Start {
                             InstallationResult result = unInstall ? installationTask.unInstall(context) : installationTask.install(context);
                             if (result.getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
                                 completed++;
-                                updateStatus((unInstall ? "un-installation": "installation is ") +"running: ", completed, failed, skipped, InstallationState.RUNNING);
-                                info("Have successfully finished "+(unInstall ? "un-installation task: " : "installation task: ") + installationTask.getName() + " after " + getSeconds(start) + " Seconds");
+                                updateStatus((unInstall ? "un-installation" : "installation is ") + "running: ", completed, failed, skipped, InstallationState.RUNNING);
+                                info("Have successfully finished " + (unInstall ? "un-installation task: " : "installation task: ") + installationTask.getName() + " after " + getSeconds(start) + " Seconds");
                                 installationTask.setProgress(100).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.COMPLETED);
 
                             } else {
@@ -703,7 +703,7 @@ public class Start {
                                 failed++;
                                 updateStatus(mainStatusMessage, completed, failed, skipped, InstallationState.RUNNING);
                                 installationTask.setProgress(0).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.FAILED);
-                                info("Have unsuccessfully finished "+(unInstall? "un-installation task" : " installation task: ") + installationTask.getName() + " after " + getSeconds(start) + " Seconds");
+                                info("Have unsuccessfully finished " + (unInstall ? "un-installation task" : " installation task: ") + installationTask.getName() + " after " + getSeconds(start) + " Seconds");
 
                             }
                             doUpdateUI(installationTask, installationContext);
@@ -735,6 +735,20 @@ public class Start {
                 updateStatus(mainStatusMessage + " finalizing", completed, failed, skipped, InstallationState.FINALIZING);
                 info(" calling finalizers on all tasks");
                 if (!unInstall) {
+
+                    if (context.getiInstallationTasks().size() != 0) {
+                        InstallationTask task = (InstallationTask) context.getiInstallationTasks().values().toArray()[0]; //use first task, as the function
+                        for (String service : restarters.values()) {
+                            if (!task.testServiceRunning(service, "Installer runner", false)) {
+                                if (task.setServiceToStart(service, "Starting services")) {
+                                    info("Have started service: " + service);
+                                } else {
+                                    severe("Have failed to start service: " + service);
+                                }
+                            }
+                        }
+                    }
+
                     for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
                         if (!installationTask.isSnooper()) {
                             try {
@@ -770,25 +784,13 @@ public class Start {
                     }
                 }
                 //ugly, we need to have one Installation task for the operation of starting required services.
-                if (!unInstall) {
-                    if (context.getiInstallationTasks().size() != 0) {
-                        InstallationTask task = (InstallationTask) context.getiInstallationTasks().values().toArray()[0]; //use first task, as the function
-                        for (String service : restarters.values()) {
 
-                            if (task.setServiceToStart(service, "runner finalizing")) {
-                                info("Have started service: " + service);
-                            } else {
-                                severe("Have failed to start service: " + service);
-                            }
-                        }
-                    }
-                }
                 if (failed == 0) {
                     updateStatus("done, no task has failed ", completed, failed, skipped, InstallationState.COMPLETE);
                 } else {
                     updateStatus("done, some tasks failed", completed, failed, skipped, InstallationState.PARTLYCOMPLETED);
                 }
-               if (updateParameter!=null) updateParameter.setValue(oldUpdate);
+                if (updateParameter != null) updateParameter.setValue(oldUpdate);
                 if (!uiFoundandRun) stopped = true; //command line will execute here
             });
             thread.start();
@@ -887,12 +889,12 @@ public class Start {
     }
 
     private static boolean uiComponentInstall(IUIComponent component, InstallationContext context) {
-        updateParameter=null;
+        updateParameter = null;
         return install(context, false);
     }
 
     private static boolean uiComponentUnInstall(IUIComponent component, InstallationContext context) {
-        updateParameter=null;
+        updateParameter = null;
         return Uninstall(context);
     }
 
