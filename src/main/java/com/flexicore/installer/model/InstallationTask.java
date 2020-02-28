@@ -81,14 +81,21 @@ public class InstallationTask implements IInstallationTask {
     }
 
     public boolean stopWildfly(String ownerName, long wait) {
-
+        long started=System.currentTimeMillis();
+        if (isWindows()) {
+            started=System.currentTimeMillis();
+            forceKillService("java");
+            info ("Stopped wildlfy by force  in "+(System.currentTimeMillis()-started));
+            info("Killed wildfly by PowerShell command");
+            return true;
+        }
         if (testServiceRunning("wildfly", ownerName, false)) {
+
             if (!waitForServiceToStop("wildfly", ownerName, true, wait)) {
-                //was not able to stop the service
-                if (isWindows()) {
-                    forceKillService("java");
-                    info("Killed wildfly by PowerShell command");
-                }
+                severe("Was not able to stop service Wildfly");
+
+            }else {
+                info ("Stopped wildlfy by PS in "+(System.currentTimeMillis()-started));
             }
         } else {
             info("Wildfly service was not running, no need to stop it.");
@@ -228,7 +235,7 @@ public class InstallationTask implements IInstallationTask {
      */
     public boolean setServiceToStop(String serviceName, String ownerName) {
         if (isWindows) {
-            PowerShellResponse response = executePowerShellCommand("Service-stop " + serviceName, 10000, 5);
+            PowerShellResponse response = executePowerShellCommand("Stop-Service -name " + serviceName, 10000, 5);
             return true;
             //return executeCommand("sc stop " + serviceName, "STOP_PENDING", "Set Service To Stop " + serviceName);
         } else {
@@ -304,7 +311,7 @@ public class InstallationTask implements IInstallationTask {
     //todo: check that Linux version works.
     public boolean setServiceToStart(String serviceName, String ownerName) {
         if (isWindows()) {
-            PowerShellResponse response = executePowerShellCommand("Service-Start -name " + serviceName, 10000, 5);
+            PowerShellResponse response = executePowerShellCommand("Start-Service -name " + serviceName, 10000, 5);
             return true;
 
             //return executeCommand("sc start " + serviceName, "START_PENDING", "Set Service To Stop " + serviceName);
