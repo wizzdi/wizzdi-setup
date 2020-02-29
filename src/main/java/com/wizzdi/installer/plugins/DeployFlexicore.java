@@ -89,7 +89,8 @@ public class DeployFlexicore extends InstallationTask {
                  deployments = new File(wildflyhome + "/standalone/deployments");
                 if (deployments.exists()) {
                     if (exists(flexicore.getAbsolutePath())) {
-                        if (update) {
+
+                        if (update|| flexicoreMissing(deployments)) {
                             if (serviceRunning) stopWildfly("flexicore update",3000);
                             Path result = Files.copy(Paths.get(flexicore.getAbsolutePath())
                                     , Paths.get(wildflyhome + "/standalone/FlexiCore.war.zip")
@@ -151,6 +152,25 @@ public class DeployFlexicore extends InstallationTask {
         }
         return new InstallationResult().setInstallationStatus(InstallationStatus.FAILED);
 
+    }
+
+    private boolean flexicoreMissing(File deployments) {
+        if (!deployments.exists()) return true;
+        File[] files=deployments.listFiles();
+        if (files==null || files.length!=2) return true;
+        boolean folderFound=false;
+        boolean controlFile=false;
+        for (File file:files) {
+            if (file.getName().equals("FlexiCore.war") && file.isDirectory()){
+                folderFound=true;
+                continue;
+            }
+            if (file.getName().startsWith("FlexiCore.war")) {
+                controlFile=true;
+                continue;
+            }
+        }
+        return !controlFile || !folderFound;
     }
 
     private InstallationResult waitForDeployment(File deployments) {
