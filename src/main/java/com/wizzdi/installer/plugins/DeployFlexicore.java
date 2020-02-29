@@ -105,20 +105,26 @@ public class DeployFlexicore extends InstallationTask {
                                 String fileis = file.getAbsolutePath();
                                 try {
                                     Files.deleteIfExists(Paths.get(fileis));
+                                    info("Deleted "+file.getAbsolutePath());
                                 } catch (Exception e) {
                                     severe("error while deleting file: " + file.getAbsolutePath());
                                 }
                             }
+
                             ZipUtil.unpack(flexicore, deployments);
+                            info("Unpacked Flexicore.war.zip");
                             setProgress(70);
                             if (!isWindows) {
                                 setOwnerFolder(Paths.get(deployments.getAbsolutePath()), serviceName, serviceName);
                             }
                             touch(new File(deployments.getAbsolutePath() + "/FlexiCore.war.dodeploy")); //this should start deployment
+                            files = deployments.listFiles();
+                            for (File file : files) {
+                                String fileis = file.getAbsolutePath();
+                                info("Before finishing, file: "+fileis);
+                            }
 
-//                            if (serviceRunning) { //will wait here only if service is running
-//                                return waitForDeployment(deployments);
-//                            }
+
                             return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
                         }else {
                             updateProgress(installationContext,"WIll not update Flexicore as update option was not selected");
@@ -154,6 +160,8 @@ public class DeployFlexicore extends InstallationTask {
         setProgress(97);
         switch (state) {
             case deployed:
+               Service service= getNewService(true).setName("Flexicore").setDescription("Flexicore Framework");
+                updateService(getContext(),service,this);
                 updateProgress(getContext(), "Deployment succeeded");
                 return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
             case failed:
@@ -164,6 +172,7 @@ public class DeployFlexicore extends InstallationTask {
                 break;
 
             case dodeploy:
+
                 updateProgress(getContext(), "Deployment has not started");
                 break;
 
@@ -172,6 +181,9 @@ public class DeployFlexicore extends InstallationTask {
                 break;
             case isdeploying:
                 updateProgress(getContext(), "Deployment is still deploying after 200 seconds");
+                break;
+            case nodeployfile:
+                updateProgress(getContext(), "did not find a deploy file in the deployment folder!!");
                 break;
             default:
 
@@ -187,6 +199,10 @@ public class DeployFlexicore extends InstallationTask {
             do {
                 Thread.sleep(20);
                 File[] files = file.listFiles();
+                if (files.length==1) {
+                    info ("Was waiting for deploy but there is only one file in deployemts: "+files[0]);
+                    return DeployState.nodeployfile;
+                }
                 if (exists(path + "/flexicore.war.isdeploying")) continue;
                 if (exists(path + "/flexicore.war.deployed")) return DeployState.deployed;
                 if (exists(path + "/flexicore.war.undeployed")) return DeployState.undeployed;
@@ -202,7 +218,7 @@ public class DeployFlexicore extends InstallationTask {
     }
 
     public enum DeployState {
-        isdeploying, deployed, dodeploy, undeployed, failed, undefined
+        isdeploying, deployed, dodeploy, undeployed, failed, undefined,nodeployfile
     }
 
     /**
@@ -216,10 +232,18 @@ public class DeployFlexicore extends InstallationTask {
     @Override
     public InstallationResult finalizeInstallation(InstallationContext installationContext) throws Throwable {
         info("Finalizer on deploy flexicore called");
+        Thread.sleep(300); //allow for Wildfly to start
+       if (testServiceRunning(serviceName,"Flexicore deploy",false)) {
+           info("Deploy flexicore found service wildfly running");
+           InstallationResult result = waitForDeployment(deployments);
+           return result;
+       }else {
+           info("Deploy flexicore found service wildfly NOT running");
+           updateProgress(installationContext,"Deployed, but wildfly service not running");
+           return new InstallationResult().setInstallationStatus(InstallationStatus.FAILED);
+       }
 
-       return waitForDeployment(deployments);
 
-        
     }
 
     @Override
