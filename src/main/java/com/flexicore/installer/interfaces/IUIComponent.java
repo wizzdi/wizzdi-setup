@@ -8,11 +8,38 @@ import java.util.Map;
 import java.util.Set;
 
 public interface IUIComponent extends ExtensionPoint {
+    /**
+     *
+     * @param context
+     */
     void setContext(InstallationContext context);
+
+    /**
+     *
+     * @return
+     */
     boolean isAutoStart();
+
+    /**
+     *
+     * @return
+     */
     boolean isShowing();
+
+    /**
+     *
+     * @param context
+     * @return
+     */
     boolean startAsynch(InstallationContext context);
     boolean startBlocking(InstallationContext context);
+
+    /**
+     * 
+     * @param context
+     * @param task
+     * @return
+     */
     boolean updateProgress(InstallationContext context,IInstallationTask task);
     boolean updateWidget(InstallationContext context,IInstallationTask task,Parameter parameter);
 
@@ -21,6 +48,14 @@ public interface IUIComponent extends ExtensionPoint {
     String getVersion();
     boolean updateStatus(InstallationContext context, Map<String, Set<String>> additional, String message, InstallationState state);
     boolean refreshFilesCount(InstallationContext context,IInstallationTask task);
+
+    /**
+     *
+     * @param context
+     * @param message
+     * @param dialogOptions
+     * @return
+     */
     DialogReplies showDialogAndWait(InstallationContext context, String message, DialogOptions dialogOptions);
 
     /**

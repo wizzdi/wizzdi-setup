@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import static com.flexicore.installer.utilities.LoggerUtilities.initLogger;
 import static java.lang.System.exit;
+import static java.lang.System.in;
 
 
 public class Start {
@@ -71,8 +72,8 @@ public class Start {
                         setInstallerProgress(Start::InstallerProgress).
                         setUpdateService(Start::uiUpdateService).
                         setFilesProgress(Start::updateFilesProgress).
-                        setUiToggle(Start::uiComponentToggle).setUpdateSingleComponent(Start::doUpdateComponent);
-
+                        setUiToggle(Start::uiComponentToggle).setUpdateSingleComponent(Start::doUpdateComponent).
+                        setUishowDialog(Start::doShowDialog);
 
         File pluginRoot = new File(mainCmd.getOptionValue(INSTALLATION_TASKS_FOLDER, "tasks"));
         String path = pluginRoot.getAbsolutePath();
@@ -328,6 +329,18 @@ public class Start {
             }
         }
         return true;
+    }
+
+    private static DialogReplies doShowDialog(InstallationContext installationContext, String message, DialogOptions options) {
+        if (uiComponents != null) {
+            List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
+            if (filtered.size() > 0) {
+                return filtered.get(0).showDialogAndWait(installationContext, message, options);
+            }
+
+        }
+        return DialogReplies.NOUSERINTERFACE;
+
     }
 
     /**
@@ -1038,6 +1051,11 @@ public class Start {
     @FunctionalInterface
     public static interface UpdateSingleComponent {
         boolean updateComponent(InstallationContext context, IInstallationTask task, Parameter parameter);
+    }
+
+    @FunctionalInterface
+    public static interface ShowDialog {
+        DialogReplies dialog(InstallationContext context, String message, DialogOptions options);
     }
 }
 

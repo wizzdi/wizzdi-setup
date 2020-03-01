@@ -37,6 +37,7 @@ public class InstallationContext {
     private Start.UpdateService updateService;
     private Start.installerFilesProgress filesProgress;
     private Start.UpdateSingleComponent updateSingleComponent;
+    private Start.ShowDialog uishowDialog;
     private ProgressConsumer consumer;
     private int successFullyInstalled=0;
     private int failedToInstall=0;
@@ -339,7 +340,14 @@ public class InstallationContext {
         return this;
     }
 
+    public Start.ShowDialog getUishowDialog() {
+        return uishowDialog;
+    }
 
+    public InstallationContext setUishowDialog(Start.ShowDialog uishowDialog) {
+        this.uishowDialog = uishowDialog;
+        return this;
+    }
 }
 
 
