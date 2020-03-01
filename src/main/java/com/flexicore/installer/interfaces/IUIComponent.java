@@ -21,6 +21,7 @@ public interface IUIComponent extends ExtensionPoint {
     String getVersion();
     boolean updateStatus(InstallationContext context, Map<String, Set<String>> additional, String message, InstallationState state);
     boolean refreshFilesCount(InstallationContext context,IInstallationTask task);
+    DialogReplies showDialogAndWait(InstallationContext context, String message, DialogOptions dialogOptions);
 
     /**
      * notify optional UI on Installation Tasks having some issues (already installed, different version installed).
