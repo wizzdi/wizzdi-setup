@@ -6,7 +6,7 @@
 
     <groupId>com.flexicore</groupId>
     <artifactId>flexicore-installer</artifactId>
-    <version>1.0.18</version>
+    <version>1.0.19</version>
     <distributionManagement>
         <repository>
             <id>flexicore-local</id>
