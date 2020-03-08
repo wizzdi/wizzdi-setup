@@ -5,6 +5,7 @@ import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.interfaces.IUIComponent;
 import com.flexicore.installer.model.*;
 import org.apache.commons.cli.*;
+import org.fusesource.jansi.AnsiConsole;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
@@ -12,19 +13,16 @@ import org.jgrapht.traverse.TopologicalOrderIterator;
 import org.pf4j.DefaultPluginManager;
 import org.pf4j.PluginManager;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import static org.fusesource.jansi.Ansi.*;
 import static com.flexicore.installer.utilities.LoggerUtilities.initLogger;
 import static java.lang.System.exit;
-import static java.lang.System.in;
 
 
 public class Start {
@@ -48,7 +46,9 @@ public class Start {
 
     public static void main(String[] args) throws MissingInstallationTaskDependency, ParseException, InterruptedException {
         ;
-
+        UserAction userAction = UserAction.getSample();
+        UserResponse result = consoleAskUser(null, userAction);
+        exit(0);
         Options options = initOptions();
         CommandLineParser parser = new DefaultParser();
         String[] trueArgs = getTrueArgs(args, options);
@@ -73,7 +73,7 @@ public class Start {
                         setUpdateService(Start::uiUpdateService).
                         setFilesProgress(Start::updateFilesProgress).
                         setUiToggle(Start::uiComponentToggle).setUpdateSingleComponent(Start::doUpdateComponent).
-                        setUishowDialog(Start::doShowDialog);
+                        setUiAskUSer(Start::getUserResponse);
 
         File pluginRoot = new File(mainCmd.getOptionValue(INSTALLATION_TASKS_FOLDER, "tasks"));
         String path = pluginRoot.getAbsolutePath();
@@ -331,16 +331,122 @@ public class Start {
         return true;
     }
 
-    private static DialogReplies doShowDialog(InstallationContext installationContext, String message, DialogOptions options) {
-        if (uiComponents != null) {
-            List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
-            if (filtered.size() > 0) {
-                return filtered.get(0).showDialogAndWait(installationContext, message, options);
+    private static UserResponse getUserResponse(InstallationContext context, UserAction userAction) {
+        if (!context.getParamaters().getBooleanValue("quiet")) {
+            if (uiComponents != null) {
+                List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
+                if (filtered.size() > 0) {
+                    return filtered.get(0).askUser(context, userAction);
+                }
+
             }
+            return consoleAskUser(context, userAction);
+        } else {
 
+            return userAction.getDefaultResponse();
         }
-        return DialogReplies.NOUSERINTERFACE;
 
+    }
+
+    /**
+     * prompt user using console
+     *
+     * @param context
+     * @param userAction
+     * @return
+     */
+    private static UserResponse consoleAskUser(InstallationContext context, UserAction userAction) {
+        if (userAction.isUseAnsiColorsInConsole()) AnsiConsole.systemInstall();
+        UserResponse response = null;
+        UserMessage last = null;
+        printDefaults(userAction);
+        try {
+            do {
+                if (last == null) {
+                    for (UserMessage userMessage : userAction.getMessages()) {
+                        last = printUserMessage(userMessage, userAction.getDefaultResponse().toString());
+                    }
+                } else {
+
+                    printUserMessage(last, userAction.getDefaultResponse().toString());
+                    printDefaults(userAction);
+                }
+                String answer = getLine();
+
+                try {
+                    response = UserResponse.valueOf(answer.toUpperCase());
+
+                } catch (IllegalArgumentException e) {
+
+                }
+
+            } while (response == null);
+        } catch (Exception e) {
+            severe("Error while getting user console input", e);
+        } finally {
+            if (userAction.isUseAnsiColorsInConsole()) AnsiConsole.systemUninstall();
+
+            return response;
+        }
+    }
+
+    private static void printDefaults(UserAction userAction) {
+        System.out.println(ansi().a("").reset());
+        String prompt=userAction.getOptionalPrompt().isEmpty() ? "Possible answers": userAction.getOptionalPrompt();
+        System.out.println(ansi().bold().a(prompt).reset());
+        switch (userAction.getResponseType()) {
+            case BOOLEAN:
+                System.out.println(ansi().bold().a("true,false,yes,no").reset());
+                break;
+            case EXISTINGFILE:
+                System.out.println(ansi().bold().a("type the full path to an existing file").reset());
+                break;
+            case EXISTINGFOLDER:
+                System.out.println(ansi().bold().a("type the full path to an existing folder").reset());
+                break;
+            case FILE:
+                System.out.println(ansi().bold().a("type the full path to a new file").reset());
+                break;
+            case FROMELIST:
+                 System.out.println(ansi().bold().a(userAction.getAllAnswers()).reset());
+                break;
+            case LIST:
+                System.out.println(ansi().bold().a("type a coma separated list of strings").reset());
+                break;
+            case STRING:
+                System.out.println(ansi().bold().a("Any String").reset());
+                break;
+        }
+
+    }
+
+    static java.io.BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+
+    private static String getLine() {
+
+
+        try {
+            String result = in.readLine();
+
+            return result;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        return "";
+    }
+
+    private static UserMessage printUserMessage(UserMessage userMessage, String defaultResponse) {
+        UserMessage last;
+        if (userMessage.isCrlf()) {
+            System.out.println(ansi().fg(userMessage.getColor()).a(userMessage.getMessage()).reset());
+            last = userMessage;
+        } else {
+            System.out.print(ansi().fg(userMessage.getColor()).a(userMessage.getMessage() + "[" + defaultResponse + "] ? ").reset());
+            last = userMessage;
+        }
+        return last;
     }
 
     /**
@@ -1054,8 +1160,8 @@ public class Start {
     }
 
     @FunctionalInterface
-    public static interface ShowDialog {
-        DialogReplies dialog(InstallationContext context, String message, DialogOptions options);
+    public static interface AskUser {
+        UserResponse dialog(InstallationContext context, UserAction userAction);
     }
 }
 

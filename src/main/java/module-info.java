@@ -15,7 +15,7 @@ module flexicore.installer {
     requires java.sql;
     requires shortcuts;
     requires jdk.crypto.ec;
-
+    requires org.fusesource.jansi;
 
 
     exports com.flexicore.installer.exceptions;

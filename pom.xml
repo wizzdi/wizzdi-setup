@@ -31,6 +31,11 @@
             <artifactId>pf4j</artifactId>
             <version>3.0.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.fusesource.jansi</groupId>
+            <artifactId>jansi</artifactId>
+            <version>1.18</version>
+        </dependency>
 
         <dependency>
             <groupId>com.wizzdi.installer</groupId>
@@ -310,13 +315,24 @@
                                         <groupId>org.pf4j</groupId>
                                         <artifactId>pf4j</artifactId>
                                     </artifact>
+
                                     <moduleInfoSource>
                                         module org.pf4j {
                                         }
                                     </moduleInfoSource>
 
                                 </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.fusesource.jansi</groupId>
+                                        <artifactId>jansi</artifactId>
+                                    </artifact>
+                                    <moduleInfo>
+                                        <name>org.fusesource.jansi</name>
+<!--                                        The full name must be provided here-->
+                                    </moduleInfo>
 
+                                </module>
 
                             </modules>
 

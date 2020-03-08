@@ -35,7 +35,7 @@ public interface IUIComponent extends ExtensionPoint {
     boolean startBlocking(InstallationContext context);
 
     /**
-     * 
+     *
      * @param context
      * @param task
      * @return
@@ -52,11 +52,10 @@ public interface IUIComponent extends ExtensionPoint {
     /**
      *
      * @param context
-     * @param message
-     * @param dialogOptions
+     * @param userAction required User Action
      * @return
      */
-    DialogReplies showDialogAndWait(InstallationContext context, String message, DialogOptions dialogOptions);
+    UserResponse askUser(InstallationContext context, UserAction userAction);
 
     /**
      * notify optional UI on Installation Tasks having some issues (already installed, different version installed).
