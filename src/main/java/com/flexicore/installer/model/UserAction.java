@@ -13,6 +13,7 @@ import java.util.List;
 public class UserAction {
     private boolean useAnsiColorsInConsole = true;
     private ResponseType responseType;
+    private String title;
     private List<UserMessage> messages = new ArrayList<>();
     private UserResponse defaultResponse = UserResponse.CONTINUE;
     private String defaultResponseForString="";
@@ -20,8 +21,18 @@ public class UserAction {
     private String optionalPrompt="";
 
     public enum ResponseType {
-        FROMELIST,BOOLEAN,STRING,FILE,EXISTINGFILE, EXISTINGFOLDER,LIST
+        FROMLIST,BOOLEAN,STRING,FILE,EXISTINGFILE, EXISTINGFOLDER,LIST
     }
+    public void addMessage(UserMessage userMessage) {
+        messages.add(userMessage);
+    }
+    public void clearMessages() {
+        messages.clear();
+    }
+    /**
+     * creates a UserAction for debugging purposes
+     * @return
+     */
     public static UserAction getSample() {
         UserAction result=new UserAction();
         result.getMessages().add(new UserMessage().setColor(Ansi.Color.RED).setMessage("Hello there").setCrlf(true));
@@ -37,7 +48,10 @@ public class UserAction {
         return result;
     }
 
-
+    /**
+     * list of {@link UserMessage} to be displayed on console
+     * @return
+     */
     public List<UserMessage> getMessages() {
         return messages;
     }
@@ -47,6 +61,10 @@ public class UserAction {
         return this;
     }
 
+    /**
+     * The default response for FROMLIST
+     * @return
+     */
     public UserResponse getDefaultResponse() {
         return defaultResponse;
     }
@@ -56,6 +74,10 @@ public class UserAction {
         return this;
     }
 
+    /**
+     * if true, will use console colors as defined in {@link UserMessage} type
+     * @return
+     */
     public boolean isUseAnsiColorsInConsole() {
         return useAnsiColorsInConsole;
     }
@@ -65,6 +87,10 @@ public class UserAction {
         return this;
     }
 
+    /**
+     * get all possible responses as an array
+     * @return
+     */
     public UserResponse[] getPossibleAnswers() {
         return possibleAnswers;
     }
@@ -73,6 +99,11 @@ public class UserAction {
         this.possibleAnswers = possibleAnswers;
         return this;
     }
+
+    /**
+     * get a string with possible responses for  FROMLIST
+     * @return
+     */
     public String getAllAnswers() {
         String result="";
         if (possibleAnswers!=null) {
@@ -85,6 +116,10 @@ public class UserAction {
         return result;
     }
 
+    /**
+     * get the response type , can be FROMELIST,BOOLEAN,STRING,FILE,EXISTINGFILE, EXISTINGFOLDER,LIST
+     * @return
+     */
     public ResponseType getResponseType() {
         return responseType;
     }
@@ -94,6 +129,10 @@ public class UserAction {
         return this;
     }
 
+    /**
+     * what is the default response for a String type
+     * @return
+     */
     public String getDefaultResponseForString() {
         return defaultResponseForString;
     }
@@ -103,12 +142,25 @@ public class UserAction {
         return this;
     }
 
+    /**
+     * Add custom prompt message , will be displayed on console only
+     * @return
+     */
     public String getOptionalPrompt() {
         return optionalPrompt;
     }
 
     public UserAction setOptionalPrompt(String optionalPrompt) {
         this.optionalPrompt = optionalPrompt;
+        return this;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public UserAction setTitle(String title) {
+        this.title = title;
         return this;
     }
 }

@@ -20,9 +20,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static org.fusesource.jansi.Ansi.*;
 import static com.flexicore.installer.utilities.LoggerUtilities.initLogger;
 import static java.lang.System.exit;
+import static org.fusesource.jansi.Ansi.Color;
+import static org.fusesource.jansi.Ansi.ansi;
 
 
 public class Start {
@@ -45,10 +46,10 @@ public class Start {
 
 
     public static void main(String[] args) throws MissingInstallationTaskDependency, ParseException, InterruptedException {
-        ;
-        UserAction userAction = UserAction.getSample();
-        UserResponse result = consoleAskUser(null, userAction);
-        exit(0);
+
+//        UserAction userAction = UserAction.getSample();
+//        UserResponse result = consoleAskUser(null, userAction);
+//        exit(0);
         Options options = initOptions();
         CommandLineParser parser = new DefaultParser();
         String[] trueArgs = getTrueArgs(args, options);
@@ -392,7 +393,8 @@ public class Start {
 
     private static void printDefaults(UserAction userAction) {
         System.out.println(ansi().a("").reset());
-        String prompt=userAction.getOptionalPrompt().isEmpty() ? "Possible answers": userAction.getOptionalPrompt();
+
+        String prompt = userAction.getOptionalPrompt().isEmpty() ? "Possible answers" : userAction.getOptionalPrompt();
         System.out.println(ansi().bold().a(prompt).reset());
         switch (userAction.getResponseType()) {
             case BOOLEAN:
@@ -407,8 +409,8 @@ public class Start {
             case FILE:
                 System.out.println(ansi().bold().a("type the full path to a new file").reset());
                 break;
-            case FROMELIST:
-                 System.out.println(ansi().bold().a(userAction.getAllAnswers()).reset());
+            case FROMLIST:
+                System.out.println(ansi().bold().a(userAction.getAllAnswers()).reset());
                 break;
             case LIST:
                 System.out.println(ansi().bold().a("type a coma separated list of strings").reset());
@@ -772,153 +774,158 @@ public class Start {
         return install(context, true);
     }
 
+    static boolean stopInstall = false;
+
     private static boolean install(InstallationContext context, boolean unInstall) {
+        if (showInstallPrompt(context).equals(UserResponse.CONTINUE)) {
+            if (!installRunning) {
 
-        if (!installRunning) {
-            installRunning = true;
 
-            Thread thread = new Thread(() -> {
-                long startAll = System.currentTimeMillis();
-                logger.info("Performing installation of " + context.getiInstallationTasks().size() + " tasks");
-                informUI(getInstallationMessage(unInstall) + "  running , performed 0, failed 0, skipped 0", InstallationState.STARTING);
-                int failed = 0;
-                int skipped = 0;
-                int completed = 0;
-                handleInspections(context);
-                HashMap<String, String> restarters = new HashMap<>();
-                String mainStatusMessage = unInstall ? "Un-installation status" : "installation status";
-                for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
-                    if (!installationTask.isEnabled() && !installationTask.isWrongOS()) {
-                        info("task " + installationTask.getName() + " is disabled, skipping");
-                        skipped++;
-                        updateStatus(mainStatusMessage, completed, failed, skipped, InstallationState.RUNNING);
-                        continue;
-
-                    }
-
-                    info("will now " + (unInstall ? "uninstall" : "install ") + installationTask.getName() + " id: " + installationTask.getId());
-                    info("details: " + installationTask.getDescription());
-
-                    installationTask.setProgress(0).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now()).setMessage(" Started " + getInstallationMessage(unInstall) + " it may take some time");
-                    doUpdateUI(installationTask, installationContext);
+                installationThread = new Thread(() -> {
                     try {
-                        long start = System.currentTimeMillis();
-                        if (!installationTask.isSnooper()) {
-                            if (!installationTask.getNeedRestartTasks().isEmpty()) {
-                                for (String service : installationTask.getNeedRestartTasks()) {
-                                    restarters.put(service, service);
-                                }
-                            }
+                        installRunning = true;
+                        int t = 0;
 
-                            InstallationResult result = unInstall ? installationTask.unInstall(context) : installationTask.install(context);
-                            if (result.getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
-                                completed++;
-                                updateStatus((unInstall ? "un-installation" : "installation is ") + "running: ", completed, failed, skipped, InstallationState.RUNNING);
-                                info("Have successfully finished " + (unInstall ? "un-installation task: " : "installation task: ") + installationTask.getName() + " after " + getSeconds(start) + " Seconds");
-                                installationTask.setProgress(100).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.COMPLETED);
-
-                            } else {
-                                info("-----------Failed task: " + installationTask.getName());
-                                failed++;
-                                updateStatus(mainStatusMessage, completed, failed, skipped, InstallationState.RUNNING);
-                                installationTask.setProgress(0).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.FAILED);
-                                info("Have unsuccessfully finished " + (unInstall ? "un-installation task" : " installation task: ") + installationTask.getName() + " after " + getSeconds(start) + " Seconds");
-
-                            }
-                            doUpdateUI(installationTask, installationContext);
-                        } else {
-                            Thread snooper = new Thread(() -> {
-                                try {
-                                    InstallationResult result = unInstall ? installationTask.unInstall(context) : installationTask.install(context);
-                                } catch (Throwable throwable) {
-                                    severe("Exception while running a snooper", throwable);
-                                }
-                            });
-                            snooper.setName(installationTask.getId());
-                            snoopers.add(snooper);
-                            snooper.start();
+                        while (t++ < Long.MAX_VALUE) {
+                            Thread.sleep(10);
+                            checkStopInstall(0, 0, 0);
                         }
-                    } catch (Throwable throwable) {
-                        severe("Exception while installing: " + installationTask.getName(), throwable);
-                        installationTask.setProgress(0).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.FAILED);
 
-
-                    }
-                    if (context.getConsumer() != null) {
-                        context.getConsumer().updateProgress(installationTask, context);
-                    }
-                    // installTask(installationTask, context);
-                }
-
-
-                updateStatus(mainStatusMessage + " finalizing", completed, failed, skipped, InstallationState.FINALIZING);
-                info(" calling finalizers on all tasks");
-                if (!unInstall) {
-
-                    if (context.getiInstallationTasks().size() != 0) {
-                        InstallationTask task = (InstallationTask) context.getiInstallationTasks().values().toArray()[0]; //use first task, as the function
-                        for (String service : restarters.values()) {
-                            if (!task.testServiceRunning(service, "Installer runner", false)) {
-                                if (task.setServiceToStart(service, "Starting services")) {
-                                    info("Have started service: " + service);
-                                } else {
-                                    severe("Have failed to start service: " + service);
-                                }
-                            }
+                        long startAll = System.currentTimeMillis();
+                        logger.info("Performing installation of " + context.getiInstallationTasks().size() + " tasks");
+                        informUI(getInstallationMessage(unInstall) + "  running , performed 0, failed 0, skipped 0", InstallationState.STARTING);
+                        int failed = 0;
+                        int skipped = 0;
+                        int completed = 0;
+                        handleInspections(context);
+                        HashMap<String, String> restarters = new HashMap<>();
+                        String mainStatusMessage = unInstall ? "Un-installation status" : "installation status";
+                        InstallProper installProper = new InstallProper(context, unInstall, failed, skipped, completed, restarters, mainStatusMessage).invoke();
+                        if (installProper.is()) { //handling stop installation;
+                            updateStatus(" Installation was stopped ",installProper.getCompleted(),installProper.getFailed(),installProper.getSkipped(),InstallationState.ABORTED);
+                            return;
                         }
-                    }
+                        failed = installProper.getFailed();
+                        skipped = installProper.getSkipped();
+                        completed = installProper.getCompleted();
 
-                    for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
-                        if (!installationTask.isSnooper()) {
+
+                        updateStatus(mainStatusMessage + " finalizing", completed, failed, skipped, InstallationState.FINALIZING);
+                        info(" calling finalizers on all tasks");
+                        if (!unInstall) {
+                            FinishInstall finishInstall = new FinishInstall(context, failed, skipped, completed, restarters).invoke();
+                            if (finishInstall.is()) {
+                                return;
+                            }
+                            failed = finishInstall.getFailed();
+                            completed = finishInstall.getCompleted();
+                        }
+                        info("Total installation time was: " + getSeconds(startAll) + " Seconds");
+                        updateStatus("starting cleanup ", completed, failed, skipped, InstallationState.CLEANUP);
+                        for (IInstallationTask installationTask : context.getCleanupTasks().values()) {
+                            checkStopInstall(completed, failed, skipped);
+                            installationTask.setProgress(70).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now());
                             try {
-                                if (installationTask.isEnabled()) {
-                                    if (installationTask.finalizeInstallation(context).getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
-                                        completed++;
-                                        updateStatus("finalizing  status", completed, failed, skipped, InstallationState.FINALIZING);
-                                    } else {
-                                        failed++;
-                                        info("-----------Failed task while finalizing: " + installationTask.getName());
-                                        updateStatus("finalizing  status", completed, failed, skipped, InstallationState.FINALIZING);
-                                    }
+                                if (installationTask.install(installationContext).equals(InstallationStatus.COMPLETED)) {
+
+                                } else {
+
                                 }
+                                doUpdateUI(installationTask, installationContext);
                             } catch (Throwable throwable) {
-                                severe("Error while finalizing task: " + installationTask.getName());
+                                if (throwable instanceof InterruptedException) {
+                                    installRunning = false;
+                                    return;
+                                }
+                                severe("Error while cleanup task run " + installationTask.getName());
                             }
                         }
-                    }
-                }
-                info("Total installation time was: " + getSeconds(startAll) + " Seconds");
-                updateStatus("starting cleanup ", completed, failed, skipped, InstallationState.CLEANUP);
-                for (IInstallationTask installationTask : context.getCleanupTasks().values()) {
-                    installationTask.setProgress(70).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now());
-                    try {
-                        if (installationTask.install(installationContext).equals(InstallationStatus.COMPLETED)) {
+                        //ugly, we need to have one Installation task for the operation of starting required services.
 
+                        if (failed == 0) {
+                            updateStatus("done, no task has failed ", completed, failed, skipped, InstallationState.COMPLETE);
                         } else {
-
+                            updateStatus("done, some tasks failed", completed, failed, skipped, InstallationState.PARTLYCOMPLETED);
                         }
-                        doUpdateUI(installationTask, installationContext);
-                    } catch (Throwable throwable) {
-                        severe("Error while cleanup task run " + installationTask.getName());
+                        if (updateParameter != null) updateParameter.setValue(oldUpdate);
+                        if (!uiFoundandRun) stopped = true; //command line will execute here
+                    } catch (InterruptedException e) {
+                        info("Installation was interrupted");
+                        installRunning = false;
                     }
-                }
-                //ugly, we need to have one Installation task for the operation of starting required services.
+                });
+                installationThread.start();
 
-                if (failed == 0) {
-                    updateStatus("done, no task has failed ", completed, failed, skipped, InstallationState.COMPLETE);
-                } else {
-                    updateStatus("done, some tasks failed", completed, failed, skipped, InstallationState.PARTLYCOMPLETED);
-                }
-                if (updateParameter != null) updateParameter.setValue(oldUpdate);
-                if (!uiFoundandRun) stopped = true; //command line will execute here
-            });
-            thread.start();
-            installRunning = false;
-        } else {
-            info("Install already running");
-            return true;
+
+            } else {
+                info("Install already running");
+                return true;
+            }
         }
         return false;
+    }
+
+    static Thread installationThread;
+    static boolean wasStopped = false;
+
+    private static boolean checkStopInstall(int completed, int failed, int skipped) {
+        if (stopInstall) {
+            installRunning = false;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static UserResponse showInstallPrompt(InstallationContext context) {
+        if (!context.getParamaters().getBooleanValue("quiet")) {
+            if (installRunning) {
+                UserAction ua = new UserAction();
+                ua.addMessage(new UserMessage().setMessage("Installation is running, stop it?").
+                        setEmphasize(3).
+                        setColor(Color.RED));
+                ua.setPossibleAnswers(new UserResponse[]{UserResponse.NO, UserResponse.FORCESTOP});
+                ua.setUseAnsiColorsInConsole(true);
+                UserResponse userResponse = getUserResponse(context, ua);
+                if (!userResponse.equals(UserResponse.FORCESTOP)) {
+                    return UserResponse.STOP;
+                }
+
+
+                stopInstall = true;
+                while (installRunning) { //wait here till installationThread is confirming stop
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+
+                    }
+                }
+                installationThread.interrupt();
+
+                while (installationThread.isAlive()) ;
+            }
+            UserAction ua = new UserAction();
+            ua.addMessage(new UserMessage().setMessage("Will install the following tasks:").
+                    setEmphasize(3).
+                    setColor(Color.GREEN));
+            for (IInstallationTask task : context.getiInstallationTasks().values()) {
+                if (task.isEnabled()) {
+                    ua.addMessage(new UserMessage().setMessage("TasK: " + task.getName()).
+                            setEmphasize(1).
+                            setColor(Color.BLACK));
+                }
+            }
+            ua.setPossibleAnswers(new UserResponse[]{UserResponse.CONTINUE, UserResponse.STOP});
+            ua.setOptionalPrompt("Select YES if you wish to continue with the installation");
+            ua.setUseAnsiColorsInConsole(true);
+            UserResponse response = getUserResponse(context, ua);
+            return response; //
+        } else {
+            info("Will not prompt for continue installation");
+            return !installRunning ? UserResponse.CONTINUE : UserResponse.STOP;
+        }
+
+
     }
 
     private static String getInstallationMessage(boolean unInstall) {
@@ -1162,6 +1169,195 @@ public class Start {
     @FunctionalInterface
     public static interface AskUser {
         UserResponse dialog(InstallationContext context, UserAction userAction);
+    }
+
+    private static class InstallProper {
+        private boolean myResult;
+        private InstallationContext context;
+        private boolean unInstall;
+        private int failed;
+        private int skipped;
+        private int completed;
+        private HashMap<String, String> restarters;
+        private String mainStatusMessage;
+
+        public InstallProper(InstallationContext context, boolean unInstall, int failed, int skipped, int completed, HashMap<String, String> restarters, String mainStatusMessage) {
+            this.context = context;
+            this.unInstall = unInstall;
+            this.failed = failed;
+            this.skipped = skipped;
+            this.completed = completed;
+            this.restarters = restarters;
+            this.mainStatusMessage = mainStatusMessage;
+        }
+
+        boolean is() {
+            return myResult;
+        }
+
+        public int getFailed() {
+            return failed;
+        }
+
+        public int getSkipped() {
+            return skipped;
+        }
+
+        public int getCompleted() {
+            return completed;
+        }
+
+        public InstallProper invoke() {
+            for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
+                if (checkStopInstall(completed, failed, skipped)) {
+                    myResult = true;
+                    return this;
+                }
+                if (!installationTask.isEnabled() && !installationTask.isWrongOS()) {
+                    info("task " + installationTask.getName() + " is disabled, skipping");
+                    skipped++;
+                    updateStatus(mainStatusMessage, completed, failed, skipped, InstallationState.RUNNING);
+                    continue;
+
+                }
+
+                info("will now " + (unInstall ? "uninstall" : "install ") + installationTask.getName() + " id: " + installationTask.getId());
+                info("details: " + installationTask.getDescription());
+
+                installationTask.setProgress(0).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now()).setMessage(" Started " + getInstallationMessage(unInstall) + " it may take some time");
+                doUpdateUI(installationTask, installationContext);
+                try {
+                    long start = System.currentTimeMillis();
+                    if (!installationTask.isSnooper()) {
+                        if (!installationTask.getNeedRestartTasks().isEmpty()) {
+                            for (String service : installationTask.getNeedRestartTasks()) {
+                                restarters.put(service, service);
+                            }
+                        }
+
+                        InstallationResult result = unInstall ? installationTask.unInstall(context) : installationTask.install(context);
+                        if (result.getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
+                            completed++;
+                            updateStatus((unInstall ? "un-installation" : "installation is ") + "running: ", completed, failed, skipped, InstallationState.RUNNING);
+                            info("Have successfully finished " + (unInstall ? "un-installation task: " : "installation task: ") + installationTask.getName() + " after " + getSeconds(start) + " Seconds");
+                            installationTask.setProgress(100).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.COMPLETED);
+
+                        } else {
+                            info("-----------Failed task: " + installationTask.getName());
+                            failed++;
+                            updateStatus(mainStatusMessage, completed, failed, skipped, InstallationState.RUNNING);
+                            installationTask.setProgress(0).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.FAILED);
+                            info("Have unsuccessfully finished " + (unInstall ? "un-installation task" : " installation task: ") + installationTask.getName() + " after " + getSeconds(start) + " Seconds");
+
+                        }
+                        doUpdateUI(installationTask, installationContext);
+                    } else {
+                        Thread snooper = new Thread(() -> {
+                            try {
+                                InstallationResult result = unInstall ? installationTask.unInstall(context) : installationTask.install(context);
+                            } catch (Throwable throwable) {
+                                if (throwable instanceof InterruptedException) {
+                                    installRunning = false;
+                                    return;
+                                }
+                                severe("Exception while running a snooper", throwable);
+                            }
+                        });
+                        snooper.setName(installationTask.getId());
+                        snoopers.add(snooper);
+                        snooper.start();
+                    }
+                } catch (Throwable throwable) {
+                    if (throwable instanceof InterruptedException) {
+                        installRunning = false;
+                        myResult = true;
+                        return this;
+                    }
+                    severe("Exception while installing: " + installationTask.getName(), throwable);
+                    installationTask.setProgress(0).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.FAILED);
+
+
+                }
+                if (context.getConsumer() != null) {
+                    context.getConsumer().updateProgress(installationTask, context);
+                }
+                // installTask(installationTask, context);
+            }
+            myResult = false;
+            return this;
+        }
+    }
+
+    private static class FinishInstall {
+        private boolean myResult;
+        private InstallationContext context;
+        private int failed;
+        private int skipped;
+        private int completed;
+        private HashMap<String, String> restarters;
+
+        public FinishInstall(InstallationContext context, int failed, int skipped, int completed, HashMap<String, String> restarters) {
+            this.context = context;
+            this.failed = failed;
+            this.skipped = skipped;
+            this.completed = completed;
+            this.restarters = restarters;
+        }
+
+        boolean is() {
+            return myResult;
+        }
+
+        public int getFailed() {
+            return failed;
+        }
+
+        public int getCompleted() {
+            return completed;
+        }
+
+        public FinishInstall invoke() {
+            checkStopInstall(completed, failed, skipped);
+            if (context.getiInstallationTasks().size() != 0) {
+                InstallationTask task = (InstallationTask) context.getiInstallationTasks().values().toArray()[0]; //use first task, as the function
+                for (String service : restarters.values()) {
+                    if (!task.testServiceRunning(service, "Installer runner", false)) {
+                        if (task.setServiceToStart(service, "Starting services")) {
+                            info("Have started service: " + service);
+                        } else {
+                            severe("Have failed to start service: " + service);
+                        }
+                    }
+                }
+            }
+
+            for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
+                if (!installationTask.isSnooper()) {
+                    checkStopInstall(completed, failed, skipped);
+                    try {
+                        if (installationTask.isEnabled()) {
+                            if (installationTask.finalizeInstallation(context).getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
+                                completed++;
+                                updateStatus("finalizing  status", completed, failed, skipped, InstallationState.FINALIZING);
+                            } else {
+                                failed++;
+                                info("-----------Failed task while finalizing: " + installationTask.getName());
+                                updateStatus("finalizing  status", completed, failed, skipped, InstallationState.FINALIZING);
+                            }
+                        }
+                    } catch (Throwable throwable) {
+                        if (throwable instanceof InterruptedException) {
+                            installRunning = false;
+                            myResult = true;
+                            return this;
+                        }
+                        severe("Error while finalizing task: " + installationTask.getName());
+                    }
+                }
+            }
+            myResult = false;
+            return this;
+        }
     }
 }
 
