@@ -5,6 +5,7 @@ public class InstallationResult {
     private InstallationStatus installationStatus;
     private String message;
     private String taskid;
+    private UserAction userAction;
 
     public InstallationStatus getInstallationStatus() {
         return installationStatus;
@@ -38,5 +39,14 @@ public class InstallationResult {
         return "InstallationResult{" +
                 "installationStatus=" + installationStatus +
                 '}';
+    }
+
+    public UserAction getUserAction() {
+        return userAction;
+    }
+
+    public InstallationResult setUserAction(UserAction userAction) {
+        this.userAction = userAction;
+        return this;
     }
 }

@@ -779,87 +779,89 @@ public class Start {
     private static boolean install(InstallationContext context, boolean unInstall) {
         if (showInstallPrompt(context).equals(UserResponse.CONTINUE)) {
             if (!installRunning) {
-
-
                 installationThread = new Thread(() -> {
-                    try {
-                        installRunning = true;
-                        int t = 0;
+                    installRunning = true;
+                    long startAll = System.currentTimeMillis();
+                    logger.info("Performing installation of " + context.getiInstallationTasks().size() + " tasks");
+                    informUI(getInstallationMessage(unInstall) + "  running , performed 0, failed 0, skipped 0", InstallationState.STARTING);
+                    int failed = 0;
+                    int skipped = 0;
+                    int completed = 0;
+                    handleInspections(context);
+                    HashMap<String, String> restarters = new HashMap<>();
+                    String mainStatusMessage = unInstall ? "Un-installation status" : "installation status";
+                    InstallProper installProper = new InstallProper(context, unInstall, failed, skipped, completed, restarters, mainStatusMessage).invoke();
 
-                        while (t++ < Long.MAX_VALUE) {
-                            Thread.sleep(10);
-                            checkStopInstall(0, 0, 0);
-                        }
-
-                        long startAll = System.currentTimeMillis();
-                        logger.info("Performing installation of " + context.getiInstallationTasks().size() + " tasks");
-                        informUI(getInstallationMessage(unInstall) + "  running , performed 0, failed 0, skipped 0", InstallationState.STARTING);
-                        int failed = 0;
-                        int skipped = 0;
-                        int completed = 0;
-                        handleInspections(context);
-                        HashMap<String, String> restarters = new HashMap<>();
-                        String mainStatusMessage = unInstall ? "Un-installation status" : "installation status";
-                        InstallProper installProper = new InstallProper(context, unInstall, failed, skipped, completed, restarters, mainStatusMessage).invoke();
-                        if (installProper.is()) { //handling stop installation;
-                            updateStatus(" Installation was stopped ",installProper.getCompleted(),installProper.getFailed(),installProper.getSkipped(),InstallationState.ABORTED);
+                    if (installProper.is()) { //handling stop installation;
+                        updateStatus(" Installation was stopped ", installProper.getCompleted(), installProper.getFailed(), installProper.getSkipped(), InstallationState.ABORTED);
+                        return;
+                    }
+                    failed = installProper.getFailed();
+                    skipped = installProper.getSkipped();
+                    completed = installProper.getCompleted();
+                    updateStatus(mainStatusMessage + " finalizing", completed, failed, skipped, InstallationState.FINALIZING);
+                    info(" calling finalizers on all tasks");
+                    if (!unInstall) {
+                        FinishInstall finishInstall = new FinishInstall(context, failed, skipped, completed, restarters).invoke();
+                        if (finishInstall.is()) {
+                            updateStatus(" Installation was stopped ", installProper.getCompleted(), installProper.getFailed(), installProper.getSkipped(), InstallationState.ABORTED);
                             return;
                         }
-                        failed = installProper.getFailed();
-                        skipped = installProper.getSkipped();
-                        completed = installProper.getCompleted();
-
-
-                        updateStatus(mainStatusMessage + " finalizing", completed, failed, skipped, InstallationState.FINALIZING);
-                        info(" calling finalizers on all tasks");
-                        if (!unInstall) {
-                            FinishInstall finishInstall = new FinishInstall(context, failed, skipped, completed, restarters).invoke();
-                            if (finishInstall.is()) {
-                                return;
-                            }
-                            failed = finishInstall.getFailed();
-                            completed = finishInstall.getCompleted();
-                        }
-                        info("Total installation time was: " + getSeconds(startAll) + " Seconds");
-                        updateStatus("starting cleanup ", completed, failed, skipped, InstallationState.CLEANUP);
-                        for (IInstallationTask installationTask : context.getCleanupTasks().values()) {
-                            checkStopInstall(completed, failed, skipped);
-                            installationTask.setProgress(70).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now());
-                            try {
-                                if (installationTask.install(installationContext).equals(InstallationStatus.COMPLETED)) {
-
-                                } else {
-
-                                }
-                                doUpdateUI(installationTask, installationContext);
-                            } catch (Throwable throwable) {
-                                if (throwable instanceof InterruptedException) {
-                                    installRunning = false;
-                                    return;
-                                }
-                                severe("Error while cleanup task run " + installationTask.getName());
-                            }
-                        }
-                        //ugly, we need to have one Installation task for the operation of starting required services.
-
-                        if (failed == 0) {
-                            updateStatus("done, no task has failed ", completed, failed, skipped, InstallationState.COMPLETE);
-                        } else {
-                            updateStatus("done, some tasks failed", completed, failed, skipped, InstallationState.PARTLYCOMPLETED);
-                        }
-                        if (updateParameter != null) updateParameter.setValue(oldUpdate);
-                        if (!uiFoundandRun) stopped = true; //command line will execute here
-                    } catch (InterruptedException e) {
-                        info("Installation was interrupted");
-                        installRunning = false;
+                        failed = finishInstall.getFailed();
+                        completed = finishInstall.getCompleted();
                     }
+                    info("Total installation time was: " + getSeconds(startAll) + " Seconds");
+                    updateStatus("starting cleanup ", completed, failed, skipped, InstallationState.CLEANUP);
+                    if (cleanUp(context, failed, skipped, completed)) {
+                        updateStatus(" Installation was stopped ", installProper.getCompleted(), installProper.getFailed(), installProper.getSkipped(), InstallationState.ABORTED);
+                        return;
+                    }
+                    //ugly, we need to have one Installation task for the operation of starting required services.
+
+                    if (failed == 0) {
+                        updateStatus("done, no task has failed ", completed, failed, skipped, InstallationState.COMPLETE);
+                    } else {
+                        updateStatus("done, some tasks failed", completed, failed, skipped, InstallationState.PARTLYCOMPLETED);
+                    }
+                    if (updateParameter != null) updateParameter.setValue(oldUpdate);
+                    if (!uiFoundandRun) stopped = true; //command line will execute here
+
                 });
                 installationThread.start();
-
-
             } else {
                 info("Install already running");
                 return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * for now it does nothing.
+     *
+     * @param context
+     * @param failed
+     * @param skipped
+     * @param completed
+     * @return
+     */
+    private static boolean cleanUp(InstallationContext context, int failed, int skipped, int completed) {
+        for (IInstallationTask installationTask : context.getCleanupTasks().values()) {
+            checkStopInstall(completed, failed, skipped);
+            installationTask.setProgress(70).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now());
+            try {
+                if (installationTask.install(installationContext).equals(InstallationStatus.COMPLETED)) {
+
+                } else {
+
+                }
+                doUpdateUI(installationTask, installationContext);
+            } catch (Throwable throwable) {
+                if (throwable instanceof InterruptedException) {
+                    installRunning = false;
+                    return true;
+                }
+                severe("Error while cleanup task run " + installationTask.getName());
             }
         }
         return false;
@@ -905,12 +907,15 @@ public class Start {
                 while (installationThread.isAlive()) ;
             }
             UserAction ua = new UserAction();
-            ua.addMessage(new UserMessage().setMessage("Will install the following tasks:").
-                    setEmphasize(3).
+            ua.setTitle("Please confirm installation");
+            ua.addMessage(new UserMessage().setMessage(""));
+            ua.addMessage(new UserMessage().setMessage("Will install the following installation tasks:").
+                    setEmphasize(2).
                     setColor(Color.GREEN));
+            ua.addMessage(new UserMessage().setMessage(""));
             for (IInstallationTask task : context.getiInstallationTasks().values()) {
                 if (task.isEnabled()) {
-                    ua.addMessage(new UserMessage().setMessage("TasK: " + task.getName()).
+                    ua.addMessage(new UserMessage().setMessage(task.getName()).
                             setEmphasize(1).
                             setColor(Color.BLACK));
                 }

@@ -81,11 +81,11 @@ public class InstallationTask implements IInstallationTask {
     }
 
     public boolean stopWildfly(String ownerName, long wait) {
-        long started=System.currentTimeMillis();
+        long started = System.currentTimeMillis();
         if (isWindows()) {
-            started=System.currentTimeMillis();
+            started = System.currentTimeMillis();
             forceKillService("java");
-            info ("Stopped wildlfy by force  in "+(System.currentTimeMillis()-started));
+            info("Stopped wildlfy by force  in " + (System.currentTimeMillis() - started));
             info("Killed wildfly by PowerShell command");
             return true;
         }
@@ -94,14 +94,103 @@ public class InstallationTask implements IInstallationTask {
             if (!waitForServiceToStop("wildfly", ownerName, true, wait)) {
                 severe("Was not able to stop service Wildfly");
 
-            }else {
-                info ("Stopped wildlfy by PS in "+(System.currentTimeMillis()-started));
+            } else {
+                info("Stopped wildlfy by PS in " + (System.currentTimeMillis() - started));
             }
         } else {
             info("Wildfly service was not running, no need to stop it.");
             return true;
         }
         return false;
+    }
+
+    private String getValueByKey(PowerShellResponse response, String key) {
+        if (response.isError() || response.isTimeout()) return "";
+
+        String[] result = response.getCommandOutput().split("\n");
+        for (String line : result) {
+            if (line.contains(key)) {
+                return line.split(":")[1];
+            }
+        }
+        return "";
+    }
+
+    public int getNumberOfLogicalProcessor() {
+        PowerShellResponse response = executePowerShellCommand("(Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors", 500, 5);
+        try {
+            if (response.isTimeout() || response.isTimeout()) return -1;
+            return Integer.parseInt(response.getCommandOutput());
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+
+
+    }
+    public ProcessorType getPorcessorType () {
+        ProcessorType processorType = new ProcessorType();
+        PowerShellResponse response = executePowerShellCommand("Get-WmiObject Win32_Processor", 500, 5);
+       if (response.isTimeout() || response.isTimeout()) return processorType;
+       processorType.populate(response.getCommandOutput());
+       return processorType;
+    }
+    public ProcessorData getProcessorData() {
+        PowerShellResponse response = executePowerShellCommand("Get-CimInstance -ClassName 'Win32_Processor'   | Select-Object -Property 'DeviceID', 'Name', 'NumberOfCores'", 500, 5);
+        ProcessorData processorData = new ProcessorData();
+        try {
+            if (response.isTimeout() || response.isTimeout()) return processorData;
+            String[] lines = response.getCommandOutput().split("\n");
+            info("Get-CimInstance -ClassName 'Win32_Processor'  ");
+            String theLine=lines[3];
+            for (String line:lines) {
+                if (line.startsWith("CPU")) theLine=line;
+                info(line);
+            }
+            if (theLine.startsWith("CPU")) {
+                String[] split = theLine.split("\\s+");
+                processorData.setName(split[1] + " " + split[2] + " " + split[3]);
+                processorData.setProcessorFrequency(Double.parseDouble(split[6].replaceAll("[^\\d.]", "")));
+                processorData.setNumberOfCores(Integer.parseInt(split[7]));
+                processorData.setLogicalCores(getNumberOfLogicalProcessor());
+                processorData.setProcessorType(getPorcessorType());
+            }else {
+                severe("Could not parse processor data ");
+            }
+
+        } catch (NumberFormatException e) {
+
+        }
+        return processorData;
+    }
+
+
+    double gb = 1024 * 1024 * 1024;
+
+    public double getFreeDiskSpace(String driveLetter) {
+
+        if (isWindows()) {
+            if (driveLetter == null || driveLetter.isEmpty()) driveLetter = "C:";
+            PowerShellResponse response = executePowerShellCommand("   Get-WMIObject Win32_Logicaldisk -filter \"deviceid='" + driveLetter + "'\"", 500, 5);
+            try {
+                return Double.parseDouble(getValueByKey(response, "FreeSpace")) / gb;
+            } catch (NumberFormatException e) {
+
+            }
+        }
+        return -1;
+    }
+
+    public double getPhysicalMemory() {
+        if (isWindows()) {
+            PowerShellResponse response = executePowerShellCommand(" Get-WmiObject -Class Win32_ComputerSystem", 500, 5);
+
+            try {
+                return Double.parseDouble(getValueByKey(response, "TotalPhysicalMemory")) / gb;
+            } catch (NumberFormatException e) {
+
+            }
+        }
+        return -1;
     }
 
     private void forceKillService(String taskManagerName) {
