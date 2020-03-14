@@ -3,6 +3,7 @@ package com.flexicore.installer.model;
 import com.flexicore.installer.interfaces.IInstallationTask;
 
 import java.util.*;
+import java.util.logging.Level;
 
 public class Parameters {
     private TreeMap<String, Parameter> map = new TreeMap<>();
@@ -71,6 +72,29 @@ public class Parameters {
         }
         return false;
     }
+    public int getInt(InstallationContext c,String key,int defaultValue) {
+        try {
+            int result= Integer.parseInt(getValue(key));
+            return result;
+        } catch (NumberFormatException e) {
+            c.getLogger().log(Level.SEVERE,"Error while parsing int : "+key ,e);
+            return defaultValue;
+        }
+
+
+    }
+    public Double getDouble(InstallationContext c,String key,double defaultValue) {
+        try {
+            double result= Double.parseDouble(getValue(key));
+            return result;
+        } catch (NumberFormatException e) {
+            c.getLogger().log(Level.SEVERE,"Error while parsing double : "+key ,e);
+            return defaultValue;
+        }
+
+
+    }
+
 
     public String getValue(String key) {
 

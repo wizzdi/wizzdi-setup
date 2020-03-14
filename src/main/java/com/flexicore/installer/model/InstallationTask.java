@@ -2259,9 +2259,6 @@ public class InstallationTask implements IInstallationTask {
         foldersFailed++;
     }
 
-    public enum WindowsVersion {
-        xp, vista, seven, eight, ten
-    }
 
 
     public InstallationTask setWrongOS(boolean wrongOS) {
@@ -2271,14 +2268,14 @@ public class InstallationTask implements IInstallationTask {
 
     public static WindowsVersion getWindowsVersion() {
         if (System.getProperty("os.name").toLowerCase().contains("windows") && System.getProperty("os.name").toLowerCase().contains("xp")) {
-            return WindowsVersion.xp;
+            return WindowsVersion.Windows_XP;
         } else if (System.getProperty("os.name").toLowerCase().contains("windows") && System.getProperty("os.name").toLowerCase().contains("vista")) {
-            return WindowsVersion.vista;
+            return WindowsVersion.Windows_VISTA;
         } else if (System.getProperty("os.name").toLowerCase().contains("windows") && System.getProperty("os.name").toLowerCase().contains("7")) {
-            return WindowsVersion.seven;
+            return WindowsVersion.Windows_7;
         } else if (System.getProperty("os.name").toLowerCase().contains("windows") && System.getProperty("os.name").toLowerCase().contains("8")) {
-            return WindowsVersion.eight;
-        } else return WindowsVersion.ten;
+            return WindowsVersion.Windows_8;
+        } else return WindowsVersion.Windows_10;
     }
 
 }

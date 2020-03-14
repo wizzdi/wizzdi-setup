@@ -847,7 +847,7 @@ public class Start {
      */
     private static boolean cleanUp(InstallationContext context, int failed, int skipped, int completed) {
         for (IInstallationTask installationTask : context.getCleanupTasks().values()) {
-            checkStopInstall(completed, failed, skipped);
+            checkStopInstall();
             installationTask.setProgress(70).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now());
             try {
                 if (installationTask.install(installationContext).equals(InstallationStatus.COMPLETED)) {
@@ -870,12 +870,16 @@ public class Start {
     static Thread installationThread;
     static boolean wasStopped = false;
 
-    private static boolean checkStopInstall(int completed, int failed, int skipped) {
+    /**
+     * check if any task has stopped installation
+     *
+     * @return
+     */
+    private static boolean checkStopInstall() {
         if (stopInstall) {
             installRunning = false;
             return true;
         }
-
         return false;
     }
 
@@ -1185,6 +1189,8 @@ public class Start {
         private int completed;
         private HashMap<String, String> restarters;
         private String mainStatusMessage;
+        private UserResponse response=UserResponse.CONTINUE;
+
 
         public InstallProper(InstallationContext context, boolean unInstall, int failed, int skipped, int completed, HashMap<String, String> restarters, String mainStatusMessage) {
             this.context = context;
@@ -1212,9 +1218,13 @@ public class Start {
             return completed;
         }
 
+        public UserResponse getResponse() {
+            return response;
+        }
+
         public InstallProper invoke() {
             for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
-                if (checkStopInstall(completed, failed, skipped)) {
+                if (checkStopInstall()) {
                     myResult = true;
                     return this;
                 }
@@ -1241,20 +1251,32 @@ public class Start {
                         }
 
                         InstallationResult result = unInstall ? installationTask.unInstall(context) : installationTask.install(context);
-                        if (result.getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
-                            completed++;
-                            updateStatus((unInstall ? "un-installation" : "installation is ") + "running: ", completed, failed, skipped, InstallationState.RUNNING);
-                            info("Have successfully finished " + (unInstall ? "un-installation task: " : "installation task: ") + installationTask.getName() + " after " + getSeconds(start) + " Seconds");
-                            installationTask.setProgress(100).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.COMPLETED);
 
-                        } else {
-                            info("-----------Failed task: " + installationTask.getName());
-                            failed++;
-                            updateStatus(mainStatusMessage, completed, failed, skipped, InstallationState.RUNNING);
-                            installationTask.setProgress(0).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.FAILED);
-                            info("Have unsuccessfully finished " + (unInstall ? "un-installation task" : " installation task: ") + installationTask.getName() + " after " + getSeconds(start) + " Seconds");
+                        if (result.getUserAction() != null) response = getUserResponse(context, result.getUserAction());
+
+                        switch (result.getInstallationStatus()) {
+                            case COMPLETED:
+                                completed++;
+                                updateStatus((unInstall ? "un-installation" : "installation is ") + "running: ", completed, failed, skipped, InstallationState.RUNNING);
+                                info("Have successfully finished " + (unInstall ? "un-installation task: " : "installation task: ") + installationTask.getName() + " after " + getSeconds(start) + " Seconds");
+                                installationTask.setProgress(100).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.COMPLETED);
+                                break;
+                            case FORCEABORT:
+                                updateStatus((unInstall ? "un-installation" : "installation is ") + "aborted: ", completed, failed, skipped, InstallationState.ABORTED);
+                                info("Have aborted installation by " + (unInstall ? "un-installation task: " : "installation task: ") + installationTask.getName() + " after " + getSeconds(start) + " Seconds");
+                                myResult=true;
+                                return this;
+
+                            case FAILED:
+                                info("-----------Failed task: " + installationTask.getName());
+                                failed++;
+                                updateStatus(mainStatusMessage, completed, failed, skipped, InstallationState.RUNNING);
+                                installationTask.setProgress(0).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.FAILED);
+                                info("Have unsuccessfully finished " + (unInstall ? "un-installation task" : " installation task: ") + installationTask.getName() + " after " + getSeconds(start) + " Seconds");
+
 
                         }
+
                         doUpdateUI(installationTask, installationContext);
                     } else {
                         Thread snooper = new Thread(() -> {
@@ -1322,7 +1344,7 @@ public class Start {
         }
 
         public FinishInstall invoke() {
-            checkStopInstall(completed, failed, skipped);
+            checkStopInstall();
             if (context.getiInstallationTasks().size() != 0) {
                 InstallationTask task = (InstallationTask) context.getiInstallationTasks().values().toArray()[0]; //use first task, as the function
                 for (String service : restarters.values()) {
@@ -1338,7 +1360,7 @@ public class Start {
 
             for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
                 if (!installationTask.isSnooper()) {
-                    checkStopInstall(completed, failed, skipped);
+                    checkStopInstall();
                     try {
                         if (installationTask.isEnabled()) {
                             if (installationTask.finalizeInstallation(context).getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
