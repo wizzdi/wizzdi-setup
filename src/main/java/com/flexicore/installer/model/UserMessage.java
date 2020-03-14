@@ -11,6 +11,9 @@ public class UserMessage {
 
     private Ansi.Color color = BLACK; // this can be used to translate in JavaFX UI without dependency on JavaFX
     private Side side = Side.left;
+    private String fontName="calibri";
+    private int fontSize=10;
+    private boolean useFont=false;
 
     public enum Side {
         left, center, right // this is bit UI thing....
@@ -58,6 +61,33 @@ public class UserMessage {
 
     public UserMessage setCrlf(boolean crlf) {
         this.crlf = crlf;
+        return this;
+    }
+
+    public String getFontName() {
+        return fontName;
+    }
+
+    public UserMessage setFontName(String fontName) {
+        this.fontName = fontName;
+        return this;
+    }
+
+    public int getFontSize() {
+        return fontSize;
+    }
+
+    public UserMessage setFontSize(int fontSize) {
+        this.fontSize = fontSize;
+        return this;
+    }
+
+    public boolean isUseFont() {
+        return useFont;
+    }
+
+    public UserMessage setUseFont(boolean useFont) {
+        this.useFont = useFont;
         return this;
     }
 }
