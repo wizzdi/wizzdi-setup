@@ -810,7 +810,8 @@ public class Start {
     static boolean stopInstall = false;
 
     private static boolean install(InstallationContext context, boolean unInstall) {
-        if (showInstallPrompt(context).equals(UserResponse.CONTINUE)) {
+        UserResponse response = showInstallPrompt(context);
+        if (response.equals(UserResponse.CONTINUE) || response.equals(UserResponse.YES) || response.equals(UserResponse.TRUE)) {
             if (!installRunning) {
                 installationThread = new Thread(() -> {
                     installRunning = true;
@@ -925,6 +926,7 @@ public class Start {
                         setColor(Color.RED));
                 ua.setPossibleAnswers(new UserResponse[]{UserResponse.NO, UserResponse.FORCESTOP});
                 ua.setUseAnsiColorsInConsole(true);
+
                 UserResponse userResponse = getUserResponse(context, ua);
                 if (!userResponse.equals(UserResponse.FORCESTOP)) {
                     return UserResponse.STOP;
@@ -957,8 +959,8 @@ public class Start {
                             setColor(Color.BLACK));
                 }
             }
-            ua.setPossibleAnswers(new UserResponse[]{UserResponse.CONTINUE, UserResponse.STOP});
-            ua.setOptionalPrompt("Select YES if you wish to continue with the installation");
+            ua.setPossibleAnswers(new UserResponse[]{UserResponse.CONTINUE, UserResponse.STOP,UserResponse.YES,UserResponse.NO});
+            ua.setOptionalPrompt("Select/type  YES if you wish to continue with the installation");
             ua.setUseAnsiColorsInConsole(true);
             UserResponse response = getUserResponse(context, ua);
             return response; //

@@ -87,11 +87,11 @@ public class PowerShell implements AutoCloseable {
         try {
             this.waitPause = Integer
                     .valueOf((config != null && config.get("waitPause") != null) ? config.get("waitPause")
-                            : PowerShellConfig.getConfig().getProperty("waitPause"));
+                            : "5");
             this.maxWait = Long.valueOf((config != null && config.get("maxWait") != null) ? config.get("maxWait")
-                    : PowerShellConfig.getConfig().getProperty("maxWait"));
+                    : "10000");
             this.tempFolder = (config != null && config.get("tempFolder") != null) ? getTempFolder(config.get("tempFolder"))
-                    : getTempFolder(PowerShellConfig.getConfig().getProperty("tempFolder"));
+                    : new File(System.getProperty("java.io.tmpdir"));
 
         } catch (NumberFormatException nfe) {
             logger.log(Level.SEVERE,

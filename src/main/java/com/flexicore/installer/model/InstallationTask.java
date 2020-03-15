@@ -140,11 +140,11 @@ public class InstallationTask implements IInstallationTask {
         try {
             if (response.isTimeout() || response.isTimeout()) return processorData;
             String[] lines = response.getCommandOutput().split("\n");
-            info("Get-CimInstance -ClassName 'Win32_Processor'  ");
+           // info("Get-CimInstance -ClassName 'Win32_Processor'  ");
             String theLine=lines[3];
             for (String line:lines) {
                 if (line.startsWith("CPU")) theLine=line;
-                info(line);
+               // info(line);
             }
             if (theLine.startsWith("CPU")) {
                 String[] split = theLine.split("\\s+");

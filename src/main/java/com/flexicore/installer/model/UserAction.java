@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class UserAction {
     private boolean useAnsiColorsInConsole = true;
-    private ResponseType responseType;
+    private ResponseType responseType=ResponseType.BOOLEAN;
     private String title;
     private List<UserMessage> messages = new ArrayList<>();
     private UserResponse defaultResponse = UserResponse.CONTINUE;
