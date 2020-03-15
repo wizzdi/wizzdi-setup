@@ -439,14 +439,47 @@ public class Start {
         return "";
     }
 
+    /**
+     * print user message to console, treats \n in message text and use left margin correctly.
+     * Ansi color used when supported by the OS,
+     * default response can be prompted
+     * @param userMessage
+     * @param defaultResponse
+     * @return
+     */
     private static UserMessage printUserMessage(UserMessage userMessage, String defaultResponse) {
+        StringBuilder leftMargin = new StringBuilder();
+        String[] lines;
+
+        if (userMessage.getLeftMargin() != -1) {
+            lines = userMessage.getMessage().split("\n");
+            for (int i = 0; i < userMessage.getLeftMargin(); i++) leftMargin.append(" ");
+
+        } else {
+            lines = new String[1];
+            lines[0] = userMessage.getMessage();
+        }
         UserMessage last;
         if (userMessage.isCrlf()) {
-            System.out.println(ansi().fg(userMessage.getColor()).a(userMessage.getMessage()).reset());
+            for (String line : lines) {
+                if (line == lines[lines.length - 1]) {
+                    System.out.println(ansi().fg(userMessage.getColor()).a(leftMargin.toString() + line).reset());
+                } else {
+                    System.out.println(ansi().fg(userMessage.getColor()).a(leftMargin.toString() + line));
+                }
+            }
             last = userMessage;
         } else {
-            System.out.print(ansi().fg(userMessage.getColor()).a(userMessage.getMessage() + "[" + defaultResponse + "] ? ").reset());
+            for (String line : lines) {
+                if (line == lines[lines.length - 1]) {
+                    System.out.print(ansi().fg(userMessage.getColor()).a(userMessage.getMessage() + "[" + defaultResponse + "] ? ").reset());
+                } else {
+                    System.out.println(ansi().fg(userMessage.getColor()).a(leftMargin.toString() + line));
+
+                }
+            }
             last = userMessage;
+
         }
         return last;
     }
@@ -1189,7 +1222,7 @@ public class Start {
         private int completed;
         private HashMap<String, String> restarters;
         private String mainStatusMessage;
-        private UserResponse response=UserResponse.CONTINUE;
+        private UserResponse response = UserResponse.CONTINUE;
 
 
         public InstallProper(InstallationContext context, boolean unInstall, int failed, int skipped, int completed, HashMap<String, String> restarters, String mainStatusMessage) {
@@ -1264,7 +1297,7 @@ public class Start {
                             case FORCEABORT:
                                 updateStatus((unInstall ? "un-installation" : "installation is ") + "aborted: ", completed, failed, skipped, InstallationState.ABORTED);
                                 info("Have aborted installation by " + (unInstall ? "un-installation task: " : "installation task: ") + installationTask.getName() + " after " + getSeconds(start) + " Seconds");
-                                myResult=true;
+                                myResult = true;
                                 return this;
 
                             case FAILED:
