@@ -768,9 +768,9 @@ public class InstallationTask implements IInstallationTask {
 
             errorGobbler.start();
             outputGobbler.start();
-            info("Process is: " + process.pid());
+            //info("Process is: " + process.pid());
             int exitVal = process.waitFor();
-            info(ownerName + ", Exit Val for script :" + exitVal);
+            if (exitVal!=1062)  info(ownerName + ", Exit Val for script :" + exitVal);
             errorLines.clear();
             errorLines.addAll(errorGobbler.getLines());
             lines.clear();

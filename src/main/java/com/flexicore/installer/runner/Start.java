@@ -5,6 +5,7 @@ import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.interfaces.IUIComponent;
 import com.flexicore.installer.model.*;
 import org.apache.commons.cli.*;
+import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.AnsiConsole;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -14,6 +15,8 @@ import org.pf4j.DefaultPluginManager;
 import org.pf4j.PluginManager;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.logging.Level;
@@ -33,6 +36,7 @@ public class Start {
     private static final String INSTALLATION_TASKS_FOLDER = "tasks";
     private static final long PROGRESS_DELAY = 300;
     private static final String CONFIG_FILENAME = "jpowershell.properties";
+    private static final int LOG_PAGE_SIZE = 50;
     private static Logger logger;
     private static PluginManager pluginManager;
     private static List<IUIComponent> uiComponents;
@@ -333,7 +337,7 @@ public class Start {
     }
 
     private static UserResponse getUserResponse(InstallationContext context, UserAction userAction) {
-        if (!context.getParamaters().getBooleanValue("quiet")) {
+        if (context == null || !context.getParamaters().getBooleanValue("quiet")) {
             if (uiComponents != null) {
                 List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
                 if (filtered.size() > 0) {
@@ -360,13 +364,14 @@ public class Start {
         if (userAction.isUseAnsiColorsInConsole()) AnsiConsole.systemInstall();
         UserResponse response = null;
         UserMessage last = null;
-        printDefaults(userAction);
+
         try {
             do {
                 if (last == null) {
                     for (UserMessage userMessage : userAction.getMessages()) {
                         last = printUserMessage(userMessage, userAction.getDefaultResponse().toString());
                     }
+                    printDefaults(userAction);
                 } else {
 
                     printUserMessage(last, userAction.getDefaultResponse().toString());
@@ -396,28 +401,30 @@ public class Start {
 
         String prompt = userAction.getOptionalPrompt().isEmpty() ? "Possible answers" : userAction.getOptionalPrompt();
         System.out.println(ansi().bold().a(prompt).reset());
-        switch (userAction.getResponseType()) {
-            case BOOLEAN:
-                System.out.println(ansi().bold().a("true,false,yes,no").reset());
-                break;
-            case EXISTINGFILE:
-                System.out.println(ansi().bold().a("type the full path to an existing file").reset());
-                break;
-            case EXISTINGFOLDER:
-                System.out.println(ansi().bold().a("type the full path to an existing folder").reset());
-                break;
-            case FILE:
-                System.out.println(ansi().bold().a("type the full path to a new file").reset());
-                break;
-            case FROMLIST:
-                System.out.println(ansi().bold().a(userAction.getAllAnswers()).reset());
-                break;
-            case LIST:
-                System.out.println(ansi().bold().a("type a coma separated list of strings").reset());
-                break;
-            case STRING:
-                System.out.println(ansi().bold().a("Any String").reset());
-                break;
+        if (userAction.getOptionalPrompt().isEmpty()) {
+            switch (userAction.getResponseType()) {
+                case BOOLEAN:
+                    System.out.println(ansi().bold().a("true,false,yes,no,continue,stop").reset());
+                    break;
+                case EXISTINGFILE:
+                    System.out.println(ansi().bold().a("type the full path to an existing file").reset());
+                    break;
+                case EXISTINGFOLDER:
+                    System.out.println(ansi().bold().a("type the full path to an existing folder").reset());
+                    break;
+                case FILE:
+                    System.out.println(ansi().bold().a("type the full path to a new file").reset());
+                    break;
+                case FROMLIST:
+                    System.out.println(ansi().bold().a(userAction.getAllAnswers()).reset());
+                    break;
+                case LIST:
+                    System.out.println(ansi().bold().a("type a coma separated list of strings").reset());
+                    break;
+                case STRING:
+                    System.out.println(ansi().bold().a("Any String").reset());
+                    break;
+            }
         }
 
     }
@@ -443,6 +450,7 @@ public class Start {
      * print user message to console, treats \n in message text and use left margin correctly.
      * Ansi color used when supported by the OS,
      * default response can be prompted
+     *
      * @param userMessage
      * @param defaultResponse
      * @return
@@ -762,16 +770,21 @@ public class Start {
 
     private static boolean doStop() {
         logger.info("Performing installation stop");
+        killInstallation();
         return true;
     }
 
+    private static boolean installationPaused = false;
+
     private static boolean doPause() {
         logger.info("Performing installation pause");
+        installationPaused = true;
         return true;
     }
 
     private static boolean doResume() {
         logger.info("Performing installation resume");
+        installationPaused = false;
         return true;
     }
 
@@ -828,6 +841,7 @@ public class Start {
 
                     if (installProper.is()) { //handling stop installation;
                         updateStatus(" Installation was stopped ", installProper.getCompleted(), installProper.getFailed(), installProper.getSkipped(), InstallationState.ABORTED);
+                        installRunning = false;
                         return;
                     }
                     failed = installProper.getFailed();
@@ -839,6 +853,7 @@ public class Start {
                         FinishInstall finishInstall = new FinishInstall(context, failed, skipped, completed, restarters).invoke();
                         if (finishInstall.is()) {
                             updateStatus(" Installation was stopped ", installProper.getCompleted(), installProper.getFailed(), installProper.getSkipped(), InstallationState.ABORTED);
+                            installRunning = false;
                             return;
                         }
                         failed = finishInstall.getFailed();
@@ -848,6 +863,7 @@ public class Start {
                     updateStatus("starting cleanup ", completed, failed, skipped, InstallationState.CLEANUP);
                     if (cleanUp(context, failed, skipped, completed)) {
                         updateStatus(" Installation was stopped ", installProper.getCompleted(), installProper.getFailed(), installProper.getSkipped(), InstallationState.ABORTED);
+                        installRunning = false;
                         return;
                     }
                     //ugly, we need to have one Installation task for the operation of starting required services.
@@ -859,7 +875,7 @@ public class Start {
                     }
                     if (updateParameter != null) updateParameter.setValue(oldUpdate);
                     if (!uiFoundandRun) stopped = true; //command line will execute here
-
+                    installRunning = false;
                 });
                 installationThread.start();
             } else {
@@ -933,34 +949,24 @@ public class Start {
                 }
 
 
-                stopInstall = true;
-                while (installRunning) { //wait here till installationThread is confirming stop
-                    try {
-                        Thread.sleep(50);
-                    } catch (InterruptedException e) {
-
-                    }
-                }
-                installationThread.interrupt();
-
-                while (installationThread.isAlive()) ;
+                killInstallation();
             }
             UserAction ua = new UserAction();
             ua.setTitle("Please confirm installation");
             ua.addMessage(new UserMessage().setMessage(""));
             ua.addMessage(new UserMessage().setMessage("Will install the following installation tasks:").
                     setEmphasize(2).
-                    setColor(Color.GREEN));
+                    setColor(Color.GREEN).setLeftMargin(20).setFontSize(16));
             ua.addMessage(new UserMessage().setMessage(""));
             for (IInstallationTask task : context.getiInstallationTasks().values()) {
                 if (task.isEnabled()) {
                     ua.addMessage(new UserMessage().setMessage(task.getName()).
                             setEmphasize(1).
-                            setColor(Color.BLACK));
+                            setColor(Color.BLACK).setLeftMargin(10));
                 }
             }
-            ua.setPossibleAnswers(new UserResponse[]{UserResponse.CONTINUE, UserResponse.STOP,UserResponse.YES,UserResponse.NO});
-            ua.setOptionalPrompt("Select/type  YES if you wish to continue with the installation");
+            ua.setPossibleAnswers(new UserResponse[]{UserResponse.CONTINUE, UserResponse.STOP});
+            ua.setOptionalPrompt("Type YES to continue with the installation");
             ua.setUseAnsiColorsInConsole(true);
             UserResponse response = getUserResponse(context, ua);
             return response; //
@@ -968,6 +974,24 @@ public class Start {
             info("Will not prompt for continue installation");
             return !installRunning ? UserResponse.CONTINUE : UserResponse.STOP;
         }
+
+
+    }
+
+    private static void killInstallation() {
+        stopInstall = true;
+        while (installRunning) { //wait here till installationThread is confirming stop
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+
+            }
+        }
+        installationThread.interrupt();
+
+        while (installationThread.isAlive()) ;
+        updateStatus(("installation is ") + "aborted: ", 0, 0, 0, InstallationState.ABORTED);
+        info("Have aborted installation by user");
 
 
     }
@@ -1096,7 +1120,12 @@ public class Start {
     }
 
     private static String uiComponentShowLogs(IUIComponent uiComponent, InstallationContext context) {
-        return doshowLogs();
+        try {
+            return doshowLogs();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private static String UIAccessAbout(IUIComponent uiComponent, InstallationContext context) {
@@ -1123,11 +1152,75 @@ public class Start {
         return "";
     }
 
-    private static String doshowLogs() {
+    private static String doshowLogs() throws IOException {
         logger.info("Performing show logs");
+        List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
+        File file = new File(System.getProperty("user.dir") + "/logs/installer.log");
+        if (file.exists()) {
+            List<String> lines = Files.readAllLines(Paths.get(file.getAbsolutePath()));
+            if (lines != null && lines.size() > 0) {
+                int pagesize = LOG_PAGE_SIZE;
+                int currentPage = -1;
+                UserResponse response = UserResponse.NEXT;
+                do {
+                    switch (response) {
+                        case BACK:
+                            currentPage = currentPage != 0 ? currentPage - 1 : currentPage;
+                            break;
+                        case NEXT:
+                            int b=(lines.size()/ pagesize);
+                            currentPage = currentPage < b ? currentPage + 1 : currentPage;
+                            break;
+                    }
+                    String[] page = getPage(lines, pagesize, currentPage);
+                    UserAction ua = new UserAction();
+                    for (int i = 0; i < page.length; i++) {
+                        String m=page[i].toLowerCase();
+                        Ansi.Color color=m.contains("severe")
+                                || m.contains("error")
+                                || m.contains("failed")
+                                || m.contains("abort")
+                                || m.contains("stop")
+                                || m.contains("cannot")
+                                || m.contains("unsuccessfully")
+                                ? Color.RED
+                                : Color.BLACK;
+                        UserMessage um = new UserMessage().setMessage(page[i]).
+                                setLeftMargin(10).
+                                setUseFont(true).
+                                setFontName("calibri").
+                                setFontSize(12).
+                                setColor(color);
+                        ua.addMessage(um);
+                    }
+                    ua.setPossibleAnswers(new UserResponse[]{UserResponse.BACK, UserResponse.DONE, UserResponse.NEXT});
+                    response = getUserResponse(null, ua);
+                } while (!response.equals(UserResponse.DONE));
+
+            }
+
+
+        }
         return "";
     }
 
+    /**
+     * returns the next page
+     *
+     * @param lines
+     * @param pageSize
+     * @param pageNumber
+     * @return
+     */
+    private static String[] getPage(List<String> lines, int pageSize, int pageNumber) {
+        String[] result = new String[(Math.min(lines.size()-pageNumber*pageSize,pageSize)) ];
+        int j = 0;
+        for (int i = pageNumber * pageSize; i < (pageNumber+1) * pageSize; i++) {
+            if (i == lines.size()) return result;
+            result[j++] = lines.get(i);
+        }
+        return result;
+    }
 
     @FunctionalInterface
     public static interface UIAccessInterfaceQuit {
@@ -1256,9 +1349,24 @@ public class Start {
         public UserResponse getResponse() {
             return response;
         }
-
+        boolean wasPaused=false;
         public InstallProper invoke() {
             for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
+                long pauseStarted=System.currentTimeMillis();
+                while (installationPaused) {
+                    wasPaused=true;
+                    updateStatus("Installation paused for the last "+(System.currentTimeMillis()-pauseStarted)/1000,completed,failed,skipped,InstallationState.PAUSED);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+
+                    }
+                }
+                if (wasPaused) {
+                    wasPaused=false;
+                    updateStatus("Installation resumed  after a pause of "+(System.currentTimeMillis()-pauseStarted)/1000,completed,failed,skipped,InstallationState.RUNNING);
+
+                }
                 if (checkStopInstall()) {
                     myResult = true;
                     return this;
@@ -1358,6 +1466,15 @@ public class Start {
         private int completed;
         private HashMap<String, String> restarters;
 
+        /**
+         * handle services
+         *
+         * @param context
+         * @param failed
+         * @param skipped
+         * @param completed
+         * @param restarters
+         */
         public FinishInstall(InstallationContext context, int failed, int skipped, int completed, HashMap<String, String> restarters) {
             this.context = context;
             this.failed = failed;

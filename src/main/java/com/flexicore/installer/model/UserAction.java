@@ -19,6 +19,7 @@ public class UserAction {
     private String defaultResponseForString="";
     private UserResponse[] possibleAnswers;
     private String optionalPrompt="";
+    private int defaultLeftMargin=-1;
 
     public enum ResponseType {
         FROMLIST,BOOLEAN,STRING,FILE,EXISTINGFILE, EXISTINGFOLDER,LIST
@@ -161,6 +162,15 @@ public class UserAction {
 
     public UserAction setTitle(String title) {
         this.title = title;
+        return this;
+    }
+
+    public int getDefaultLeftMargin() {
+        return defaultLeftMargin;
+    }
+
+    public UserAction setDefaultLeftMargin(int defaultLeftMargin) {
+        this.defaultLeftMargin = defaultLeftMargin;
         return this;
     }
 }

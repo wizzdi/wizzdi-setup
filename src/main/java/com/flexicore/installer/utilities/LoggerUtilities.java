@@ -27,13 +27,15 @@ public class LoggerUtilities {
 
         try {
 
-            // String time = LocalDateTime.now().toString().replace(":", "-");
+
             File file;
             if (!(file = new File(folder)).exists()) {
                 Files.createDirectories(file.toPath());
             }
             fh = new FileHandler(folder.isEmpty() ? name + ".log" : folder + "/" + name + ".log");
             logger.addHandler(fh);
+            System.setProperty("java.util.logging.SimpleFormatter.format",
+                    "[%1$tF %1$tT] [%4$-7s] %5$s %n");
             SimpleFormatter formatter = new SimpleFormatter();
             fh.setFormatter(formatter);
             loggers.add(logger);

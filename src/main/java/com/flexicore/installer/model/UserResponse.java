@@ -1,7 +1,7 @@
 package com.flexicore.installer.model;
 
 public enum UserResponse {
-    OK,CONTINUE,FORCESTOP,IGNORE,YES,NO,STOP,TRUE,FALSE;
+    OK,CONTINUE,FORCESTOP,IGNORE,YES,NO,STOP,TRUE,FALSE,BACK,NEXT,DONE;
 
     public static String getAll() {
         String result = null;
