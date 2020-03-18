@@ -1195,7 +1195,7 @@ public class Start {
                     }
                     ua.setPossibleAnswers(new UserResponse[]{UserResponse.BACK, UserResponse.DONE, UserResponse.NEXT});
                     response = getUserResponse(null, ua);
-                } while (!response.equals(UserResponse.DONE));
+                } while (response!=null && !response.equals(UserResponse.DONE));
 
             }
 
