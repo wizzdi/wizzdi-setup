@@ -1,0 +1,44 @@
+package com.flexicore.installer.model;
+
+public class SystemData {
+    private ProcessorData processorData;
+    private double physicalMemory;
+    private double freeDiskSpace;
+    private WindowsVersion windowsVersion;
+
+    public ProcessorData getProcessorData() {
+        return processorData;
+    }
+
+    public SystemData setProcessorData(ProcessorData processorData) {
+        this.processorData = processorData;
+        return this;
+    }
+
+    public double getPhysicalMemory() {
+        return physicalMemory;
+    }
+
+    public SystemData setPhysicalMemory(double physicalMemory) {
+        this.physicalMemory = physicalMemory;
+        return this;
+    }
+
+    public double getFreeDiskSpace() {
+        return freeDiskSpace;
+    }
+
+    public SystemData setFreeDiskSpace(double freeDiskSpace) {
+        this.freeDiskSpace = freeDiskSpace;
+        return this;
+    }
+
+    public WindowsVersion getWindowsVersion() {
+        return windowsVersion;
+    }
+
+    public SystemData setWindowsVersion(WindowsVersion windowsVersion) {
+        this.windowsVersion = windowsVersion;
+        return this;
+    }
+}

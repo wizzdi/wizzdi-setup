@@ -1,59 +1,75 @@
 package com.flexicore.installer.model;
 
+import java.util.jar.Manifest;
+
 public class ProcessorType {
-    int family;
-    int model;
-    int stepping;
+    int family=-1;
+    int model=-1;
+    int stepping=-1;
     String caption;
     String deviceId;
     String manufacturer;
     String maxClockSpeed;
     String name;
     String socketDesignation;
-//    Caption           : Intel64 Family 6 Model 142 Stepping 10
-//    DeviceID          : CPU0
-//    Manufacturer      : GenuineIntel
-//    MaxClockSpeed     : 1992
-//    Name              : Intel(R) Core(TM) i7-8550U CPU @ 1.80GHz
-//    SocketDesignation : U3E1
+
+    @Override
+    public String toString() {
+        StringBuilder b=new StringBuilder();
+        if (caption!=null) b.append("Caption: "+caption);
+        if (deviceId!=null) b.append(",DeviceID: "+deviceId);
+        if (manufacturer !=null) b.append(",Manufacturer: "+manufacturer);
+        if (maxClockSpeed!=null) b.append(",MaxclockSpeed: "+maxClockSpeed);
+        if (name!=null) b.append(",Name: "+name);
+        if (socketDesignation !=null) b.append(",SocketDesignation: "+socketDesignation);
+        if (family!=-1) b.append(",Family: "+family);
+        if (model!=-1) b.append(",Model: "+model);
+        if (stepping!=-1) b.append(",stepping: "+stepping);
+        return b.toString();
+
+    }
+
     public void populate(String data) {
-        String[] lines=data.split("\n");
-        for (String line:lines) {
+        String[] lines = data.split("\n");
+        for (String line : lines) {
             String[] split;
-            split=line.split(":");
-            if (split.length>1) {
+            split = line.split(":");
+            if (split.length > 1) {
                 switch (split[0].trim()) {
                     case "Caption":
-                        caption=split[1].trim();
-                        String[] more=split[1].split("\\s+");
-                        if (more[2].contains("Family")) {
-                            family = Integer.parseInt(more[3]);
-                            model = Integer.parseInt(more[5]);
-                            stepping = Integer.parseInt(more[7]);
+                        caption = split[1].trim();
+                        String[] more = split[1].split("\\s+");
+                        int i = 0;
+                        for (String m : more) {
+                            if (m.toLowerCase().contains("family")) family = Integer.parseInt(more[i + 1]);
+                            if (m.toLowerCase().contains("model")) model = Integer.parseInt(more[i + 1]);
+                            if (m.toLowerCase().contains("stepping")) stepping = Integer.parseInt(more[i + 1]);
+                            if (m.toLowerCase().contains("@")) stepping = Integer.parseInt(more[i + 1]);
+                            i++;
                         }
+
                         break;
                     case "DeviceID":
-                        deviceId=split[1].trim();
+                        deviceId = split[1].trim();
                         break;
                     case "Manufacturer":
-                        manufacturer=split[1].trim();
+                        manufacturer = split[1].trim();
                         break;
                     case "MaxClockSpeed":
-                        maxClockSpeed=split[1].trim();
+                        maxClockSpeed = split[1].trim();
                         break;
                     case "Name":
-                        name=split[1].trim();
+                        name = split[1].trim();
                         break;
                     case "SocketDesignation":
-                        socketDesignation=split[1].trim();
+                        socketDesignation = split[1].trim();
                         break;
-
-
                 }
             }
         }
 
     }
+
     public int getFamily() {
         return family;
     }

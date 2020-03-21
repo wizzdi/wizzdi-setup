@@ -4,7 +4,9 @@ import com.flexicore.installer.exceptions.MissingInstallationTaskDependency;
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.interfaces.IUIComponent;
 import com.flexicore.installer.model.*;
+import jpowershell.PowerShellResponse;
 import org.apache.commons.cli.*;
+import org.apache.commons.lang3.SystemUtils;
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.AnsiConsole;
 import org.jgrapht.Graph;
@@ -14,6 +16,7 @@ import org.jgrapht.traverse.TopologicalOrderIterator;
 import org.pf4j.DefaultPluginManager;
 import org.pf4j.PluginManager;
 
+import javax.print.attribute.standard.Severity;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -23,6 +26,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import static com.flexicore.installer.model.InstallationTask.executePowerShellCommand;
 import static com.flexicore.installer.utilities.LoggerUtilities.initLogger;
 import static java.lang.System.exit;
 import static org.fusesource.jansi.Ansi.Color;
@@ -34,6 +38,7 @@ public class Start {
     private static final String HELP = "h";
     private static final String LOG_PATH_OPT = "l";
     private static final String INSTALLATION_TASKS_FOLDER = "tasks";
+    private static final String DEMO_POWERSHELL = "ps";
     private static final long PROGRESS_DELAY = 300;
     private static final String CONFIG_FILENAME = "jpowershell.properties";
     private static final int LOG_PAGE_SIZE = 50;
@@ -41,13 +46,14 @@ public class Start {
     private static PluginManager pluginManager;
     private static List<IUIComponent> uiComponents;
     private static InstallationContext installationContext = null;
+
     static boolean uiFoundandRun = false;
     static String currentStatus = "";
 
     static Map<String, Set<String>> missingDependencies = new HashMap<>();
     private static String oldUpdate = "false";
     private static Parameter updateParameter = null;
-
+    static ProcessorData processorData;
 
     public static void main(String[] args) throws MissingInstallationTaskDependency, ParseException, InterruptedException {
 
@@ -58,9 +64,38 @@ public class Start {
         CommandLineParser parser = new DefaultParser();
         String[] trueArgs = getTrueArgs(args, options);
 
+
         CommandLine mainCmd = parser.parse(options, trueArgs, false); //will not fail if fed with plugins options.
 
         logger = initLogger("Installer", mainCmd.getOptionValue(LOG_PATH_OPT, "logs"));
+        Thread startThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                long start = System.currentTimeMillis();
+                info("************* starting data gathering ");
+                processorData = getProcessorData();
+                ProcessorType result = getPorcessorType();
+
+                if (result != null) {
+                    info("Processor type: " + result);
+                    processorData.setProcessorType(result);
+                } else {
+
+                }
+                int logical = getNumberOfLogicalProcessor();
+                if (logical > 0) {
+                    info("Logical processors: " + logical);
+                    processorData.setLogicalCores(logical);
+                } else {
+                    info("****************************** no logical processors received");
+                }
+
+                info("************* ended  data gathering in" + (System.currentTimeMillis() - start) / 1000 + " Seconds");
+                info("Processor data: "+processorData);
+            }
+        });
+        startThread.start();
+
         installationContext = new InstallationContext()
                 .setLogger(logger).setParameters(new Parameters()).
                         setOperatingSystem(InstallationTask.isWindows ?
@@ -202,6 +237,152 @@ public class Start {
 
     }
 
+    private static final Integer DEFAULT_TIMEOUT = 3000;
+    private static final Integer DEFAULT_WAIT_PAUSE = 10;
+
+    private static void showPowerShell(String[] args) {
+        PowerShellResponse response;
+        List<String> convertedArgs = new ArrayList<>();
+        boolean found = false;
+        for (String arg : args) {
+            if (found) convertedArgs.add(arg);
+            if (arg.equals("-ps")) found = true;
+        }
+        switch (convertedArgs.size()) {
+            case 0:
+                ProcessorType result = getPorcessorType();
+                break;
+            case 1:
+                String p1 = convertedArgs.get(0);
+                if (p1.equals("help") || p1.equals("-help") || p1.equals("h") || p1.equals("-h")) {
+                    System.out.println("usage: java -jar TestPS [ps command] timeout waitpause");
+                    exit(0);
+
+                } else {
+                    response = executePowerShellCommand(convertedArgs.get(0), DEFAULT_TIMEOUT, DEFAULT_WAIT_PAUSE);
+                }
+            case 2:
+                response = executePowerShellCommand(convertedArgs.get(0), Integer.valueOf(convertedArgs.get(1)), DEFAULT_WAIT_PAUSE);
+                break;
+            default:
+                response = executePowerShellCommand(convertedArgs.get(0), Integer.valueOf(convertedArgs.get(1)), Integer.valueOf(convertedArgs.get(2)));
+        }
+    }
+
+    public static int getNumberOfLogicalProcessor() {
+        PowerShellResponse response = executePowerShellCommand("(Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors", 3000, 5);
+        try {
+            if (response.isTimeout() || response.isError()) {
+
+                return -1;
+            }
+            System.out.println("response for getting logical processors number:\n" + response.getCommandOutput());
+            System.out.println();
+            return Integer.parseInt(response.getCommandOutput());
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+
+
+    }
+    private static String getValueByKey(PowerShellResponse response, String key) {
+        if (response.isError() || response.isTimeout()) return "";
+
+        String[] result = response.getCommandOutput().split("\n");
+        for (String line : result) {
+            if (line.contains(key)) {
+                return line.split(":")[1];
+            }
+        }
+        return "";
+    }
+
+
+    static double gb = 1024 * 1024 * 1024;
+
+    public static double getFreeDiskSpace(String driveLetter) {
+
+        if (isWindows()) {
+            if (driveLetter == null || driveLetter.isEmpty()) driveLetter = "C:";
+            PowerShellResponse response = executePowerShellCommand("   Get-WMIObject Win32_Logicaldisk -filter \"deviceid='" + driveLetter + "'\"", 3000, 5);
+            try {
+                return Double.parseDouble(getValueByKey(response, "FreeSpace")) / gb;
+            } catch (NumberFormatException e) {
+
+            }
+        }
+        return -1;
+    }
+    private static boolean isWindows() {
+        return SystemUtils.IS_OS_WINDOWS;
+    }
+    public static  double getPhysicalMemory() {
+        if (isWindows()) {
+            PowerShellResponse response = executePowerShellCommand(" Get-WmiObject -Class Win32_ComputerSystem", 3000, 5);
+
+            try {
+                return Double.parseDouble(getValueByKey(response, "TotalPhysicalMemory")) / gb;
+            } catch (NumberFormatException e) {
+
+            }
+        }
+        return -1;
+    }
+
+    public static ProcessorData getProcessorData() {
+        PowerShellResponse response = executePowerShellCommand(
+                "Get-CimInstance -ClassName 'Win32_Processor'   | Select-Object -Property 'DeviceID', 'Name', 'NumberOfCores'", 3000, 200);
+        ProcessorData processorData = new ProcessorData();
+
+        try {
+            if (response.isTimeout() || response.isError()) {
+                if (response.isTimeout()) severe("Time out in getting processor data");
+                if (response.isError()) severe("error in getting processor data");
+                return processorData;
+            }
+
+            String[] lines = response.getCommandOutput().split("\n");
+            // info("Get-CimInstance -ClassName 'Win32_Processor'  ");
+            String theLine = lines[3];
+            for (String line : lines) {
+                if (line.startsWith("CPU")) theLine = line;
+                // info(line);
+            }
+            if (theLine.startsWith("CPU")) {
+                String[] split = theLine.split("\\s+");
+                processorData.setName(split[1] + " " + split[2] + " " + split[3]);
+                processorData.setProcessorFrequency(Double.parseDouble(split[6].replaceAll("[^\\d.]", "")));
+                processorData.setNumberOfCores(Integer.parseInt(split[7]));
+                processorData.setLogicalCores(getNumberOfLogicalProcessor());
+                processorData.setProcessorType(getPorcessorType());
+            } else {
+                severe("Could not parse processor data ");
+            }
+
+        } catch (NumberFormatException e) {
+            severe("Error while parsing  ", e);
+        }
+        return processorData;
+    }
+
+    public static ProcessorType getPorcessorType() {
+        ProcessorType processorType = new ProcessorType();
+        PowerShellResponse response = executePowerShellCommand("Get-WmiObject Win32_Processor", 10, 5);
+        if (response.isTimeout() || response.isError()) {
+
+
+            return processorType;
+
+        }
+
+        processorType.populate(response.getCommandOutput());
+        if (processorType != null) {
+            System.out.println("Processor type:");
+            System.out.println(processorType.toString());
+        }
+
+        return processorType;
+    }
 
     private static void checkHelp(CommandLine mainCmd) {
         if (mainCmd.hasOption(HELP)) {
@@ -763,7 +944,8 @@ public class Start {
                 .addOption(INSTALLATION_TASKS_FOLDER, true, "(optional - default currentDir/tasks) folder for installation tasks")
                 .addOption(LOG_PATH_OPT, true, "log folder")
 
-                .addOption(HELP, false, "shows this message");
+                .addOption(HELP, false, "shows this message")
+                .addOption(DEMO_POWERSHELL, false, "Add powerShell command for tests");
 
     }
 
@@ -1168,15 +1350,15 @@ public class Start {
                             currentPage = currentPage != 0 ? currentPage - 1 : currentPage;
                             break;
                         case NEXT:
-                            int b=(lines.size()/ pagesize);
+                            int b = (lines.size() / pagesize);
                             currentPage = currentPage < b ? currentPage + 1 : currentPage;
                             break;
                     }
                     String[] page = getPage(lines, pagesize, currentPage);
                     UserAction ua = new UserAction();
                     for (int i = 0; i < page.length; i++) {
-                        String m=page[i].toLowerCase();
-                        Ansi.Color color=m.contains("severe")
+                        String m = page[i].toLowerCase();
+                        Ansi.Color color = m.contains("severe")
                                 || m.contains("error")
                                 || m.contains("failed")
                                 || m.contains("abort")
@@ -1195,7 +1377,7 @@ public class Start {
                     }
                     ua.setPossibleAnswers(new UserResponse[]{UserResponse.BACK, UserResponse.DONE, UserResponse.NEXT});
                     response = getUserResponse(null, ua);
-                } while (response!=null && !response.equals(UserResponse.DONE));
+                } while (response != null && !response.equals(UserResponse.DONE));
 
             }
 
@@ -1213,9 +1395,9 @@ public class Start {
      * @return
      */
     private static String[] getPage(List<String> lines, int pageSize, int pageNumber) {
-        String[] result = new String[(Math.min(lines.size()-pageNumber*pageSize,pageSize)) ];
+        String[] result = new String[(Math.min(lines.size() - pageNumber * pageSize, pageSize))];
         int j = 0;
-        for (int i = pageNumber * pageSize; i < (pageNumber+1) * pageSize; i++) {
+        for (int i = pageNumber * pageSize; i < (pageNumber + 1) * pageSize; i++) {
             if (i == lines.size()) return result;
             result[j++] = lines.get(i);
         }
@@ -1349,13 +1531,15 @@ public class Start {
         public UserResponse getResponse() {
             return response;
         }
-        boolean wasPaused=false;
+
+        boolean wasPaused = false;
+
         public InstallProper invoke() {
             for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
-                long pauseStarted=System.currentTimeMillis();
+                long pauseStarted = System.currentTimeMillis();
                 while (installationPaused) {
-                    wasPaused=true;
-                    updateStatus("Installation paused for the last "+(System.currentTimeMillis()-pauseStarted)/1000,completed,failed,skipped,InstallationState.PAUSED);
+                    wasPaused = true;
+                    updateStatus("Installation paused for the last " + (System.currentTimeMillis() - pauseStarted) / 1000, completed, failed, skipped, InstallationState.PAUSED);
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
@@ -1363,8 +1547,8 @@ public class Start {
                     }
                 }
                 if (wasPaused) {
-                    wasPaused=false;
-                    updateStatus("Installation resumed  after a pause of "+(System.currentTimeMillis()-pauseStarted)/1000,completed,failed,skipped,InstallationState.RUNNING);
+                    wasPaused = false;
+                    updateStatus("Installation resumed  after a pause of " + (System.currentTimeMillis() - pauseStarted) / 1000, completed, failed, skipped, InstallationState.RUNNING);
 
                 }
                 if (checkStopInstall()) {

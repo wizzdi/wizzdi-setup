@@ -4,8 +4,8 @@ public class ProcessorData {
     private String name;
     private ProcessorType processorType;
     private double processorFrequency;
-    private int numberOfCores;
-    private int logicalCores;
+    private int numberOfCores = -1;
+    private int logicalCores = -1;
 
     public String getName() {
         return name;
@@ -16,7 +16,16 @@ public class ProcessorData {
         return this;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        if (name != null) b.append("Name: " + name);
+        if (processorType != null) b.append(",ProcessorType: " + processorType);
+        if (numberOfCores != -1) b.append(",Number of cores: " + numberOfCores);
+        if (logicalCores != -1) b.append(",Logical cores: " + logicalCores);
+        return b.toString();
 
+    }
 
     public double getProcessorFrequency() {
         return processorFrequency;

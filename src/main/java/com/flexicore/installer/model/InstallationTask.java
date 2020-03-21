@@ -117,6 +117,7 @@ public class InstallationTask implements IInstallationTask {
     }
 
     public int getNumberOfLogicalProcessor() {
+        int result = -2;
         PowerShellResponse response = executePowerShellCommand("(Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors", 3000, 5);
         try {
             if (response.isTimeout() || response.isError()) {
@@ -124,12 +125,19 @@ public class InstallationTask implements IInstallationTask {
                 if (response.isError()) severe("error in getting processor number of logical cores");
 
                 return -1;
+            } else {
+                info("response for getting logical processors number:\n" + response.getCommandOutput());
             }
-            return Integer.parseInt(response.getCommandOutput());
+            
+            try {
+                result= Integer.parseInt(response.getCommandOutput());
+            } catch (NumberFormatException e) {
+                severe("Error while parsing logical cores",e);
+            }
         } catch (NumberFormatException e) {
             return -1;
         }
-
+        return result;
 
     }
 
@@ -141,20 +149,29 @@ public class InstallationTask implements IInstallationTask {
             if (response.isTimeout()) severe("Time out in getting processor type");
             if (response.isError()) severe("error in getting processor type");
             return processorType;
+
+        } else {
+            info("response for getting processor type:\n" + response.getCommandOutput());
         }
+
         processorType.populate(response.getCommandOutput());
         return processorType;
     }
 
-    public ProcessorData getProcessorData() {
-        PowerShellResponse response = executePowerShellCommand("Get-CimInstance -ClassName 'Win32_Processor'   | Select-Object -Property 'DeviceID', 'Name', 'NumberOfCores'", 3000, 5);
+    public  ProcessorData getProcessorData() {
+        PowerShellResponse response = executePowerShellCommand(
+                "Get-CimInstance -ClassName 'Win32_Processor'   | Select-Object -Property 'DeviceID', 'Name', 'NumberOfCores'", 3000, 200);
         ProcessorData processorData = new ProcessorData();
+
         try {
-            if (response.isTimeout() || response.isError()){
+            if (response.isTimeout() || response.isError()) {
                 if (response.isTimeout()) severe("Time out in getting processor data");
                 if (response.isError()) severe("error in getting processor data");
                 return processorData;
+            } else {
+                info("response for getting processor data:\n" + response.getCommandOutput());
             }
+
             String[] lines = response.getCommandOutput().split("\n");
             // info("Get-CimInstance -ClassName 'Win32_Processor'  ");
             String theLine = lines[3];
@@ -179,35 +196,6 @@ public class InstallationTask implements IInstallationTask {
         return processorData;
     }
 
-
-    double gb = 1024 * 1024 * 1024;
-
-    public double getFreeDiskSpace(String driveLetter) {
-
-        if (isWindows()) {
-            if (driveLetter == null || driveLetter.isEmpty()) driveLetter = "C:";
-            PowerShellResponse response = executePowerShellCommand("   Get-WMIObject Win32_Logicaldisk -filter \"deviceid='" + driveLetter + "'\"", 3000, 5);
-            try {
-                return Double.parseDouble(getValueByKey(response, "FreeSpace")) / gb;
-            } catch (NumberFormatException e) {
-
-            }
-        }
-        return -1;
-    }
-
-    public double getPhysicalMemory() {
-        if (isWindows()) {
-            PowerShellResponse response = executePowerShellCommand(" Get-WmiObject -Class Win32_ComputerSystem", 3000, 5);
-
-            try {
-                return Double.parseDouble(getValueByKey(response, "TotalPhysicalMemory")) / gb;
-            } catch (NumberFormatException e) {
-
-            }
-        }
-        return -1;
-    }
 
     private void forceKillService(String taskManagerName) {
         PowerShellResponse response = executePowerShellCommand("get-process " + taskManagerName + " -IncludeUserName", 3000, 5);
@@ -534,8 +522,11 @@ public class InstallationTask implements IInstallationTask {
 
     public void info(String message) {
         if (context != null) {
-            if (context.getLogger() != null) context.getLogger().info(message);
+            if (context.getLogger() != null) {
+                context.getLogger().info(message);
+            }
         }
+        System.out.println("info: " + message);
     }
 
     /**
@@ -546,8 +537,12 @@ public class InstallationTask implements IInstallationTask {
      */
     public void error(String message, Throwable e) {
         if (context != null) {
-            if (context.getLogger() != null) context.getLogger().log(Level.SEVERE, message, e);
+            if (context.getLogger() != null) {
+                context.getLogger().log(Level.SEVERE, message, e);
+                return;
+            }
         }
+        System.out.println("Severe: " + message);
     }
 
     public void severe(String message, Throwable e) {
@@ -557,8 +552,12 @@ public class InstallationTask implements IInstallationTask {
 
     public void severe(String message) {
         if (context != null) {
-            if (context.getLogger() != null) context.getLogger().log(Level.SEVERE, message);
+            if (context.getLogger() != null) {
+                context.getLogger().log(Level.SEVERE, message);
+                return;
+            }
         }
+        System.out.println("Severe: " + message);
     }
 
     void debuglines(String command, boolean force) {
