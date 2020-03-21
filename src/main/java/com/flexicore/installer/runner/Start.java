@@ -112,7 +112,8 @@ public class Start {
                         setUpdateService(Start::uiUpdateService).
                         setFilesProgress(Start::updateFilesProgress).
                         setUiToggle(Start::uiComponentToggle).setUpdateSingleComponent(Start::doUpdateComponent).
-                        setUiAskUSer(Start::getUserResponse);
+                        setUiAskUSer(Start::getUserResponse).
+                        setShowSystemData(Start::showSystemData);
 
         File pluginRoot = new File(mainCmd.getOptionValue(INSTALLATION_TASKS_FOLDER, "tasks"));
         String path = pluginRoot.getAbsolutePath();
@@ -535,7 +536,19 @@ public class Start {
         }
 
     }
+    private static UserResponse showSystemData(InstallationContext context, SystemData systemData) {
+        if (context == null || !context.getParamaters().getBooleanValue("quiet")) {
+            if (uiComponents != null) {
+                List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
+                if (filtered.size() > 0) {
+                    return filtered.get(0).showSystemData(context, systemData);
+                }
 
+            }
+
+        }
+        return UserResponse.OK;
+    }
     /**
      * prompt user using console
      *
@@ -1490,6 +1503,10 @@ public class Start {
     @FunctionalInterface
     public static interface AskUser {
         UserResponse dialog(InstallationContext context, UserAction userAction);
+    }
+    @FunctionalInterface
+    public static interface ShowSystemData {
+        UserResponse dialog(InstallationContext context, SystemData systemData);
     }
 
     private static class InstallProper {

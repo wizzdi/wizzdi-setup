@@ -38,6 +38,7 @@ public class InstallationContext {
     private Start.installerFilesProgress filesProgress;
     private Start.UpdateSingleComponent updateSingleComponent;
     private Start.AskUser uiAskUSer;
+    private Start.ShowSystemData showSystemData;
     private ProgressConsumer consumer;
     private int successFullyInstalled=0;
     private int failedToInstall=0;
@@ -346,6 +347,15 @@ public class InstallationContext {
 
     public InstallationContext setUiAskUSer(Start.AskUser uiAskUSer) {
         this.uiAskUSer = uiAskUSer;
+        return this;
+    }
+
+    public Start.ShowSystemData getShowSystemData() {
+        return showSystemData;
+    }
+
+    public InstallationContext setShowSystemData(Start.ShowSystemData showSystemData) {
+        this.showSystemData = showSystemData;
         return this;
     }
 }

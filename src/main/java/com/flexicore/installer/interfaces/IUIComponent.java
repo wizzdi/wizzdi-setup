@@ -64,6 +64,6 @@ public interface IUIComponent extends ExtensionPoint {
      */
     void handleInspections(InstallationContext context, ArrayList<InspectionResult> inspections);
 
-
+    UserResponse showSystemData(InstallationContext context,SystemData systemData);
 
 }
