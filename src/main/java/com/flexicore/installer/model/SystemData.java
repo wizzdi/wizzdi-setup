@@ -4,8 +4,17 @@ public class SystemData {
     private ProcessorData processorData;
     private double physicalMemory;
     private double freeDiskSpace;
-    private WindowsVersion windowsVersion;
+    private WindowsVersion windowsVersion=WindowsVersion.Windows_10;
+    public String toString() {
+        StringBuilder b=new StringBuilder();
+        if (processorData!=null) b.append("Processor Data: "+processorData);
+        if (physicalMemory!=-1) b.append("\nPhysical Memory: "+(double)Math.round(physicalMemory));
+        if (freeDiskSpace !=-1) b.append("\nFree disk space: "+(double)Math.round(freeDiskSpace));
+        b.append("\nWindows version: "+windowsVersion);
 
+        return b.toString();
+
+    }
     public ProcessorData getProcessorData() {
         return processorData;
     }
@@ -41,4 +50,6 @@ public class SystemData {
         this.windowsVersion = windowsVersion;
         return this;
     }
+
+
 }

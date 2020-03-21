@@ -16,7 +16,6 @@ import org.jgrapht.traverse.TopologicalOrderIterator;
 import org.pf4j.DefaultPluginManager;
 import org.pf4j.PluginManager;
 
-import javax.print.attribute.standard.Severity;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -27,6 +26,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static com.flexicore.installer.model.InstallationTask.executePowerShellCommand;
+import static com.flexicore.installer.model.InstallationTask.getWindowsVersion;
 import static com.flexicore.installer.utilities.LoggerUtilities.initLogger;
 import static java.lang.System.exit;
 import static org.fusesource.jansi.Ansi.Color;
@@ -73,25 +73,24 @@ public class Start {
             public void run() {
                 long start = System.currentTimeMillis();
                 info("************* starting data gathering ");
+                SystemData systemData = new SystemData();
+
                 processorData = getProcessorData();
-                ProcessorType result = getPorcessorType();
-
-                if (result != null) {
-                    info("Processor type: " + result);
-                    processorData.setProcessorType(result);
-                } else {
-
-                }
+                systemData.setProcessorData(processorData);
                 int logical = getNumberOfLogicalProcessor();
                 if (logical > 0) {
-                    info("Logical processors: " + logical);
+
                     processorData.setLogicalCores(logical);
                 } else {
                     info("****************************** no logical processors received");
                 }
 
-                info("************* ended  data gathering in" + (System.currentTimeMillis() - start) / 1000 + " Seconds");
-                info("Processor data: "+processorData);
+                 systemData.setPhysicalMemory(getPhysicalMemory());
+                systemData.setFreeDiskSpace(getFreeDiskSpace("C:"));
+                systemData.setWindowsVersion(getWindowsVersion());
+                info("************* ended  data gathering in: " + (System.currentTimeMillis() - start) / 1000 + " Seconds");
+
+                info("System data: " + systemData);
             }
         });
         startThread.start();
@@ -285,6 +284,7 @@ public class Start {
 
 
     }
+
     private static String getValueByKey(PowerShellResponse response, String key) {
         if (response.isError() || response.isTimeout()) return "";
 
@@ -313,10 +313,12 @@ public class Start {
         }
         return -1;
     }
+
     private static boolean isWindows() {
         return SystemUtils.IS_OS_WINDOWS;
     }
-    public static  double getPhysicalMemory() {
+
+    public static double getPhysicalMemory() {
         if (isWindows()) {
             PowerShellResponse response = executePowerShellCommand(" Get-WmiObject -Class Win32_ComputerSystem", 3000, 5);
 

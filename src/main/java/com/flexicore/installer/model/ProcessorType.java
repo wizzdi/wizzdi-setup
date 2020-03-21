@@ -17,12 +17,12 @@ public class ProcessorType {
     public String toString() {
         StringBuilder b=new StringBuilder();
         if (caption!=null) b.append("Caption: "+caption);
-        if (deviceId!=null) b.append(",DeviceID: "+deviceId);
-        if (manufacturer !=null) b.append(",Manufacturer: "+manufacturer);
-        if (maxClockSpeed!=null) b.append(",MaxclockSpeed: "+maxClockSpeed);
-        if (name!=null) b.append(",Name: "+name);
-        if (socketDesignation !=null) b.append(",SocketDesignation: "+socketDesignation);
-        if (family!=-1) b.append(",Family: "+family);
+        if (deviceId!=null) b.append("\nDeviceID: "+deviceId);
+        if (manufacturer !=null) b.append("\nManufacturer: "+manufacturer);
+        if (maxClockSpeed!=null) b.append("\nMaxclockSpeed: "+maxClockSpeed);
+        if (name!=null) b.append("\nName: "+name);
+        if (socketDesignation !=null) b.append(",\nSocketDesignation: "+socketDesignation);
+        if (family!=-1) b.append("\nFamily: "+family);
         if (model!=-1) b.append(",Model: "+model);
         if (stepping!=-1) b.append(",stepping: "+stepping);
         return b.toString();

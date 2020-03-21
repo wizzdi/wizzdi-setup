@@ -20,9 +20,9 @@ public class ProcessorData {
     public String toString() {
         StringBuilder b = new StringBuilder();
         if (name != null) b.append("Name: " + name);
-        if (processorType != null) b.append(",ProcessorType: " + processorType);
-        if (numberOfCores != -1) b.append(",Number of cores: " + numberOfCores);
-        if (logicalCores != -1) b.append(",Logical cores: " + logicalCores);
+        if (processorType != null) b.append("\nProcessorType: " + processorType);
+        if (numberOfCores != -1) b.append("\nNumber of cores: " + numberOfCores);
+        if (logicalCores != -1) b.append("\nLogical cores: " + logicalCores);
         return b.toString();
 
     }
