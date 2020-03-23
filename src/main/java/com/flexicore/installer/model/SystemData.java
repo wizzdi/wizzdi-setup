@@ -4,6 +4,9 @@ public class SystemData {
     private ProcessorData processorData;
     private double physicalMemory;
     private double freeDiskSpace;
+    private boolean done;
+    private long start;
+    private long total;
     private WindowsVersion windowsVersion=WindowsVersion.Windows_10;
     public String toString() {
         StringBuilder b=new StringBuilder();
@@ -51,5 +54,30 @@ public class SystemData {
         return this;
     }
 
+    public boolean isDone() {
+        return done;
+    }
 
+    public SystemData setDone(boolean done) {
+        this.done = done;
+        return this;
+    }
+
+    public long getStart() {
+        return start;
+    }
+
+    public SystemData setStart(long start) {
+        this.start = start;
+        return this;
+    }
+
+    public long getTotal() {
+        return total;
+    }
+
+    public SystemData setTotal(long total) {
+        this.total = total;
+        return this;
+    }
 }

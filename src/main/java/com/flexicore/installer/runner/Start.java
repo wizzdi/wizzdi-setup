@@ -54,6 +54,8 @@ public class Start {
     private static String oldUpdate = "false";
     private static Parameter updateParameter = null;
     static ProcessorData processorData;
+    static SystemData systemData = new SystemData();
+
 
     public static void main(String[] args) throws MissingInstallationTaskDependency, ParseException, InterruptedException {
 
@@ -71,9 +73,9 @@ public class Start {
         Thread startThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                long start = System.currentTimeMillis();
+                systemData.setStart(System.currentTimeMillis());
                 info("************* starting data gathering ");
-                SystemData systemData = new SystemData();
+
 
                 processorData = getProcessorData();
                 systemData.setProcessorData(processorData);
@@ -85,12 +87,13 @@ public class Start {
                     info("****************************** no logical processors received");
                 }
 
-                 systemData.setPhysicalMemory(getPhysicalMemory());
+                systemData.setPhysicalMemory(getPhysicalMemory());
                 systemData.setFreeDiskSpace(getFreeDiskSpace("C:"));
                 systemData.setWindowsVersion(getWindowsVersion());
-                info("************* ended  data gathering in: " + (System.currentTimeMillis() - start) / 1000 + " Seconds");
+                info("************* ended  data gathering in: " + (systemData.setTotal(System.currentTimeMillis() - systemData.getStart()).getTotal()/1000+ " Seconds"));
 
                 info("System data: " + systemData);
+                systemData.setDone(true);
             }
         });
         startThread.start();
@@ -113,7 +116,7 @@ public class Start {
                         setFilesProgress(Start::updateFilesProgress).
                         setUiToggle(Start::uiComponentToggle).setUpdateSingleComponent(Start::doUpdateComponent).
                         setUiAskUSer(Start::getUserResponse).
-                        setShowSystemData(Start::showSystemData);
+                        setShowSystemData(Start::uiComponentShowSystemData);
 
         File pluginRoot = new File(mainCmd.getOptionValue(INSTALLATION_TASKS_FOLDER, "tasks"));
         String path = pluginRoot.getAbsolutePath();
@@ -237,51 +240,26 @@ public class Start {
 
     }
 
-    private static final Integer DEFAULT_TIMEOUT = 3000;
-    private static final Integer DEFAULT_WAIT_PAUSE = 10;
 
-    private static void showPowerShell(String[] args) {
-        PowerShellResponse response;
-        List<String> convertedArgs = new ArrayList<>();
-        boolean found = false;
-        for (String arg : args) {
-            if (found) convertedArgs.add(arg);
-            if (arg.equals("-ps")) found = true;
-        }
-        switch (convertedArgs.size()) {
-            case 0:
-                ProcessorType result = getPorcessorType();
-                break;
-            case 1:
-                String p1 = convertedArgs.get(0);
-                if (p1.equals("help") || p1.equals("-help") || p1.equals("h") || p1.equals("-h")) {
-                    System.out.println("usage: java -jar TestPS [ps command] timeout waitpause");
-                    exit(0);
 
-                } else {
-                    response = executePowerShellCommand(convertedArgs.get(0), DEFAULT_TIMEOUT, DEFAULT_WAIT_PAUSE);
-                }
-            case 2:
-                response = executePowerShellCommand(convertedArgs.get(0), Integer.valueOf(convertedArgs.get(1)), DEFAULT_WAIT_PAUSE);
-                break;
-            default:
-                response = executePowerShellCommand(convertedArgs.get(0), Integer.valueOf(convertedArgs.get(1)), Integer.valueOf(convertedArgs.get(2)));
-        }
-    }
 
+
+    static int logicalCores=-1;
     public static int getNumberOfLogicalProcessor() {
+        if (logicalCores!=-1) return logicalCores;
         PowerShellResponse response = executePowerShellCommand("(Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors", 3000, 5);
         try {
             if (response.isTimeout() || response.isError()) {
 
-                return -1;
+                return 2;
             }
-            System.out.println("response for getting logical processors number:\n" + response.getCommandOutput());
-            System.out.println();
-            return Integer.parseInt(response.getCommandOutput());
+            logicalCores=Integer.parseInt(response.getCommandOutput());
+
         } catch (NumberFormatException e) {
-            return -1;
+
+            return 2;
         }
+        return logicalCores;
 
 
     }
@@ -331,8 +309,9 @@ public class Start {
         }
         return -1;
     }
-
+    static ProcessorData cacheProcessorData =null;
     public static ProcessorData getProcessorData() {
+        if (cacheProcessorData !=null) return cacheProcessorData;
         PowerShellResponse response = executePowerShellCommand(
                 "Get-CimInstance -ClassName 'Win32_Processor'   | Select-Object -Property 'DeviceID', 'Name', 'NumberOfCores'", 3000, 200);
         ProcessorData processorData = new ProcessorData();
@@ -345,44 +324,69 @@ public class Start {
             }
 
             String[] lines = response.getCommandOutput().split("\n");
+
             // info("Get-CimInstance -ClassName 'Win32_Processor'  ");
             String theLine = lines[3];
+
+            boolean found=false;
             for (String line : lines) {
-                if (line.startsWith("CPU")) theLine = line;
-                // info(line);
+                if (line.toLowerCase().startsWith("cpu")) {
+                    theLine = line;
+                    found=true;
+                }
+
             }
-            if (theLine.startsWith("CPU")) {
+            if (theLine.toLowerCase().startsWith("cpu")) {
                 String[] split = theLine.split("\\s+");
-                processorData.setName(split[1] + " " + split[2] + " " + split[3]);
-                processorData.setProcessorFrequency(Double.parseDouble(split[6].replaceAll("[^\\d.]", "")));
-                processorData.setNumberOfCores(Integer.parseInt(split[7]));
-                processorData.setLogicalCores(getNumberOfLogicalProcessor());
+                int i=0;
+                int at=-1;
+                for (String s:split) {
+                    if (s.equals("@")) at=i;
+                    i++;
+                }
+                StringBuilder b=new StringBuilder();
+                for (int j=1;j<at;j++){
+                    b.append(split[j]);
+                    if (j+1!=at) b.append(" ");
+                }
+                processorData.setName(b.toString());
+                try {
+                    processorData.setProcessorFrequency(Double.parseDouble(split[at+1].replaceAll("[^\\d.]", "")));
+                } catch (NumberFormatException e) {
+                    severe("Issue while parsing processor frequency");
+                }
+                try {
+                    processorData.setNumberOfCores(Integer.parseInt(split[at+2]));
+                } catch (NumberFormatException e) {
+                    severe("Issue while parsing processor number of true cores");
+                }
+                try {
+                    processorData.setLogicalCores(getNumberOfLogicalProcessor());
+                } catch (Exception e) {
+                    severe("Issue while parsing get number of logical processors");
+                }
                 processorData.setProcessorType(getPorcessorType());
             } else {
                 severe("Could not parse processor data ");
             }
 
         } catch (NumberFormatException e) {
-            severe("Error while parsing  ", e);
+            severe("General Error while parsing processor data ", e);
         }
+        cacheProcessorData =processorData;
         return processorData;
     }
-
+    static ProcessorType cacheProcessorType=null;
     public static ProcessorType getPorcessorType() {
+        if (cacheProcessorType!=null) return cacheProcessorType;
         ProcessorType processorType = new ProcessorType();
         PowerShellResponse response = executePowerShellCommand("Get-WmiObject Win32_Processor", 10, 5);
         if (response.isTimeout() || response.isError()) {
-
-
-            return processorType;
-
-        }
+          return processorType;
+      }
 
         processorType.populate(response.getCommandOutput());
-        if (processorType != null) {
-            System.out.println("Processor type:");
-            System.out.println(processorType.toString());
-        }
+        cacheProcessorType=processorType;
 
         return processorType;
     }
@@ -536,19 +540,18 @@ public class Start {
         }
 
     }
-    private static UserResponse showSystemData(InstallationContext context, SystemData systemData) {
-        if (context == null || !context.getParamaters().getBooleanValue("quiet")) {
-            if (uiComponents != null) {
-                List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
-                if (filtered.size() > 0) {
-                    return filtered.get(0).showSystemData(context, systemData);
-                }
 
-            }
+
+    private static UserResponse uiShowSystemData(IUIComponent iuiComponent, InstallationContext context) {
+        if (iuiComponent != null) {
+
+            return iuiComponent.showSystemData(context, systemData);
 
         }
-        return UserResponse.OK;
+
+        return null;
     }
+
     /**
      * prompt user using console
      *
@@ -1325,6 +1328,14 @@ public class Start {
         return null;
     }
 
+    private static UserResponse uiComponentShowSystemData(IUIComponent iuiComponent, InstallationContext context) {
+
+        return doShowSystemData(iuiComponent, context);
+
+
+    }
+
+
     private static String UIAccessAbout(IUIComponent uiComponent, InstallationContext context) {
         return doAbout();
     }
@@ -1347,6 +1358,11 @@ public class Start {
     private static String doAbout() {
         logger.info("Performing about");
         return "";
+    }
+
+    private static UserResponse doShowSystemData(IUIComponent iuiComponent, InstallationContext context) {
+        UserResponse result = uiShowSystemData(iuiComponent, context);
+        return result;
     }
 
     private static String doshowLogs() throws IOException {
@@ -1504,9 +1520,10 @@ public class Start {
     public static interface AskUser {
         UserResponse dialog(InstallationContext context, UserAction userAction);
     }
+
     @FunctionalInterface
     public static interface ShowSystemData {
-        UserResponse dialog(InstallationContext context, SystemData systemData);
+        UserResponse showSystemData(IUIComponent uiComponent, InstallationContext context);
     }
 
     private static class InstallProper {
@@ -1741,6 +1758,12 @@ public class Start {
             return this;
         }
     }
+
+    public static SystemData getSystemData() {
+        return systemData;
+    }
+
+
 }
 
 
