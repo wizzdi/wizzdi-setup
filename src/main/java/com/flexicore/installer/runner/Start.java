@@ -1152,9 +1152,10 @@ public class Start {
                 killInstallation();
             }
             UserAction ua = new UserAction();
-            ua.setTitle("Please confirm installation");
+
+            ua.setTitle(updateParameter.getBoolean()?"Please confirm update ":"Please confirm installation");
             ua.addMessage(new UserMessage().setMessage(""));
-            ua.addMessage(new UserMessage().setMessage("Will install the following installation tasks:").
+            ua.addMessage(new UserMessage().setMessage(updateParameter.getBoolean()?"will update the following tasks ":"will install the following tasks:").
                     setEmphasize(2).
                     setColor(Color.GREEN).setLeftMargin(20).setFontSize(16));
             ua.addMessage(new UserMessage().setMessage(""));
@@ -1166,7 +1167,7 @@ public class Start {
                 }
             }
             ua.setPossibleAnswers(new UserResponse[]{UserResponse.CONTINUE, UserResponse.STOP});
-            ua.setOptionalPrompt("Type YES to continue with the installation");
+            ua.setOptionalPrompt("Type YES to continue with the installation/update");
             ua.setUseAnsiColorsInConsole(true);
             UserResponse response = getUserResponse(context, ua);
             return response; //
