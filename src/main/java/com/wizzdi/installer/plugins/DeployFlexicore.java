@@ -25,21 +25,15 @@ public class DeployFlexicore extends InstallationTask {
     static String currentFolder = System.getProperty("user.dir");
     static String parentFolder = new File(currentFolder).getParent();
     static Parameter[] preDefined = {
-            /* example **
-            new Parameter("targetpath", "the target path to install this installation into", true, "/temp/target",ParameterType.FOLDER),
-            new Parameter("serverpath", "where to get this installation files from (not alien components)",
-            true, parentFolder + "/resources/server",ParameterType.FOLDER,Parameter::validateExistingFolder),
-            new Parameter("instllationspath", "where to find alien components installation files, for example Java installation. This is more relevant for Windows", true, parentFolder + "/resources/installations",ParameterType.FOLDER,Parameter::validateExistingFolder),
-            new Parameter("scriptspath", "where to find operating system scripts", true, parentFolder + "/scripts",ParameterType.FOLDER,Parameter::validateExistingFolder),
-
-            new Parameter("dry", "If set (used) installation will run but nothing really installed", false, "false",ParameterType.BOOLEAN),
-            };
-
-             */
-
-            /*
-            do not create a constructor!!!
-             */
+            new Parameter("flexicore_running",
+                    "When checked, it means that flexicore is running\n" +
+                            "not intended for user changes",
+                    true,
+                    "false",
+                    ParameterType.BOOLEAN,
+                    null,
+                    250,
+                    false, false)
 
     };
     private boolean serviceRunning;
@@ -55,6 +49,9 @@ public class DeployFlexicore extends InstallationTask {
         Parameters result = new Parameters();
 
         for (Parameter parameter : preDefined) {
+            if (parameter.getName().equals("flexicore_running")) {
+                parameter.setEditable(false);
+            }
             result.addParameter(parameter, this);
             if (context.isExtraLogs()) logger.info("Got a default parameter: " + parameter.toString());
         }
@@ -183,6 +180,7 @@ public class DeployFlexicore extends InstallationTask {
                Service service= getNewService(true).setName("Flexicore").setDescription("Flexicore Framework");
                 updateService(getContext(),service,this);
                 updateProgress(getContext(), "Deployment succeeded");
+
                 return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
             case failed:
                 updateProgress(getContext(), "Deployment failed");
@@ -256,6 +254,9 @@ public class DeployFlexicore extends InstallationTask {
        if (testServiceRunning(serviceName,"Flexicore deploy",false)) {
            info("Deploy flexicore found service wildfly running");
            InstallationResult result = waitForDeployment(deployments);
+           Parameter p=installationContext.getParameter("flexicore_running");
+           //required so other plugins can test if flexicore is running without knowing the details.
+           if (p!=null && result.getInstallationStatus().equals(InstallationStatus.COMPLETED)) p.setValue("true");
            return result;
        }else {
            info("Deploy flexicore found service wildfly NOT running");
