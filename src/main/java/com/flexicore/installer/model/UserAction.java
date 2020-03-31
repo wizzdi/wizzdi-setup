@@ -30,24 +30,7 @@ public class UserAction {
     public void clearMessages() {
         messages.clear();
     }
-    /**
-     * creates a UserAction for debugging purposes
-     * @return
-     */
-    public static UserAction getSample() {
-        UserAction result=new UserAction();
-        result.getMessages().add(new UserMessage().setColor(Ansi.Color.RED).setMessage("Hello there").setCrlf(true));
-        result.getMessages().add(new UserMessage().setColor(Ansi.Color.GREEN).setMessage("Hello there 2").setCrlf(true));
-        result.getMessages().add(new UserMessage().setColor(Ansi.Color.CYAN).setMessage("Hello there 2").setCrlf(false));
-        result.setDefaultResponse(UserResponse.FORCESTOP);
-        result.setResponseType(ResponseType.EXISTINGFILE);
-        result.setDefaultResponseForString("/dev/mdbinstall.log");
-        result.setOptionalPrompt("Please do that or that");
 
-
-        result.setPossibleAnswers(new UserResponse[]{UserResponse.IGNORE,UserResponse.NO});
-        return result;
-    }
 
     /**
      * list of {@link UserMessage} to be displayed on console

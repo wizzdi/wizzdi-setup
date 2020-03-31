@@ -2,12 +2,17 @@ package com.flexicore.installer.model;
 
 import org.fusesource.jansi.Ansi;
 
+import java.util.List;
+
 import static org.fusesource.jansi.Ansi.Color.*;
 
 /**
  * Describes a UserMessage that has no JavaFX dependency and can be used n Console and in JavaFX based UI
  */
 public class UserMessage {
+    public enum InputType {
+        none,string,bool,list
+    }
     boolean crlf=true;
     private String message;
     private int emphasize = 1; // the higher the number larger font will be used if UI present, console will use colors if possible
@@ -19,10 +24,18 @@ public class UserMessage {
     private String fontName="calibri";
     private int fontSize=10;
     private boolean useFont=false;
-    private boolean hasTextField=false;
+
+    /**
+     * from here added support for returned input
+     */
+    private InputType inputType=InputType.none;
+
     private int textFieldSize=70;
     private String textFieldPrompt;
     private Side textFieldSide=Side.left;
+    private List<String> options;
+    private String defaultValue;
+    private Object value;
     /**
      * will be used as left margin, -1==ignore
      */
