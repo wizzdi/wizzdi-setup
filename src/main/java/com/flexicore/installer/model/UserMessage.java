@@ -19,6 +19,10 @@ public class UserMessage {
     private String fontName="calibri";
     private int fontSize=10;
     private boolean useFont=false;
+    private boolean hasTextField=false;
+    private int textFieldSize=70;
+    private String textFieldPrompt;
+    private Side textFieldSide=Side.left;
     /**
      * will be used as left margin, -1==ignore
      */
@@ -108,4 +112,5 @@ public class UserMessage {
         this.leftMargin = leftMargin;
         return this;
     }
+
 }

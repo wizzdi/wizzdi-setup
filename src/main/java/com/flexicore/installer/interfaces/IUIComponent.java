@@ -66,4 +66,6 @@ public interface IUIComponent extends ExtensionPoint {
 
     UserResponse showSystemData(InstallationContext context,SystemData systemData);
 
+
+    UserResponse showPagedList(InstallationContext context, PagedList pagedList);
 }

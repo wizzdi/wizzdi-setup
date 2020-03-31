@@ -90,7 +90,7 @@ public class Start {
                 systemData.setPhysicalMemory(getPhysicalMemory());
                 systemData.setFreeDiskSpace(getFreeDiskSpace("C:"));
                 systemData.setWindowsVersion(getWindowsVersion());
-                info("************* ended  data gathering in: " + (systemData.setTotal(System.currentTimeMillis() - systemData.getStart()).getTotal()/1000+ " Seconds"));
+                info("************* ended  data gathering in: " + (systemData.setTotal(System.currentTimeMillis() - systemData.getStart()).getTotal() / 1000 + " Seconds"));
 
                 info("System data: " + systemData);
                 systemData.setDone(true);
@@ -116,7 +116,8 @@ public class Start {
                         setFilesProgress(Start::updateFilesProgress).
                         setUiToggle(Start::uiComponentToggle).setUpdateSingleComponent(Start::doUpdateComponent).
                         setUiAskUSer(Start::getUserResponse).
-                        setShowSystemData(Start::uiComponentShowSystemData);
+                        setShowSystemData(Start::uiComponentShowSystemData).
+                        setShowPagedData(Start::uiShowPagedList);
 
         File pluginRoot = new File(mainCmd.getOptionValue(INSTALLATION_TASKS_FOLDER, "tasks"));
         String path = pluginRoot.getAbsolutePath();
@@ -241,19 +242,17 @@ public class Start {
     }
 
 
+    static int logicalCores = -1;
 
-
-
-    static int logicalCores=-1;
     public static int getNumberOfLogicalProcessor() {
-        if (logicalCores!=-1) return logicalCores;
+        if (logicalCores != -1) return logicalCores;
         PowerShellResponse response = executePowerShellCommand("(Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors", 3000, 5);
         try {
             if (response.isTimeout() || response.isError()) {
 
                 return 2;
             }
-            logicalCores=Integer.parseInt(response.getCommandOutput());
+            logicalCores = Integer.parseInt(response.getCommandOutput());
 
         } catch (NumberFormatException e) {
 
@@ -309,9 +308,11 @@ public class Start {
         }
         return -1;
     }
-    static ProcessorData cacheProcessorData =null;
+
+    static ProcessorData cacheProcessorData = null;
+
     public static ProcessorData getProcessorData() {
-        if (cacheProcessorData !=null) return cacheProcessorData;
+        if (cacheProcessorData != null) return cacheProcessorData;
         PowerShellResponse response = executePowerShellCommand(
                 "Get-CimInstance -ClassName 'Win32_Processor'   | Select-Object -Property 'DeviceID', 'Name', 'NumberOfCores'", 3000, 200);
         ProcessorData processorData = new ProcessorData();
@@ -328,35 +329,35 @@ public class Start {
             // info("Get-CimInstance -ClassName 'Win32_Processor'  ");
             String theLine = lines[3];
 
-            boolean found=false;
+            boolean found = false;
             for (String line : lines) {
                 if (line.toLowerCase().startsWith("cpu")) {
                     theLine = line;
-                    found=true;
+                    found = true;
                 }
 
             }
             if (theLine.toLowerCase().startsWith("cpu")) {
                 String[] split = theLine.split("\\s+");
-                int i=0;
-                int at=-1;
-                for (String s:split) {
-                    if (s.equals("@")) at=i;
+                int i = 0;
+                int at = -1;
+                for (String s : split) {
+                    if (s.equals("@")) at = i;
                     i++;
                 }
-                StringBuilder b=new StringBuilder();
-                for (int j=1;j<at;j++){
+                StringBuilder b = new StringBuilder();
+                for (int j = 1; j < at; j++) {
                     b.append(split[j]);
-                    if (j+1!=at) b.append(" ");
+                    if (j + 1 != at) b.append(" ");
                 }
                 processorData.setName(b.toString());
                 try {
-                    processorData.setProcessorFrequency(Double.parseDouble(split[at+1].replaceAll("[^\\d.]", "")));
+                    processorData.setProcessorFrequency(Double.parseDouble(split[at + 1].replaceAll("[^\\d.]", "")));
                 } catch (NumberFormatException e) {
                     severe("Issue while parsing processor frequency");
                 }
                 try {
-                    processorData.setNumberOfCores(Integer.parseInt(split[at+2]));
+                    processorData.setNumberOfCores(Integer.parseInt(split[at + 2]));
                 } catch (NumberFormatException e) {
                     severe("Issue while parsing processor number of true cores");
                 }
@@ -373,20 +374,22 @@ public class Start {
         } catch (NumberFormatException e) {
             severe("General Error while parsing processor data ", e);
         }
-        cacheProcessorData =processorData;
+        cacheProcessorData = processorData;
         return processorData;
     }
-    static ProcessorType cacheProcessorType=null;
+
+    static ProcessorType cacheProcessorType = null;
+
     public static ProcessorType getPorcessorType() {
-        if (cacheProcessorType!=null) return cacheProcessorType;
+        if (cacheProcessorType != null) return cacheProcessorType;
         ProcessorType processorType = new ProcessorType();
         PowerShellResponse response = executePowerShellCommand("Get-WmiObject Win32_Processor", 10, 5);
         if (response.isTimeout() || response.isError()) {
-          return processorType;
-      }
+            return processorType;
+        }
 
         processorType.populate(response.getCommandOutput());
-        cacheProcessorType=processorType;
+        cacheProcessorType = processorType;
 
         return processorType;
     }
@@ -546,6 +549,15 @@ public class Start {
         if (iuiComponent != null) {
 
             return iuiComponent.showSystemData(context, systemData);
+
+        }
+
+        return null;
+    }
+
+    private static UserResponse uiShowPagedList(IUIComponent iuiComponent, InstallationContext context, PagedList pagedList) {
+        if (iuiComponent != null) {
+            return iuiComponent.showPagedList(context, pagedList);
 
         }
 
@@ -1153,9 +1165,9 @@ public class Start {
             }
             UserAction ua = new UserAction();
 
-            ua.setTitle(updateParameter.getBoolean()?"Please confirm update ":"Please confirm installation");
+            ua.setTitle(updateParameter == null ? "Please confirm installation" : updateParameter.getBoolean() ? "Please confirm update " : "Please confirm installation");
             ua.addMessage(new UserMessage().setMessage(""));
-            ua.addMessage(new UserMessage().setMessage(updateParameter.getBoolean()?"will update the following tasks ":"will install the following tasks:").
+            ua.addMessage(new UserMessage().setMessage(updateParameter == null ? "will install the following tasks:" : updateParameter.getBoolean() ? "will update the following tasks " : "will install the following tasks:").
                     setEmphasize(2).
                     setColor(Color.GREEN).setLeftMargin(20).setFontSize(16));
             ua.addMessage(new UserMessage().setMessage(""));
@@ -1320,13 +1332,13 @@ public class Start {
         return doResume();
     }
 
-    private static String uiComponentShowLogs(IUIComponent uiComponent, InstallationContext context) {
+    private static void uiComponentShowLogs(IUIComponent uiComponent, InstallationContext context) {
         try {
-            return doshowLogs();
+            doshowLogs(uiComponent, context);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
+        return;
     }
 
     private static UserResponse uiComponentShowSystemData(IUIComponent iuiComponent, InstallationContext context) {
@@ -1354,9 +1366,7 @@ public class Start {
         updateFilesProgress(context, task);
         return task;
     }
-
-
-    private static String doAbout() {
+   private static String doAbout() {
         logger.info("Performing about");
         return "";
     }
@@ -1366,56 +1376,16 @@ public class Start {
         return result;
     }
 
-    private static String doshowLogs() throws IOException {
+    private static void doshowLogs(IUIComponent uiComponent, InstallationContext context) throws IOException {
         logger.info("Performing show logs");
         List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
         File file = new File(System.getProperty("user.dir") + "/logs/installer.log");
         if (file.exists()) {
             List<String> lines = Files.readAllLines(Paths.get(file.getAbsolutePath()));
-            if (lines != null && lines.size() > 0) {
-                int pagesize = LOG_PAGE_SIZE;
-                int currentPage = -1;
-                UserResponse response = UserResponse.NEXT;
-                do {
-                    switch (response) {
-                        case BACK:
-                            currentPage = currentPage != 0 ? currentPage - 1 : currentPage;
-                            break;
-                        case NEXT:
-                            int b = (lines.size() / pagesize);
-                            currentPage = currentPage < b ? currentPage + 1 : currentPage;
-                            break;
-                    }
-                    String[] page = getPage(lines, pagesize, currentPage);
-                    UserAction ua = new UserAction();
-                    for (int i = 0; i < page.length; i++) {
-                        String m = page[i].toLowerCase();
-                        Ansi.Color color = m.contains("severe")
-                                || m.contains("error")
-                                || m.contains("failed")
-                                || m.contains("abort")
-                                || m.contains("stop")
-                                || m.contains("cannot")
-                                || m.contains("unsuccessfully")
-                                ? Color.RED
-                                : Color.BLACK;
-                        UserMessage um = new UserMessage().setMessage(page[i]).
-                                setLeftMargin(10).
-                                setUseFont(true).
-                                setFontName("calibri").
-                                setFontSize(12).
-                                setColor(color);
-                        ua.addMessage(um);
-                    }
-                    ua.setPossibleAnswers(new UserResponse[]{UserResponse.BACK, UserResponse.DONE, UserResponse.NEXT});
-                    response = getUserResponse(null, ua);
-                } while (response != null && !response.equals(UserResponse.DONE));
-
-            }
-
-
+            PagedList pLines = new PagedList();
+            pLines.setPageSize(25).setShowSearch(true).setTitle("Installer log").addAll(lines);
+            UserResponse result = uiComponent.showPagedList(context, pLines);
         }
-        return "";
     }
 
     /**
@@ -1435,98 +1405,6 @@ public class Start {
         }
         return result;
     }
-
-    @FunctionalInterface
-    public static interface UIAccessInterfaceQuit {
-        boolean uiComponentClosed(IUIComponent uiComponent, InstallationContext context);
-
-    }
-
-
-    @FunctionalInterface
-    public static interface UIAccessInterfaceInstall {
-        boolean uiComponentInstall(IUIComponent uiComponent, InstallationContext context);
-
-    }
-
-    @FunctionalInterface
-    public static interface UIAccessInterfaceUnInstall {
-        boolean uiComponentUnInstall(IUIComponent uiComponent, InstallationContext context);
-
-    }
-
-    @FunctionalInterface
-    public static interface UIAccessInterfaceUpdate {
-        boolean uiComponentUpdate(IUIComponent uiComponent, InstallationContext context);
-
-    }
-
-    @FunctionalInterface
-    public static interface UIAccessInterfaceToggle {
-        boolean uiComponentToggle(IUIComponent uiComponent, InstallationContext context);
-
-    }
-
-    @FunctionalInterface
-    public static interface UIAccessInterfaceInstallDry {
-        boolean uiComponentInstallDry(IUIComponent uiComponent, InstallationContext context);
-    }
-
-    @FunctionalInterface
-    public static interface UIAccessInterfaceStop {
-        boolean uiComponentStop(IUIComponent uiComponent, InstallationContext context);
-    }
-
-    @FunctionalInterface
-    public static interface UIAccessInterfacePause {
-        boolean uiComponentPause(IUIComponent uiComponent, InstallationContext context);
-    }
-
-    @FunctionalInterface
-    public static interface UIAccessInterfaceResume {
-        boolean uiComponentResume(IUIComponent uiComponent, InstallationContext context);
-    }
-
-    @FunctionalInterface
-    public static interface UIAccessInterfaceShowLogs {
-        String uiComponentShowLogs(IUIComponent uiComponent, InstallationContext context);
-    }
-
-    @FunctionalInterface
-    public static interface UIAccessAbout {
-        String uiComponentAbout(IUIComponent uiComponent, InstallationContext context);
-    }
-
-    @FunctionalInterface
-    public static interface InstallerProgress {
-        IInstallationTask installationProgress(IInstallationTask task, InstallationContext context);
-    }
-
-    @FunctionalInterface
-    public static interface installerFilesProgress {
-        IInstallationTask filesProgress(InstallationContext context, IInstallationTask task);
-    }
-
-    @FunctionalInterface
-    public static interface UpdateService {
-        boolean serviceProgress(InstallationContext context, Service service, IInstallationTask task);
-    }
-
-    @FunctionalInterface
-    public static interface UpdateSingleComponent {
-        boolean updateComponent(InstallationContext context, IInstallationTask task, Parameter parameter);
-    }
-
-    @FunctionalInterface
-    public static interface AskUser {
-        UserResponse dialog(InstallationContext context, UserAction userAction);
-    }
-
-    @FunctionalInterface
-    public static interface ShowSystemData {
-        UserResponse showSystemData(IUIComponent uiComponent, InstallationContext context);
-    }
-
     private static class InstallProper {
         private boolean myResult;
         private InstallationContext context;
@@ -1762,6 +1640,106 @@ public class Start {
 
     public static SystemData getSystemData() {
         return systemData;
+    }
+
+
+    @FunctionalInterface
+    public static interface UIAccessInterfaceQuit {
+        boolean uiComponentClosed(IUIComponent uiComponent, InstallationContext context);
+
+    }
+
+
+    @FunctionalInterface
+    public static interface UIAccessInterfaceInstall {
+        boolean uiComponentInstall(IUIComponent uiComponent, InstallationContext context);
+
+    }
+
+    @FunctionalInterface
+    public static interface UIAccessInterfaceUnInstall {
+        boolean uiComponentUnInstall(IUIComponent uiComponent, InstallationContext context);
+
+    }
+
+    @FunctionalInterface
+    public static interface UIAccessInterfaceUpdate {
+        boolean uiComponentUpdate(IUIComponent uiComponent, InstallationContext context);
+
+    }
+
+    @FunctionalInterface
+    public static interface UIAccessInterfaceToggle {
+        boolean uiComponentToggle(IUIComponent uiComponent, InstallationContext context);
+
+    }
+
+    @FunctionalInterface
+    public static interface UIAccessInterfaceInstallDry {
+        boolean uiComponentInstallDry(IUIComponent uiComponent, InstallationContext context);
+    }
+
+    @FunctionalInterface
+    public static interface UIAccessInterfaceStop {
+        boolean uiComponentStop(IUIComponent uiComponent, InstallationContext context);
+    }
+
+    @FunctionalInterface
+    public static interface UIAccessInterfacePause {
+        boolean uiComponentPause(IUIComponent uiComponent, InstallationContext context);
+    }
+
+    @FunctionalInterface
+    public static interface UIAccessInterfaceResume {
+        boolean uiComponentResume(IUIComponent uiComponent, InstallationContext context);
+    }
+
+    @FunctionalInterface
+    public static interface UIAccessInterfaceShowLogs {
+        void uiComponentShowLogs(IUIComponent uiComponent, InstallationContext context);
+    }
+
+    @FunctionalInterface
+    public static interface UIAccessAbout {
+        String uiComponentAbout(IUIComponent uiComponent, InstallationContext context);
+    }
+
+    @FunctionalInterface
+    public static interface InstallerProgress {
+        IInstallationTask installationProgress(IInstallationTask task, InstallationContext context);
+    }
+
+    @FunctionalInterface
+    public static interface installerFilesProgress {
+        IInstallationTask filesProgress(InstallationContext context, IInstallationTask task);
+    }
+
+    @FunctionalInterface
+    public static interface UpdateService {
+        boolean serviceProgress(InstallationContext context, Service service, IInstallationTask task);
+    }
+
+    @FunctionalInterface
+    public static interface UpdateSingleComponent {
+        boolean updateComponent(InstallationContext context, IInstallationTask task, Parameter parameter);
+    }
+
+    @FunctionalInterface
+    public static interface AskUser {
+        UserResponse dialog(InstallationContext context, UserAction userAction);
+    }
+
+    @FunctionalInterface
+    public static interface ShowSystemData {
+        UserResponse showSystemData(IUIComponent uiComponent, InstallationContext context);
+    }
+
+    /**
+     * see a function implementing this interface and a varaible in InstallationContext saving a point to this function.
+     */
+    @FunctionalInterface
+    public static interface ShowPagedData {
+        UserResponse showSystemData(IUIComponent uiComponent, InstallationContext context, PagedList pagedList);
     }
 
 

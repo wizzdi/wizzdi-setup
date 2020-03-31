@@ -39,6 +39,7 @@ public class InstallationContext {
     private Start.UpdateSingleComponent updateSingleComponent;
     private Start.AskUser uiAskUSer;
     private Start.ShowSystemData showSystemData;
+    private Start.ShowPagedData showPagedData;
     private ProgressConsumer consumer;
     private int successFullyInstalled=0;
     private int failedToInstall=0;
@@ -356,6 +357,15 @@ public class InstallationContext {
 
     public InstallationContext setShowSystemData(Start.ShowSystemData showSystemData) {
         this.showSystemData = showSystemData;
+        return this;
+    }
+
+    public Start.ShowPagedData getShowPagedData() {
+        return showPagedData;
+    }
+
+    public InstallationContext setShowPagedData(Start.ShowPagedData showPagedData) {
+        this.showPagedData = showPagedData;
         return this;
     }
 }
