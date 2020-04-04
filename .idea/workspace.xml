@@ -2,11 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5a5edd4e-73f9-41ab-925c-ed8a5f34bf28" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_flexicore_flexicore_installer_1_0_20.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_fusesource_jansi_jansi_1_18.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/debug.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/runConfigurations/debug.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -133,7 +129,8 @@
       <workItem from="1584456697063" duration="593000" />
       <workItem from="1584514128943" duration="599000" />
       <workItem from="1584777941285" duration="599000" />
-      <workItem from="1584883283264" duration="1222000" />
+      <workItem from="1584883283264" duration="1382000" />
+      <workItem from="1584948764308" duration="608000" />
     </task>
     <task id="LOCAL-00001" summary="first">
       <created>1577453423358</created>
@@ -310,7 +307,14 @@
       <option name="project" value="LOCAL" />
       <updated>1583917868160</updated>
     </task>
-    <option name="localTasksCounter" value="26" />
+    <task id="LOCAL-00026" summary="fixed issues with re-install">
+      <created>1584948581333</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1584948581333</updated>
+    </task>
+    <option name="localTasksCounter" value="27" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -329,23 +333,22 @@
       <screen x="0" y="0" width="1536" height="764" />
     </state>
     <state x="225" y="68" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1536.764@0.0.1536.764" timestamp="1584350185387" />
-    <state x="575" y="122" key="#com.intellij.ide.util.MemberChooser" timestamp="1582432910807">
+    <state x="575" y="122" key="#com.intellij.ide.util.MemberChooser" timestamp="1586021829735">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state x="575" y="122" key="#com.intellij.ide.util.MemberChooser/0.0.1536.764@0.0.1536.764" timestamp="1582432910807" />
+    <state x="575" y="122" key="#com.intellij.ide.util.MemberChooser/0.0.1536.764@0.0.1536.764" timestamp="1586021829735" />
     <state x="450" y="141" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog" timestamp="1578992473676">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
     <state x="450" y="141" key="#com.intellij.openapi.updateSettings.impl.PluginUpdateInfoDialog/0.0.1536.764@0.0.1536.764" timestamp="1578992473676" />
-    <state x="356" y="0" key="CommitChangelistDialog2" timestamp="1583917866736">
+    <state x="356" y="0" key="CommitChangelistDialog2" timestamp="1584948579737">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state x="356" y="0" key="CommitChangelistDialog2/0.0.1536.764@0.0.1536.764" timestamp="1583917866736" />
+    <state x="356" y="0" key="CommitChangelistDialog2/0.0.1536.764@0.0.1536.764" timestamp="1584948579737" />
     <state x="549" y="156" key="FileChooserDialogImpl" timestamp="1582544060641">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
     <state x="549" y="156" key="FileChooserDialogImpl/0.0.1536.764@0.0.1536.764" timestamp="1582544060641" />
-    <state x="549" y="166" key="FileChooserDialogImpl/0.0.1536.814@0.0.1536.814" timestamp="1575691439737" />
     <state width="1493" height="65" key="GridCell.Tab.0.bottom" timestamp="1584350848263">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
@@ -386,10 +389,10 @@
       <screen x="0" y="0" width="1536" height="764" />
     </state>
     <state x="250" y="0" key="SettingsEditor/0.0.1536.764@0.0.1536.764" timestamp="1582432820537" />
-    <state x="362" y="146" key="Vcs.Push.Dialog.v2" timestamp="1583917869999">
+    <state x="362" y="146" key="Vcs.Push.Dialog.v2" timestamp="1584948583331">
       <screen x="0" y="0" width="1536" height="764" />
     </state>
-    <state x="362" y="146" key="Vcs.Push.Dialog.v2/0.0.1536.764@0.0.1536.764" timestamp="1583917869999" />
+    <state x="362" y="146" key="Vcs.Push.Dialog.v2/0.0.1536.764@0.0.1536.764" timestamp="1584948583331" />
     <state x="579" y="330" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1582816580649">
       <screen x="0" y="0" width="1536" height="764" />
     </state>

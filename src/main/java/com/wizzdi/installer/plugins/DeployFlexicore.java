@@ -20,6 +20,11 @@ import java.util.logging.Logger;
  * Deploys Flexicore.war into existing Wildfly Installation
  */
 public class DeployFlexicore extends InstallationTask {
+    @Override
+    public String getVersion() {
+        return "Deploy Flexicore 1.0.1";
+    }
+
     static Logger logger;
     static String serviceName = "wildfly";
     static String currentFolder = System.getProperty("user.dir");

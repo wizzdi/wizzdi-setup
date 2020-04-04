@@ -9,7 +9,7 @@
     </properties>
     <groupId>com.wizzdi.installer.plugins</groupId>
     <artifactId>deploy-flexicore</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <packaging>jar</packaging>
     <distributionManagement>
         <repository>
