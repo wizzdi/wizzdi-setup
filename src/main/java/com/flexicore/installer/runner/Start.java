@@ -128,6 +128,7 @@ public class Start {
         logger.info("Will load tasks from " + pluginRoot.getAbsolutePath() + "  exists: " + pluginRoot.exists());
         pluginManager = new DefaultPluginManager(pluginRoot.toPath());
 
+
         pluginManager.loadPlugins();
         pluginManager.startPlugins();
         Object o = pluginManager.getExtensions(IInstallationTask.class);
@@ -1378,11 +1379,11 @@ public class Start {
 
     private static void doshowLogs(IUIComponent uiComponent, InstallationContext context) throws IOException {
         logger.info("Performing show logs");
-        List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
+
         File file = new File(System.getProperty("user.dir") + "/logs/installer.log");
         if (file.exists()) {
             List<String> lines = Files.readAllLines(Paths.get(file.getAbsolutePath()));
-            PagedList pLines = new PagedList();
+            PagedList<String> pLines = new PagedList();
             pLines.setPageSize(25).setShowSearch(true).setTitle("Installer log").addAll(lines);
             UserResponse result = uiComponent.showPagedList(context, pLines);
         }
