@@ -25,8 +25,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static com.flexicore.installer.model.InstallationTask.executePowerShellCommand;
-import static com.flexicore.installer.model.InstallationTask.getWindowsVersion;
+import static com.flexicore.installer.model.InstallationTask.*;
 import static com.flexicore.installer.utilities.LoggerUtilities.initLogger;
 import static java.lang.System.exit;
 import static org.fusesource.jansi.Ansi.Color;
@@ -258,7 +257,7 @@ public class Start {
 
     public static int getNumberOfLogicalProcessor() {
         if (logicalCores != -1) return logicalCores;
-        PowerShellResponse response = executePowerShellCommand("(Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors", 3000, 5);
+        PowerShellReturn response = executePowerShellCommand("(Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors", null);
         try {
             if (response.isTimeout() || response.isError()) {
 
@@ -275,7 +274,7 @@ public class Start {
 
     }
 
-    private static String getValueByKey(PowerShellResponse response, String key) {
+    private static String getValueByKey(PowerShellReturn response, String key) {
         if (response.isError() || response.isTimeout()) return "";
 
         String[] result = response.getCommandOutput().split("\n");
@@ -294,9 +293,20 @@ public class Start {
 
         if (isWindows()) {
             if (driveLetter == null || driveLetter.isEmpty()) driveLetter = "C:";
-            PowerShellResponse response = executePowerShellCommand("   Get-WMIObject Win32_Logicaldisk -filter \"deviceid='" + driveLetter + "'\"", 3000, 5);
+            PowerShellReturn response = executePowerShellCommand("Get-PSDrive C | Select-Object Used,Free", null);
+
             try {
-                return Double.parseDouble(getValueByKey(response, "FreeSpace")) / gb;
+                if (!response.isError()) {
+                    for (String s:response.getOutput()) {
+                        String[] split=s.split(" ");
+                        if (split.length==2) {
+                            if (isNumeric(split[1])) {
+                                return Double.parseDouble(split[1]) / gb;
+                            }
+                        }
+                    }
+                }
+
             } catch (NumberFormatException e) {
 
             }
@@ -310,7 +320,7 @@ public class Start {
 
     public static double getPhysicalMemory() {
         if (isWindows()) {
-            PowerShellResponse response = executePowerShellCommand(" Get-WmiObject -Class Win32_ComputerSystem", 3000, 5);
+            PowerShellReturn response = executePowerShellCommand(" Get-WmiObject -Class Win32_ComputerSystem", null);
 
             try {
                 return Double.parseDouble(getValueByKey(response, "TotalPhysicalMemory")) / gb;
@@ -325,8 +335,8 @@ public class Start {
 
     public static ProcessorData getProcessorData() {
         if (cacheProcessorData != null) return cacheProcessorData;
-        PowerShellResponse response = executePowerShellCommand(
-                "Get-CimInstance -ClassName 'Win32_Processor'   | Select-Object -Property 'DeviceID', 'Name', 'NumberOfCores'", 3000, 200);
+        PowerShellReturn response = executePowerShellCommand(
+                "Get-CimInstance -ClassName 'Win32_Processor'   | Select-Object -Property 'DeviceID', 'Name', 'NumberOfCores'", null);
         ProcessorData processorData = new ProcessorData();
 
         try {
@@ -395,7 +405,7 @@ public class Start {
     public static ProcessorType getPorcessorType() {
         if (cacheProcessorType != null) return cacheProcessorType;
         ProcessorType processorType = new ProcessorType();
-        PowerShellResponse response = executePowerShellCommand("Get-WmiObject Win32_Processor", 10, 5);
+        PowerShellReturn response = executePowerShellCommand("Get-WmiObject Win32_Processor", null);
         if (response.isTimeout() || response.isError()) {
             return processorType;
         }

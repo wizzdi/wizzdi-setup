@@ -9,8 +9,13 @@ import java.util.logging.Logger;
 
 public class PowerShellReturn {
     private int result;
-    private List<String> error=new ArrayList<>();
+    boolean error=false;
+    private List<String> errorList =new ArrayList<>();
     private List<String> output=new ArrayList<>();
+
+    public PowerShellReturn(int result) {
+        this.result=result;
+    }
 
     public int getResult() {
         return result;
@@ -21,12 +26,12 @@ public class PowerShellReturn {
         return this;
     }
 
-    public List<String> getError() {
-        return error;
+    public List<String> getErrorList() {
+        return errorList;
     }
 
-    public PowerShellReturn setError(List<String> error) {
-        this.error = error;
+    public PowerShellReturn setErrorList(List<String> errorList) {
+        this.errorList = errorList;
         return this;
     }
 
@@ -39,7 +44,7 @@ public class PowerShellReturn {
         return this;
     }
     public void addError(String errorLine) {
-        error.add(errorLine);
+        errorList.add(errorLine);
     }
     public void addOutput(String outputLine) {
         output.add(outputLine);
@@ -74,22 +79,21 @@ public class PowerShellReturn {
 
         }
     }
-    public PowerShellResponse getResponse() {
+
+    public boolean isTimeout() {
+        return false;
+    }
+    public boolean isError() {
+        return errorList.size()!=0 || result!=0;
+    }
+
+    public String getCommandOutput() {
         StringBuilder sbOutput=new StringBuilder();
-        PowerShellResponse response = null;
+
         for (String s: output) {
             sbOutput.append(s);
             sbOutput.append("\n");
         }
-        StringBuilder sbError=new StringBuilder();
-        for (String s: error) {
-            sbError.append(s);
-            sbError.append("\n");
-        }
-        if (getResult()==0 && error.size()==0) {
-            response=new PowerShellResponse(false,sbOutput.toString(),false);
-            return response;
-        }
-        return new PowerShellResponse(true,sbError.toString(),false);
+        return  sbOutput.toString();
     }
 }

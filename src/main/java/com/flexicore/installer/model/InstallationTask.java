@@ -118,9 +118,9 @@ public class InstallationTask implements IInstallationTask {
 
     public int getNumberOfLogicalProcessor() {
         int result = -2;
-        PowerShellResponse response = executePowerShellCommand("(Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors", 3000, 5);
+        PowerShellReturn response = executePowerShellCommand("(Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors", null);
         try {
-            if (response.isTimeout() || response.isError()) {
+            if (response.getErrorList().size()!=0 || response.isError()) {
                 if (response.isTimeout()) severe("Time out in getting processor number of logical cores");
                 if (response.isError()) severe("error in getting processor number of logical cores");
 
@@ -143,7 +143,7 @@ public class InstallationTask implements IInstallationTask {
 
     public ProcessorType getPorcessorType() {
         ProcessorType processorType = new ProcessorType();
-        PowerShellResponse response = executePowerShellCommand("Get-WmiObject Win32_Processor", 3000, 5);
+        PowerShellReturn response = executePowerShellCommand("Get-WmiObject Win32_Processor", null);
         if (response.isTimeout() || response.isError()) {
 
             if (response.isTimeout()) severe("Time out in getting processor type");
@@ -159,8 +159,8 @@ public class InstallationTask implements IInstallationTask {
     }
 
     public ProcessorData getProcessorData() {
-        PowerShellResponse response = executePowerShellCommand(
-                "Get-CimInstance -ClassName 'Win32_Processor'   | Select-Object -Property 'DeviceID', 'Name', 'NumberOfCores'", 3000, 200);
+        PowerShellReturn response = executePowerShellCommand(
+                "Get-CimInstance -ClassName 'Win32_Processor'   | Select-Object -Property 'DeviceID', 'Name', 'NumberOfCores'", null);
         ProcessorData processorData = new ProcessorData();
 
         try {
@@ -198,7 +198,7 @@ public class InstallationTask implements IInstallationTask {
 
 
     private void forceKillService(String taskManagerName) {
-        PowerShellResponse response = executePowerShellCommand("get-process " + taskManagerName + " -IncludeUserName", 3000, 5);
+        PowerShellReturn response = executePowerShellCommand("get-process " + taskManagerName + " -IncludeUserName", null);
         if (!response.isError() && !response.isTimeout()) {
             String asString = response.getCommandOutput();
             String[] split = asString.split("\n");
@@ -209,7 +209,7 @@ public class InstallationTask implements IInstallationTask {
                     int i = 0;
                     for (String part : split) {
                         if (part.contains("NT")) {
-                            response = executePowerShellCommand("Stop-process -id " + split[i - 1] + " -force", 1000, 5);
+                            response = executePowerShellCommand("Stop-process -id " + split[i - 1] + " -force", null);
                             info("Have killed service " + taskManagerName);
                         }
                         i++;
@@ -328,7 +328,7 @@ public class InstallationTask implements IInstallationTask {
      */
     public boolean setServiceToStop(String serviceName, String ownerName) {
         if (isWindows) {
-            PowerShellResponse response = executePowerShellCommand("Stop-Service -name " + serviceName, 10000, 5);
+            PowerShellReturn response = executePowerShellCommand("Stop-Service -name " + serviceName, null);
             return true;
             //return executeCommand("sc stop " + serviceName, "STOP_PENDING", "Set Service To Stop " + serviceName);
         } else {
@@ -404,7 +404,7 @@ public class InstallationTask implements IInstallationTask {
     //todo: check that Linux version works.
     public boolean setServiceToStart(String serviceName, String ownerName) {
         if (isWindows()) {
-            PowerShellResponse response = executePowerShellCommand("Start-Service -name " + serviceName, 10000, 5);
+            PowerShellReturn response = executePowerShellCommand("Start-Service -name " + serviceName, null);
             return true;
 
             //return executeCommand("sc start " + serviceName, "START_PENDING", "Set Service To Stop " + serviceName);
@@ -583,53 +583,34 @@ public class InstallationTask implements IInstallationTask {
         }
     }
 
-    /**
-     * Execute a single PowerShell command
-     *
-     * @param command
-     * @param maxWait
-     * @param waitPause
-     * @return
-     */
-    public static PowerShellResponse executePowerShellCommandold(String command, Integer maxWait, Integer waitPause) {
 
-        Map<String, String> myConfig = new HashMap<>();
-        myConfig.put("maxWait", maxWait.toString());
-        myConfig.put("waitPause", waitPause.toString());
-        PowerShellResponse response = PowerShell.executeSingleCommand(command);
-        return response;
-    }
+
 
     /**
      * Execute a single PowerShell command
      *
      * @param command
-     * @param maxWait
-     * @param waitPause
+     * @param logger
      * @return
      */
-    public static PowerShellResponse executePowerShellCommand(String command, Integer maxWait, Integer waitPause) {
-
-
-        PowerShellResponse response;
+    public static PowerShellReturn executePowerShellCommand(String command, Logger logger) {
         PowerShellReturn powerShellReturn = null;
-
-
         Runtime runtime = Runtime.getRuntime();
         Process proc = null;
 
         try {
             proc = runtime.exec("powershell.exe " + command);
             int result = proc.waitFor();
-            powerShellReturn = new PowerShellReturn();
+            powerShellReturn = new PowerShellReturn(result);
+
             powerShellReturn.fillInput(proc, null);
             powerShellReturn.fillError(proc, null);
             proc.getOutputStream().close();
         } catch (IOException | InterruptedException e) {
-
+            if (logger!=null) logger.log(Level.SEVERE,"Error while executing PS command: ",e);
         }
 
-        return powerShellReturn.getResponse();
+        return powerShellReturn;
     }
 
     /**
@@ -649,7 +630,7 @@ public class InstallationTask implements IInstallationTask {
             try {
                 proc = runtime.exec("powershell.exe "+script+" "+parameters) ;
                 int result = proc.waitFor();
-                powerShellReturn = new PowerShellReturn();
+                powerShellReturn = new PowerShellReturn(result);
                 powerShellReturn.fillInput(proc, logger);
                 powerShellReturn.fillError(proc, logger);
                 proc.getOutputStream().close();
@@ -730,7 +711,7 @@ public class InstallationTask implements IInstallationTask {
         } else {
             command = "Get-WmiObject -Class Win32_Product | Where-Object{$_.Name -like  '*" + pattern + "*'}";
         }
-        PowerShellResponse response = executePowerShellCommand(command, 120000, 10);
+        PowerShellReturn response = executePowerShellCommand(command, null);
         List<WindowsInstalledComponent> result = getComponents(response);
         if (result != null) return result;
         return null;
@@ -738,19 +719,19 @@ public class InstallationTask implements IInstallationTask {
 
     public List<WindowsInstalledComponent> getallInstalledClasses() {
         String command = "Get-WmiObject -Class Win32_Product";
-        PowerShellResponse response = executePowerShellCommand(command, 120000, 10);
+        PowerShellReturn response = executePowerShellCommand(command, null);
         List<WindowsInstalledComponent> result = getComponents(response);
         if (result != null) return result;
         return null;
     }
 
-    private List<WindowsInstalledComponent> getComponents(PowerShellResponse response) {
+    private List<WindowsInstalledComponent> getComponents(PowerShellReturn response) {
         List<WindowsInstalledComponent> result = new ArrayList<>();
         if (response != null) {
-            String[] split = response.getCommandOutput().split("\n");
-            if (split != null && split.length > 1) {
+
+            if (response.getOutput().size()!=0) {
                 WindowsInstalledComponent component = null;
-                for (String line : split) {
+                for (String line : response.getOutput()) {
 
                     String[] parsed = line.split(":");
                     if (parsed.length == 2) {
