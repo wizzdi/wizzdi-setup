@@ -4,10 +4,10 @@ import com.flexicore.installer.exceptions.MissingInstallationTaskDependency;
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.interfaces.IUIComponent;
 import com.flexicore.installer.model.*;
-import jpowershell.PowerShellResponse;
+
 import org.apache.commons.cli.*;
 import org.apache.commons.lang3.SystemUtils;
-import org.fusesource.jansi.Ansi;
+
 import org.fusesource.jansi.AnsiConsole;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -43,6 +43,7 @@ public class Start {
     private static final String CONFIG_FILENAME = "jpowershell.properties";
     private static final int LOG_PAGE_SIZE = 50;
     private static Logger logger;
+    private static List<String> versions = new ArrayList<>();
     private static PluginManager pluginManager;
     private static List<IUIComponent> uiComponents;
     private static InstallationContext installationContext = null;
@@ -70,6 +71,8 @@ public class Start {
         CommandLine mainCmd = parser.parse(options, trueArgs, false); //will not fail if fed with plugins options.
 
         logger = initLogger("Installer", mainCmd.getOptionValue(LOG_PATH_OPT, "logs"));
+        //C:\\dev\\PowerShellScripts\\test.ps1 c:\\dev\\PowerShellScripts\\text.txt");
+       // PowerShellReturn result = InstallationTask.executeScript(logger, "c:\\dev\\PowerShellScripts\\test.ps1", new String[]{"c:\\dev\\PowerShellScripts\\text.txt"});
         Thread startThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -137,6 +140,12 @@ public class Start {
 
         // handle parameters and command line options here. do it at the dependency order.
 
+        for (IInstallationTask task : installationTasks.values()) {
+            versions.add(task.getVersion());
+            if (task.getVersion().equals("1.0.0")) {
+                int a = 3;
+            }
+        }
         for (IInstallationTask task : installationTasks.values()) {
             if (task.isSnooper()) {
 
@@ -214,6 +223,8 @@ public class Start {
         installationContext.getiInstallationTasks().values().forEach(iInstallationTask -> iInstallationTask.initialize(installationContext));
         int order = 1;
         for (IInstallationTask task : installationContext.getiInstallationTasks().values()) task.setOrder(order++);
+        Collections.sort(versions);
+
         loadUiComponents();  //currently asynchronous
         if (!uiFoundandRun) {
             checkHelp(mainCmd);
@@ -467,6 +478,7 @@ public class Start {
     private static void loadUiComponents() {
         uiComponents = pluginManager.getExtensions(IUIComponent.class);
         for (IUIComponent component : uiComponents) {
+            versions.add(0, component.getVersion());
             component.setContext(installationContext);
             installationContext.addUIComponent(component);
             if (component.isAutoStart()) {
@@ -1351,7 +1363,7 @@ public class Start {
 
 
     private static String UIAccessAbout(IUIComponent uiComponent, InstallationContext context) {
-        return doAbout();
+        return doAbout(uiComponent, context);
     }
 
     private static IInstallationTask InstallerProgress(IInstallationTask task, InstallationContext context) {
@@ -1367,8 +1379,16 @@ public class Start {
         updateFilesProgress(context, task);
         return task;
     }
-   private static String doAbout() {
-        logger.info("Performing about");
+
+    private static String doAbout(IUIComponent uiComponent, InstallationContext context) {
+        String title = "Installer plugins versions";
+        Parameter paramater = context.getParameter("maintitle");
+        if (paramater!=null) title=paramater.getValue();
+        logger.info("Performing show about ");
+        PagedList<String> pLines = new PagedList();
+
+        pLines.setPageSize(25).setShowSearch(false).setTitle(title).addAll(versions);
+        UserResponse result = uiComponent.showPagedList(context, pLines);
         return "";
     }
 
@@ -1406,6 +1426,7 @@ public class Start {
         }
         return result;
     }
+
     private static class InstallProper {
         private boolean myResult;
         private InstallationContext context;

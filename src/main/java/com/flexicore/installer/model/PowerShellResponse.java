@@ -23,9 +23,9 @@ package com.flexicore.installer.model;
  */
 public class PowerShellResponse {
 
-    private final boolean error;
-    private final String commandOutput;
-    private final boolean timeout;
+    private  boolean error;
+    private  String commandOutput;
+    private  boolean timeout;
 
     PowerShellResponse(boolean isError, String commandOutput, boolean timeout) {
         this.error = isError;

@@ -6,8 +6,7 @@ import com.flexicore.installer.utilities.CopyFileVisitor;
 import com.flexicore.installer.utilities.FolderCompression;
 import com.flexicore.installer.utilities.StreamGobbler;
 import com.wizzdi.installer.*;
-import jpowershell.PowerShell;
-import jpowershell.PowerShellResponse;
+
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -24,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
@@ -128,11 +128,11 @@ public class InstallationTask implements IInstallationTask {
             } else {
                 info("response for getting logical processors number:\n" + response.getCommandOutput());
             }
-            
+
             try {
-                result= Integer.parseInt(response.getCommandOutput());
+                result = Integer.parseInt(response.getCommandOutput());
             } catch (NumberFormatException e) {
-                severe("Error while parsing logical cores",e);
+                severe("Error while parsing logical cores", e);
             }
         } catch (NumberFormatException e) {
             return -1;
@@ -158,7 +158,7 @@ public class InstallationTask implements IInstallationTask {
         return processorType;
     }
 
-    public  ProcessorData getProcessorData() {
+    public ProcessorData getProcessorData() {
         PowerShellResponse response = executePowerShellCommand(
                 "Get-CimInstance -ClassName 'Win32_Processor'   | Select-Object -Property 'DeviceID', 'Name', 'NumberOfCores'", 3000, 200);
         ProcessorData processorData = new ProcessorData();
@@ -459,15 +459,16 @@ public class InstallationTask implements IInstallationTask {
      * @param shortcutLocation the location of the shortcut, can be System.getProperty("user.home")+"/Desktop/"+"shortcut.lnk" (example)
      * @param iconIndex        index in the SystemRoot%\system32\SHELL32.dll icons
      * @param workingDir       the working directory for the target file.
+     * @param iconsPath        optional icon path, if it is null,  SHELL32.dll is used (in system32 folder)
      * @return
      */
-    public boolean createLink(String targetLocation, String shortcutLocation, int iconIndex, String workingDir) {
+    public boolean createLink(String targetLocation, String shortcutLocation, int iconIndex, String iconsPath, String workingDir) {
         if (!isWindows()) return false;
         File file = new File(targetLocation);
         if (file.exists()) {
             ShellLink sl = ShellLink.createLink(targetLocation)
                     .setWorkingDir(workingDir)
-                    .setIconLocation("%SystemRoot%\\system32\\SHELL32.dll");
+                    .setIconLocation(iconsPath == null ? "%SystemRoot%\\system32\\SHELL32.dll" : iconsPath);
             sl.getHeader().setIconIndex(iconIndex);
             try {
                 sl.saveTo(shortcutLocation);
@@ -582,7 +583,15 @@ public class InstallationTask implements IInstallationTask {
         }
     }
 
-    public static PowerShellResponse executePowerShellCommand(String command, Integer maxWait, Integer waitPause) {
+    /**
+     * Execute a single PowerShell command
+     *
+     * @param command
+     * @param maxWait
+     * @param waitPause
+     * @return
+     */
+    public static PowerShellResponse executePowerShellCommandold(String command, Integer maxWait, Integer waitPause) {
 
         Map<String, String> myConfig = new HashMap<>();
         myConfig.put("maxWait", maxWait.toString());
@@ -591,6 +600,79 @@ public class InstallationTask implements IInstallationTask {
         return response;
     }
 
+    /**
+     * Execute a single PowerShell command
+     *
+     * @param command
+     * @param maxWait
+     * @param waitPause
+     * @return
+     */
+    public static PowerShellResponse executePowerShellCommand(String command, Integer maxWait, Integer waitPause) {
+
+
+        PowerShellResponse response;
+        PowerShellReturn powerShellReturn = null;
+
+
+        Runtime runtime = Runtime.getRuntime();
+        Process proc = null;
+
+        try {
+            proc = runtime.exec("powershell.exe " + command);
+            int result = proc.waitFor();
+            powerShellReturn = new PowerShellReturn();
+            powerShellReturn.fillInput(proc, null);
+            powerShellReturn.fillError(proc, null);
+            proc.getOutputStream().close();
+        } catch (IOException | InterruptedException e) {
+
+        }
+
+        return powerShellReturn.getResponse();
+    }
+
+    /**
+     * Execute a PowerShell script
+     * @param logger
+     * @param script
+     * @param params
+     * @return PowerShellReturn instance or null, the instance contains return value (usually 0) and list of output lines + list of error lines
+     */
+    public static PowerShellReturn executeScript(Logger logger, String script, String[] params) {
+        PowerShellReturn powerShellReturn =null;
+        if (new File(script).exists()) {
+            String parameters = prepareParams(params);
+            Runtime runtime = Runtime.getRuntime();
+            Process proc = null;
+
+            try {
+                proc = runtime.exec("powershell.exe "+script+" "+parameters) ;
+                int result = proc.waitFor();
+                powerShellReturn = new PowerShellReturn();
+                powerShellReturn.fillInput(proc, logger);
+                powerShellReturn.fillError(proc, logger);
+                proc.getOutputStream().close();
+            } catch (IOException | InterruptedException e) {
+                logger.log(Level.SEVERE, "Error while executing PowerShell Script ", e);
+            }
+        }else logger.log(Level.SEVERE,"cannot find script: "+script);
+        return powerShellReturn;
+    }
+
+    private static String prepareParams(String[] params) {
+        StringBuilder sb=new StringBuilder();
+        for (String s:params) {
+            s=s.trim();
+            if (s.contains(" ")) {
+                if (!s.startsWith("\"")) s="\""+s;
+                if (!s.endsWith("\"")) s+="\"";
+            }
+            if(sb.length()!=0) sb.append(" ");
+            sb.append(s);
+        }
+        return sb.toString();
+    }
 
     public boolean uninstallByName(String name) {
 

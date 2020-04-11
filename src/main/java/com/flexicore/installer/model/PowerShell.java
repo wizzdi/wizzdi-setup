@@ -64,7 +64,7 @@ public class PowerShell implements AutoCloseable {
     public static final String END_SCRIPT_STRING = "--END-JPOWERSHELL-SCRIPT--";
 
     // Private constructor. Instance using openSession method
-    private PowerShell() {
+    PowerShell() {
     }
 
     /**
@@ -201,7 +201,7 @@ public class PowerShell implements AutoCloseable {
         try {
             if (!result.isDone()) {
                 try {
-                    commandOutput = result.get(maxWait, TimeUnit.MILLISECONDS);
+                    commandOutput = result.get(maxWait*10, TimeUnit.MILLISECONDS);
                 } catch (TimeoutException timeoutEx) {
                     timeout = true;
                     isError = true;
