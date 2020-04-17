@@ -59,9 +59,7 @@ public class Start {
 
     public static void main(String[] args) throws MissingInstallationTaskDependency, ParseException, InterruptedException {
 
-//        UserAction userAction = UserAction.getSample();
-//        UserResponse result = consoleAskUser(null, userAction);
-//        exit(0);
+
         Options options = initOptions();
         CommandLineParser parser = new DefaultParser();
         String[] trueArgs = getTrueArgs(args, options);
@@ -71,7 +69,10 @@ public class Start {
 
         logger = initLogger("Installer", mainCmd.getOptionValue(LOG_PATH_OPT, "logs"));
         //C:\\dev\\PowerShellScripts\\test.ps1 c:\\dev\\PowerShellScripts\\text.txt");
-       // PowerShellReturn result = InstallationTask.executeScript(logger, "c:\\dev\\PowerShellScripts\\test.ps1", new String[]{"c:\\dev\\PowerShellScripts\\text.txt"});
+   //    PowerShellReturn result = InstallationTask.executeScript(logger, "c:\\dev\\PowerShellScripts\\t1.ps1", new String[]{"c:\\dev\\PowerShellScripts\\text.txt"});
+      // PowerShellReturn result = InstallationTask.executeScript(logger, "c:\\dev\\PowerShellScripts\\PSScript12339471847618652481.ps1", new String[]{});
+
+      // PowerShellReturn result = InstallationTask.executeScript(logger, "c:\\Users\\Avishay Ben Natan\\AppData\\Local\\Temp\\PSScript12339471847618652481.ps1", new String[]{});
         Thread startThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -263,7 +264,8 @@ public class Start {
 
                 return 2;
             }
-            logicalCores = Integer.parseInt(response.getCommandOutput());
+            String[] split= response.getCommandOutput().split("\n");
+            logicalCores = Integer.parseInt(split[0]);
 
         } catch (NumberFormatException e) {
 
@@ -1373,6 +1375,16 @@ public class Start {
 
 
     private static String UIAccessAbout(IUIComponent uiComponent, InstallationContext context) {
+        // this was added here for easy debugging from th UI.
+//        Collection<IInstallationTask> list = context.getiInstallationTasks().values();
+//        List<IInstallationTask> tasks=new ArrayList<>();
+//        tasks.addAll(list);
+//        if (tasks.size()!=0) {
+//           InstallationTask task= (InstallationTask) tasks.get(0);
+//            task.createUrlLink("http://localhost:8080","Itamar web",true);
+//           task.createLinkPS("C:\\wizzdi\\server\\flexicore\\app\\ItamarApp.exe",
+//                   "EPX2000","C:\\wizzdi\\server\\flexicore\\icons\\app.ico",0,true,ShortCutType.desktop);
+//        }
         return doAbout(uiComponent, context);
     }
 

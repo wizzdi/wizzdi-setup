@@ -13,6 +13,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.zeroturnaround.zip.ZipUtil;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.GroupPrincipal;
 import java.nio.file.attribute.PosixFileAttributeView;
@@ -120,7 +121,7 @@ public class InstallationTask implements IInstallationTask {
         int result = -2;
         PowerShellReturn response = executePowerShellCommand("(Get-CimInstance Win32_ComputerSystem).NumberOfLogicalProcessors", null);
         try {
-            if (response.getErrorList().size()!=0 || response.isError()) {
+            if (response.getErrorList().size() != 0 || response.isError()) {
                 if (response.isTimeout()) severe("Time out in getting processor number of logical cores");
                 if (response.isError()) severe("error in getting processor number of logical cores");
 
@@ -453,6 +454,60 @@ public class InstallationTask implements IInstallationTask {
     }
 
     /**
+     * taskbar not supported as of 13-apr
+     */
+    public enum ShortCutType {
+        desktop, startmenu, taskbar
+    }
+
+    /**
+     * create shortcut to an app using (internally) PowerShell.
+     *
+     * @param targeLocation where the target for this shortcut resides.
+     * @param linkName      name of the shortcut
+     * @param allUsers      if true, shortcuts will be created for all users. this has no effect on start menu changes
+     * @param iconFile      path to an icon file.
+     * @param iconIndex     index to the icon when the iconFile contains multiple icons
+     * @return true if successful, failures are logs into the logging file.
+     */
+    public boolean createLinkPS(String targeLocation, String linkName, String iconFile, int iconIndex, boolean allUsers, ShortCutType shortCutType) {
+        try {
+
+            linkName = removeExtension(linkName) + ".lnk";
+            File tempFile = File.createTempFile("PSScript", ".ps1");
+            String[] data = new String[]{"$Shell = New-Object -ComObject (\"WScript.Shell\")",
+                    "$public=[Environment]::GetFolderPath(\"CommonDesktopDirectory\")",
+                    "$public",
+                    shortCutType==ShortCutType.desktop ?
+                            (allUsers ?
+                                    "$objShortCut = $Shell.CreateShortcut(\"$public\\"+linkName+  "\")" :
+                                    "$objShortCut = $Shell.CreateShortcut($env:USERPROFILE + \"\\Desktop\\"+linkName+  "\")" )
+                            :(allUsers ?
+                            "$objShortCut = $Shell.CreateShortcut(\"C:\\Users\\All Users\\Microsoft\\Windows\\Start Menu\\\" + \"" + linkName + "\")" :
+                            "$objShortCut = $Shell.CreateShortcut(\"C:\\Users\\All Users\\Microsoft\\Windows\\Start Menu\\\" + \"" + linkName + "\")"),
+
+                    "$objShortcut.TargetPath = \"" + targeLocation + "\"",
+                    "$objShortcut.IconLocation = \"" + iconFile + "," + iconIndex + "\"",
+                    "$objShortcut.Save()"
+            };
+            fillTempFile(data, tempFile);
+            PowerShellReturn result = executeScript(context.getLogger(), tempFile.getAbsolutePath(), new String[]{});
+            if (!result.isError()) {
+                info("Short cut created for: "+targeLocation+ " on "+ (shortCutType.equals(ShortCutType.startmenu) ? " Start menu ": "Desktop"));
+                return true;
+            } else {
+
+                severe("Error while creating shortcut: "+result.getError());
+            }
+            Files.deleteIfExists(Paths.get(tempFile.getAbsolutePath()));
+        } catch (IOException e) {
+            severe("Error while creating shortcut ", e);
+        }
+        return false;
+
+    }
+
+    /**
      * Creates a shortcut, Windows only
      *
      * @param targetLocation   the file (executable or other) that is the target of the link
@@ -462,6 +517,7 @@ public class InstallationTask implements IInstallationTask {
      * @param iconsPath        optional icon path, if it is null,  SHELL32.dll is used (in system32 folder)
      * @return
      */
+    @Deprecated
     public boolean createLink(String targetLocation, String shortcutLocation, int iconIndex, String iconsPath, String workingDir) {
         if (!isWindows()) return false;
         File file = new File(targetLocation);
@@ -482,10 +538,82 @@ public class InstallationTask implements IInstallationTask {
 
     }
 
+    /**
+     * Creates a link to a URL on the desktop
+     *
+     * @param url      URL for the link for example:http://localhost:8080
+     * @param linkName Name of the link for the shortcut.
+     * @param allUsers if true, link will be created for all users.
+     * @return
+     */
+    public boolean createUrlLink(String url, String linkName, boolean allUsers) {
+
+        try {
+            if (!linkName.endsWith(".url")) {
+                linkName = removeExtension(linkName) + ".url";
+            }
+            File tempFile = File.createTempFile("PSScript", ".ps1");
+            String[] data = new String[]{"$Shell = New-Object -ComObject (\"WScript.Shell\")",
+                    "$public=[Environment]::GetFolderPath(\"CommonDesktopDirectory\")",
+                    "$public",
+                    !allUsers ? "$Favorite = $Shell.CreateShortcut($env:USERPROFILE + \"\\Desktop\\" + linkName + "\")" :
+                            "$Favorite = $Shell.CreateShortcut(\"$public\\"+linkName+  "\")" ,
+                    "$Favorite.TargetPath = \"" + url + "\"",
+                    "$Favorite.Save()"
+            };
+            fillTempFile(data, tempFile);
+            PowerShellReturn result = executeScript(context.getLogger(), tempFile.getAbsolutePath(), new String[]{});
+            if (!result.isError()) {
+                return true;
+            } else {
+                severe(result.getError());
+            }
+            Files.deleteIfExists(Paths.get(tempFile.getAbsolutePath()));
+        } catch (IOException e) {
+            severe("Error while creating shortcut ", e);
+        }
+        return false;
+    }
+
+    private void fillTempFile(String[] lines, File tempFile) throws IOException {
+        BufferedWriter out = new BufferedWriter
+                (new OutputStreamWriter(new FileOutputStream(tempFile.getAbsolutePath()), StandardCharsets.US_ASCII));
+        for (String s : lines) {
+            out.write(s + "\n");
+        }
+        out.close();
+
+    }
+
+    public static String removeExtension(String s) {
+
+        String separator = System.getProperty("file.separator");
+        String filename;
+
+        // Remove the path upto the filename.
+        int lastSeparatorIndex = s.lastIndexOf(separator);
+        if (lastSeparatorIndex == -1) {
+            filename = s;
+        } else {
+            filename = s.substring(lastSeparatorIndex + 1);
+        }
+
+        // Remove the extension.
+        int extensionIndex = filename.lastIndexOf(".");
+        if (extensionIndex == -1)
+            return filename;
+
+        return filename.substring(0, extensionIndex);
+    }
+
     @Deprecated
     public boolean executeBashScriptLocal(String name, String toFind, String ownerName) {
 
         return executeBashScript(getScriptsPath() + "/" + name, toFind, ownerName, true);
+    }
+
+    public static File getTempFolder() {
+        return new File(System.getProperty("java.io.tmpdir"));
     }
 
     /**
@@ -584,8 +712,6 @@ public class InstallationTask implements IInstallationTask {
     }
 
 
-
-
     /**
      * Execute a single PowerShell command
      *
@@ -607,7 +733,7 @@ public class InstallationTask implements IInstallationTask {
             powerShellReturn.fillError(proc, null);
             proc.getOutputStream().close();
         } catch (IOException | InterruptedException e) {
-            if (logger!=null) logger.log(Level.SEVERE,"Error while executing PS command: ",e);
+            if (logger != null) logger.log(Level.SEVERE, "Error while executing PS command: ", e);
         }
 
         return powerShellReturn;
@@ -615,20 +741,21 @@ public class InstallationTask implements IInstallationTask {
 
     /**
      * Execute a PowerShell script
+     *
      * @param logger
      * @param script
      * @param params
      * @return PowerShellReturn instance or null, the instance contains return value (usually 0) and list of output lines + list of error lines
      */
     public static PowerShellReturn executeScript(Logger logger, String script, String[] params) {
-        PowerShellReturn powerShellReturn =null;
+        PowerShellReturn powerShellReturn = null;
         if (new File(script).exists()) {
             String parameters = prepareParams(params);
             Runtime runtime = Runtime.getRuntime();
             Process proc = null;
 
             try {
-                proc = runtime.exec("powershell.exe "+script+" "+parameters) ;
+                proc = runtime.exec("powershell.exe -File \"" + script + "\" " + parameters); //must be for spaces in the file
                 int result = proc.waitFor();
                 powerShellReturn = new PowerShellReturn(result);
                 powerShellReturn.fillInput(proc, logger);
@@ -637,19 +764,19 @@ public class InstallationTask implements IInstallationTask {
             } catch (IOException | InterruptedException e) {
                 logger.log(Level.SEVERE, "Error while executing PowerShell Script ", e);
             }
-        }else logger.log(Level.SEVERE,"cannot find script: "+script);
+        } else logger.log(Level.SEVERE, "cannot find script: " + script);
         return powerShellReturn;
     }
 
     private static String prepareParams(String[] params) {
-        StringBuilder sb=new StringBuilder();
-        for (String s:params) {
-            s=s.trim();
+        StringBuilder sb = new StringBuilder();
+        for (String s : params) {
+            s = s.trim();
             if (s.contains(" ")) {
-                if (!s.startsWith("\"")) s="\""+s;
-                if (!s.endsWith("\"")) s+="\"";
+                if (!s.startsWith("\"")) s = "\"" + s;
+                if (!s.endsWith("\"")) s += "\"";
             }
-            if(sb.length()!=0) sb.append(" ");
+            if (sb.length() != 0) sb.append(" ");
             sb.append(s);
         }
         return sb.toString();
@@ -729,7 +856,7 @@ public class InstallationTask implements IInstallationTask {
         List<WindowsInstalledComponent> result = new ArrayList<>();
         if (response != null) {
 
-            if (response.getOutput().size()!=0) {
+            if (response.getOutput().size() != 0) {
                 WindowsInstalledComponent component = null;
                 for (String line : response.getOutput()) {
 

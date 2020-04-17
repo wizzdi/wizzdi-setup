@@ -93,7 +93,18 @@ public class PowerShellReturn {
         for (String s: output) {
             sbOutput.append(s);
             sbOutput.append("\n");
+
         }
         return  sbOutput.toString();
+    }
+
+    public String getError() {
+        StringBuilder sError=new StringBuilder();
+
+        for (String s: errorList) {
+            sError.append(s);
+            sError.append("\n");
+        }
+        return  sError.toString();
     }
 }
