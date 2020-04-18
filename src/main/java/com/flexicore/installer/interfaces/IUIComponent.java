@@ -16,13 +16,13 @@ public interface IUIComponent extends ExtensionPoint {
     void setContext(InstallationContext context);
 
     /**
-     *
+     *should the component started automatically
      * @return
      */
     boolean isAutoStart();
 
     /**
-     *
+     * is the component currently displayed
      * @return
      */
     boolean isShowing();
@@ -42,16 +42,33 @@ public interface IUIComponent extends ExtensionPoint {
      * @return
      */
     boolean updateProgress(InstallationContext context,IInstallationTask task);
+
+    /**
+     * update a visual widget when a parameter changes
+     * @param context
+     * @param task
+     * @param parameter
+     * @return
+     */
     boolean updateWidget(InstallationContext context,IInstallationTask task,Parameter parameter);
 
     boolean sendMessage(String message);
     boolean updateService(InstallationContext context, Service service, IInstallationTask task);
     String getVersion();
+
+    /**
+     * Update the status of the installation
+     * @param context
+     * @param additional
+     * @param message
+     * @param state
+     * @return
+     */
     boolean updateStatus(InstallationContext context, Map<String, Set<String>> additional, String message, InstallationState state);
     boolean refreshFilesCount(InstallationContext context,IInstallationTask task);
 
     /**
-     *
+     *Ask user (using UI, or command line) for some response , see UserAction
      * @param context
      * @param userAction required User Action
      * @return
@@ -65,8 +82,20 @@ public interface IUIComponent extends ExtensionPoint {
      */
     void handleInspections(InstallationContext context, ArrayList<InspectionResult> inspections);
 
+    /**
+     * Show current System data (normally in a dialog)
+     * @param context
+     * @param systemData
+     * @return
+     */
+
     UserResponse showSystemData(InstallationContext context,SystemData systemData);
 
-
+    /**
+     * Show Paged list of data, usually a file like log
+     * @param context
+     * @param pagedList
+     * @return
+     */
     UserResponse showPagedList(InstallationContext context, PagedList pagedList);
 }
