@@ -58,6 +58,17 @@ public interface IInstallationTask extends ExtensionPoint {
     boolean isStop();
     IInstallationTask setSTop(boolean value);
     boolean isSnooper();
+
+    /**
+     * get welcome message, usually only one plugin provides this.
+     * @return array of UserMessage or null
+     */
+    UserMessage[] getWelcomeMessage();
+    /**
+     * get final message, usually only one plugin provides this.
+     * @return array of UserMessage or null
+     */
+    UserMessage[] getFinalMessage();
     boolean cleanup();
     Service getService();
     IInstallationTask setService(Service service);
