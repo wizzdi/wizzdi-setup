@@ -24,6 +24,7 @@ public class UserMessage {
     private Side side = Side.left;
     private String fontName="calibri";
     private int fontSize=10;
+    private int topMargin=20;
     private boolean useFont=false;
 
     /**
@@ -70,6 +71,15 @@ public class UserMessage {
 
     public UserMessage setColor(Ansi.Color color) {
         this.color = color;
+        return this;
+    }
+
+    public int getTopMargin() {
+        return topMargin;
+    }
+
+    public UserMessage setTopMargin(int topMargin) {
+        this.topMargin = topMargin;
         return this;
     }
 

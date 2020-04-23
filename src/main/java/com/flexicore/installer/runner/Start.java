@@ -57,6 +57,7 @@ public class Start {
     static SystemData systemData = new SystemData();
 
 
+
     public static void main(String[] args) throws MissingInstallationTaskDependency, ParseException, InterruptedException {
 
 
@@ -459,7 +460,7 @@ public class Start {
             severe("Error while parsing task parameters, quitting on task: " + task.getId());
             return false;
         }
-
+        handleMessages(task,installationContext);
         if (mainCmd.hasOption(HELP)) {
             if (taskOptions.getOptions().size() != 0) {
                 InstallationTask installationTask = (InstallationTask) task;
@@ -470,6 +471,17 @@ public class Start {
             }
         }
         return true;
+    }
+
+    private static void handleMessages(IInstallationTask task, InstallationContext installationContext) {
+        UserMessage[] wm = task.getWelcomeMessage();
+        if (wm!=null && wm.length!=0) {
+            installationContext.setWelcomeMessage(wm);
+        }
+        UserMessage[] fm = task.getFinalMessage();
+        if (fm!=null && fm.length!=0) {
+          installationContext.setFinalMessage(fm);
+        }
     }
 
     private static void cleanSnoopers() {

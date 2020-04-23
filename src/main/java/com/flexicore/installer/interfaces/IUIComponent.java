@@ -54,21 +54,7 @@ public interface IUIComponent extends ExtensionPoint {
 
     boolean sendMessage(String message);
 
-    /**
-     * allow wizards to display a welcome message todo: allow plugins to change this message....
-     * @param context
-     * @param messages
-     * @return
-     */
-    boolean welcomeMessage(InstallationContext context,UserMessage[] messages);
 
-    /**
-     * allow wizards to display a completion message todo: allow plugins to change this message....
-     * @param context
-     * @param messages
-     * @return
-     */
-    boolean completionMessage(InstallationContext context, UserMessage[] messages);
     boolean updateService(InstallationContext context, Service service, IInstallationTask task);
     String getVersion();
 

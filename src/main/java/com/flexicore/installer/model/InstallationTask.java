@@ -1274,6 +1274,31 @@ public class InstallationTask implements IInstallationTask {
     }
 
     /**
+     * get welcome message, usually only one plugin provides this.
+     *
+     * @return array of UserMessage or null
+     */
+    @Override
+    public UserMessage[] getWelcomeMessage() {
+        return null;
+    }
+
+    /**
+     * get final message, usually only one plugin provides this.
+     *
+     * @return array of UserMessage or null
+     */
+    @Override
+    public UserMessage[] getFinalMessage() {
+       return null;
+    }
+
+    @Override
+    public UserMessage[] getFinalMessageOnError() {
+        return null;
+    }
+
+    /**
      * called when installation is beyond finalizing.
      *
      * @return

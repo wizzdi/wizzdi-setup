@@ -19,6 +19,8 @@ public class InstallationContext {
     private HashMap<String,Service> services=new HashMap<>();
     private LinkedHashMap<String,IInstallationTask> cleanupTasks=new LinkedHashMap<>();
     private LinkedHashMap<String,InstallationResult> results=new LinkedHashMap<>();
+    private UserMessage[] welcomeMessage;
+    private UserMessage[] finalMessage;
     private List<IUIComponent> iuiComponents=new ArrayList<>();
     //the following are functional interfaces defined in Start class, can be considered as a modern form of a jump tables into functions
     private Start.UIAccessInterfaceQuit uiQuit;
@@ -330,6 +332,24 @@ public class InstallationContext {
 
     public InstallationContext setHelpRunning(boolean helpRunning) {
         this.helpRunning = helpRunning;
+        return this;
+    }
+
+    public UserMessage[] getWelcomeMessage() {
+        return welcomeMessage;
+    }
+
+    public InstallationContext setWelcomeMessage(UserMessage[] welcomeMessage) {
+        this.welcomeMessage = welcomeMessage;
+        return this;
+    }
+
+    public UserMessage[] getFinalMessage() {
+        return finalMessage;
+    }
+
+    public InstallationContext setFinalMessage(UserMessage[] finalMessage) {
+        this.finalMessage = finalMessage;
         return this;
     }
 
