@@ -57,7 +57,6 @@ public class Start {
     static SystemData systemData = new SystemData();
 
 
-
     public static void main(String[] args) throws MissingInstallationTaskDependency, ParseException, InterruptedException {
 
 
@@ -460,7 +459,7 @@ public class Start {
             severe("Error while parsing task parameters, quitting on task: " + task.getId());
             return false;
         }
-        handleMessages(task,installationContext);
+        handleMessages(task, installationContext);
         if (mainCmd.hasOption(HELP)) {
             if (taskOptions.getOptions().size() != 0) {
                 InstallationTask installationTask = (InstallationTask) task;
@@ -475,12 +474,20 @@ public class Start {
 
     private static void handleMessages(IInstallationTask task, InstallationContext installationContext) {
         UserMessage[] wm = task.getWelcomeMessage();
-        if (wm!=null && wm.length!=0) {
+        if (wm != null && wm.length != 0) {
             installationContext.setWelcomeMessage(wm);
         }
         UserMessage[] fm = task.getFinalMessage();
-        if (fm!=null && fm.length!=0) {
-          installationContext.setFinalMessage(fm);
+        if (fm != null && fm.length != 0) {
+            installationContext.setFinalMessage(fm);
+        }
+        UserMessage[] rm = task.getRunningMessages();
+        if (rm != null && rm.length != 0) {
+            installationContext.setRunningMessage(rm);
+        }
+        UserMessage[] fme = task.getFinalMessageOnError();
+        if (fme != null && fme.length != 0) {
+            installationContext.setFinalErrorMessage(fme);
         }
     }
 
@@ -1123,12 +1130,15 @@ public class Start {
                         return;
                     }
                     //ugly, we need to have one Installation task for the operation of starting required services.
+                    context.setSuccessFullyInstalled(completed);
+                    context.setFailedToInstall(failed);
 
                     if (failed == 0) {
                         updateStatus("done, no task has failed ", completed, failed, skipped, InstallationState.COMPLETE);
                     } else {
                         updateStatus("done, some tasks failed", completed, failed, skipped, InstallationState.PARTLYCOMPLETED);
                     }
+
                     if (updateParameter != null) updateParameter.setValue(oldUpdate);
                     if (!uiFoundandRun) stopped = true; //command line will execute here
                     installRunning = false;
@@ -1516,6 +1526,7 @@ public class Start {
 
         boolean wasPaused = false;
 
+
         public InstallProper invoke() {
             for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
                 long pauseStarted = System.currentTimeMillis();
@@ -1573,28 +1584,29 @@ public class Start {
                                 updateStatus((unInstall ? "un-installation" : "installation is ") + "running: ", completed, failed, skipped, InstallationState.RUNNING);
                                 info("Have successfully finished " + (unInstall ? "un-installation task: " : "installation task: ") + installationTask.getName() + " after " + getSeconds(start) + " Seconds");
                                 installationTask.setProgress(100).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.COMPLETED);
-                                installationTask.setMessage(getInstallationMessage(unInstall)+" succeeded");
+                                installationTask.setMessage(getInstallationMessage(unInstall) + " succeeded");
 
                                 if (dry) {
                                     info("Will now wait so dry run will take some time...");
-                                    Thread.sleep(DRY_FAKE_WAIT);
+                                    // Thread.sleep(DRY_FAKE_WAIT);
                                 }
                                 break;
                             case FORCEABORT:
                                 updateStatus((unInstall ? "un-installation" : "installation is ") + "aborted: ", completed, failed, skipped, InstallationState.ABORTED);
                                 info("Have aborted installation by " + (unInstall ? "un-installation task: " : "installation task: ") + installationTask.getName() + " after " + getSeconds(start) + " Seconds");
                                 myResult = true;
-                                installationTask.setMessage(getInstallationMessage(unInstall)+" aborted");
+                                installationTask.setMessage(getInstallationMessage(unInstall) + " aborted");
 
                                 return this;
 
                             case FAILED:
+
                                 info("-----------Failed task: " + installationTask.getName());
                                 failed++;
                                 updateStatus(mainStatusMessage, completed, failed, skipped, InstallationState.RUNNING);
                                 installationTask.setProgress(0).setEnded(LocalDateTime.now()).setStatus(InstallationStatus.FAILED);
                                 info("Have unsuccessfully finished " + (unInstall ? "un-installation task" : " installation task: ") + installationTask.getName() + " after " + getSeconds(start) + " Seconds");
-                                installationTask.setMessage(getInstallationMessage(unInstall)+" failed");
+                                installationTask.setMessage(getInstallationMessage(unInstall) + " failed");
 
 
                         }
@@ -1707,9 +1719,9 @@ public class Start {
                         if (installationTask.isEnabled()) {
                             InstallationResult result;
                             if (!dry) {
-                                 result = installationTask.finalizeInstallation(context);
+                                result = installationTask.finalizeInstallation(context);
                             } else {
-                                result=new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
+                                result = new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
                             }
                             if (result.getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
                                 completed++;

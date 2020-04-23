@@ -1294,6 +1294,11 @@ public class InstallationTask implements IInstallationTask {
     }
 
     @Override
+    public UserMessage[] getRunningMessages() {
+        return null;
+    }
+
+    @Override
     public UserMessage[] getFinalMessageOnError() {
         return null;
     }

@@ -69,6 +69,7 @@ public interface IInstallationTask extends ExtensionPoint {
      * @return array of UserMessage or null
      */
     UserMessage[] getFinalMessage();
+    UserMessage[] getRunningMessages();
     UserMessage[] getFinalMessageOnError();
     boolean cleanup();
     Service getService();

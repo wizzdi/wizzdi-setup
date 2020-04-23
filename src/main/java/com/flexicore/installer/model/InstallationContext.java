@@ -21,6 +21,8 @@ public class InstallationContext {
     private LinkedHashMap<String,InstallationResult> results=new LinkedHashMap<>();
     private UserMessage[] welcomeMessage;
     private UserMessage[] finalMessage;
+    private UserMessage[] finalErrorMessage;
+    private UserMessage[] runningMessage;
     private List<IUIComponent> iuiComponents=new ArrayList<>();
     //the following are functional interfaces defined in Start class, can be considered as a modern form of a jump tables into functions
     private Start.UIAccessInterfaceQuit uiQuit;
@@ -68,6 +70,16 @@ public class InstallationContext {
     }
     public HashMap<String,InstallationResult> getResults() {
         return results;
+    }
+
+    public InstallationContext setSuccessFullyInstalled(int successFullyInstalled) {
+        this.successFullyInstalled = successFullyInstalled;
+        return this;
+    }
+
+    public InstallationContext setFailedToInstall(int failedToInstall) {
+        this.failedToInstall = failedToInstall;
+        return this;
     }
 
     public int getSuccessFullyInstalled() {
@@ -350,6 +362,24 @@ public class InstallationContext {
 
     public InstallationContext setFinalMessage(UserMessage[] finalMessage) {
         this.finalMessage = finalMessage;
+        return this;
+    }
+
+    public UserMessage[] getFinalErrorMessage() {
+        return finalErrorMessage;
+    }
+
+    public InstallationContext setFinalErrorMessage(UserMessage[] finalErrorMessage) {
+        this.finalErrorMessage = finalErrorMessage;
+        return this;
+    }
+
+    public UserMessage[] getRunningMessage() {
+        return runningMessage;
+    }
+
+    public InstallationContext setRunningMessage(UserMessage[] runningMessage) {
+        this.runningMessage = runningMessage;
         return this;
     }
 
