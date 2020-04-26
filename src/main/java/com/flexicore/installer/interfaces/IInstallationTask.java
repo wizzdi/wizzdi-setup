@@ -73,6 +73,8 @@ public interface IInstallationTask extends ExtensionPoint {
     UserMessage[] getFinalMessageOnError();
     boolean cleanup();
     Service getService();
+    boolean completedReported();
+    boolean finalizerCompletedReported();
     IInstallationTask setService(Service service);
     LocalDateTime getStarted();
     boolean initialize(InstallationContext context);
