@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("LossyEncoding")
 public class InstallationTask implements IInstallationTask {
     private LocalDateTime started;
     private LocalDateTime ended;
@@ -38,6 +39,8 @@ public class InstallationTask implements IInstallationTask {
     private String version = "1.0.0";
     private boolean enabled = true;
     private boolean wrongOS = false;
+    private boolean completedReported;
+    private boolean finalizerReported;
 
 
     private InstallationStatus status = InstallationStatus.CREATED;
@@ -1319,6 +1322,26 @@ public class InstallationTask implements IInstallationTask {
     }
 
     @Override
+    public boolean completedReported() {
+        return completedReported;
+    }
+
+    @Override
+    public boolean finalizerCompletedReported() {
+        return finalizerReported;
+    }
+
+    public InstallationTask setCompletedReported(boolean completedReported) {
+        this.completedReported = completedReported;
+        return this;
+    }
+
+    public InstallationTask setFinalizerReported(boolean finalizerReported) {
+        this.finalizerReported = finalizerReported;
+        return this;
+    }
+
+    @Override
     public IInstallationTask setService(Service service) {
         this.service = service;
         return this;
@@ -1362,6 +1385,8 @@ public class InstallationTask implements IInstallationTask {
 
     @Override
     public InstallationTask setStarted(LocalDateTime started) {
+        completedReported=false;
+        finalizerReported=false;
         this.started = started;
         return this;
     }

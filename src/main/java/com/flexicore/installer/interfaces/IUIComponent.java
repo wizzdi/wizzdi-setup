@@ -57,7 +57,7 @@ public interface IUIComponent extends ExtensionPoint {
 
     boolean updateService(InstallationContext context, Service service, IInstallationTask task);
     String getVersion();
-
+    int priority();
     /**
      * Update the status of the installation
      * @param context

@@ -68,11 +68,7 @@ public class Start {
         CommandLine mainCmd = parser.parse(options, trueArgs, false); //will not fail if fed with plugins options.
 
         logger = initLogger("Installer", mainCmd.getOptionValue(LOG_PATH_OPT, "logs"));
-        //C:\\dev\\PowerShellScripts\\test.ps1 c:\\dev\\PowerShellScripts\\text.txt");
-        //    PowerShellReturn result = InstallationTask.executeScript(logger, "c:\\dev\\PowerShellScripts\\t1.ps1", new String[]{"c:\\dev\\PowerShellScripts\\text.txt"});
-        // PowerShellReturn result = InstallationTask.executeScript(logger, "c:\\dev\\PowerShellScripts\\PSScript12339471847618652481.ps1", new String[]{});
-
-        // PowerShellReturn result = InstallationTask.executeScript(logger, "c:\\Users\\Avishay Ben Natan\\AppData\\Local\\Temp\\PSScript12339471847618652481.ps1", new String[]{});
+        PowerShellReturn result = InstallationTask.executeScript(logger, "c:\\Users\\Avishay Ben Natan\\AppData\\Local\\Temp\\PSScript12339471847618652481.ps1", new String[]{});
         Thread startThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -1097,7 +1093,7 @@ public class Start {
                     int failed = 0;
                     int skipped = 0;
                     int completed = 0;
-                    handleInspections(context);
+
                     HashMap<String, String> restarters = new HashMap<>();
                     String mainStatusMessage = unInstall ? "Un-installation status" : "installation status";
                     InstallProper installProper = new InstallProper(context, unInstall, dry, failed, skipped, completed, restarters, mainStatusMessage).invoke();
@@ -1268,36 +1264,6 @@ public class Start {
         return unInstall ? "un-installation" : "installation";
     }
 
-    /**
-     * should allow UI notification on issues found before installation , such as free space memory , already installed
-     * components that need removal etc.
-     * todo: implement using wait on object or timeout.
-     *
-     * @param context
-     */
-    private static void handleInspections(InstallationContext context) {
-//        ArrayList<InspectionResult> inspections=new ArrayList<>();
-//        for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
-//            InspectionResult result = installationTask.inspect(installationContext);
-//            if (!result.getInspectionState().equals(InspectionState.NOT_FOUND)) {
-//                inspections.add(result);
-//            }
-//        }
-//        if (inspections.size()!=0) {
-//            if(informUIOnInspections(installationContext,inspections)) {
-//                boolean notreplied=false;
-//                while (!notreplied) {
-//                    try {
-//                        Thread.sleep(100);
-//                        if (not)
-//                    } catch (InterruptedException e) {
-//                        info ("Interrupted while waiting for UI to respons");
-//                    }
-//                }
-//            }
-//        }
-
-    }
 
     private static void updateStatus(String message, int completed, int failed, int skipped, InstallationState state) {
         informUI(message + " Completed tasks: " + completed + " Failed tasks: " + failed + " Skipped tasks: " + skipped, state);
@@ -1405,16 +1371,7 @@ public class Start {
 
 
     private static String UIAccessAbout(IUIComponent uiComponent, InstallationContext context) {
-        // this was added here for easy debugging from th UI.
-//        Collection<IInstallationTask> list = context.getiInstallationTasks().values();
-//        List<IInstallationTask> tasks=new ArrayList<>();
-//        tasks.addAll(list);
-//        if (tasks.size()!=0) {
-//           InstallationTask task= (InstallationTask) tasks.get(0);
-//            task.createUrlLink("http://localhost:8080","Itamar web",true);
-//           task.createLinkPS("C:\\wizzdi\\server\\flexicore\\app\\ItamarApp.exe",
-//                   "EPX2000","C:\\wizzdi\\server\\flexicore\\icons\\app.ico",0,true,ShortCutType.desktop);
-//        }
+
         return doAbout(uiComponent, context);
     }
 
@@ -1701,29 +1658,38 @@ public class Start {
                             if (task.setServiceToStart(service, "Starting services")) {
                                 info("Have started service: " + service);
                                 task.setMessage("Service started");
-                                doUpdateUI(task, installationContext);
+                                //doUpdateService(context,new Service().setName(service),task);
+                               // doUpdateUI(task, installationContext);
                             } else {
                                 severe("Have failed to start service: " + service);
                                 task.setMessage("Service failed to start");
-                                doUpdateUI(task, installationContext);
+                              //  doUpdateService(context,new Service().setName(service),task);
+                              //  doUpdateUI(task, installationContext);
                             }
                         }
                     }
                 }
             }
-
+/**
+ * call finalizers here.
+ */
             for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
                 if (!installationTask.isSnooper()) {
                     checkStopInstall();
+                    InstallationResult result;
                     try {
                         if (installationTask.isEnabled()) {
-                            InstallationResult result;
+
                             if (!dry) {
                                 result = installationTask.finalizeInstallation(context);
+                                if (result.getInstallationStatus().equals(InstallationStatus.COMPLETED))  {
+                                    result.setInstallationStatus(InstallationStatus.FINALIZERCOMPELETED);
+                                }
                             } else {
-                                result = new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
+                                result = new InstallationResult().setInstallationStatus(InstallationStatus.FINALIZERCOMPELETED);
                             }
-                            if (result.getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
+                            InstallationStatus status=result.getInstallationStatus();
+                            if (status.equals(InstallationStatus.COMPLETED) || status.equals(InstallationStatus.FINALIZERCOMPELETED)) {
                                 completed++;
                                 installationTask.setMessage("Finalizer completed");
                                 doUpdateUI(installationTask, installationContext);

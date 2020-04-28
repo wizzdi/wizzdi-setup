@@ -27,6 +27,7 @@ public class UserMessage {
     private int topMargin=20;
     private boolean useFont=false;
 
+
     /**
      * from here added support for returned input
      */
