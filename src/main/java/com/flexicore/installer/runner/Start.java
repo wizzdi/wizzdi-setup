@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import static com.flexicore.installer.model.InstallationTask.*;
 import static com.flexicore.installer.utilities.LoggerUtilities.initLogger;
 import static java.lang.System.exit;
+import static java.lang.System.load;
 import static org.fusesource.jansi.Ansi.Color;
 import static org.fusesource.jansi.Ansi.ansi;
 
@@ -55,7 +56,7 @@ public class Start {
     private static Parameter updateParameter = null;
     static ProcessorData processorData;
     static SystemData systemData = new SystemData();
-
+    static boolean errorInUiComponents = false;
 
     public static void main(String[] args) throws MissingInstallationTaskDependency, ParseException, InterruptedException {
 
@@ -93,7 +94,11 @@ public class Start {
 
                 info("System data: " + systemData);
                 systemData.setDone(true);
+                if (errorInUiComponents) {
+                    ahowErrorandExit();
+                }
             }
+
         });
         startThread.start();
 
@@ -503,24 +508,45 @@ public class Start {
         }
     }
 
+    private static void ahowErrorandExit() {
+        severe("an issue was discovered with UI plugins");
+
+        System.out.println( "***************************************************************");
+        System.out.println( "Please check if you have two UI plugins in the bin/tasks folder");
+        System.out.println( "for example maininstaller-ui-xxx.jar and wizzdiWizard-yyy.jar");
+        System.out.println( "You need to delete one");
+        exit(0);
+    }
+
     /**
-     * start user interface(s) if exist
+     * start user interface(s) if exist, only one can be started
      */
     private static void loadUiComponents() {
+        errorInUiComponents = true;
         uiComponents = pluginManager.getExtensions(IUIComponent.class);
+        errorInUiComponents = false;
+        int maxPririty = -1;
+        IUIComponent selected = null;
         for (IUIComponent component : uiComponents) {
-            versions.add(0, component.getVersion());
-            component.setContext(installationContext);
-            installationContext.addUIComponent(component);
-            if (component.isAutoStart()) {
-                info("Have started  a UI plugin");
-                if (component.startAsynch(installationContext)) {
-                    uiFoundandRun = true; //will not run the installation from command line.
-                }
-
-
+            if (component.priority() > maxPririty) {
+                maxPririty = component.priority();
+                selected = component;
             }
         }
+        uiComponents.clear();
+        uiComponents.add(selected);
+        versions.add(0, selected.getVersion());
+        selected.setContext(installationContext);
+        installationContext.addUIComponent(selected);
+        if (selected.isAutoStart()) {
+            info("Have started  a UI plugin");
+            if (selected.startAsynch(installationContext)) {
+                uiFoundandRun = true; //will not run the installation from command line.
+            }
+
+
+        }
+
     }
 
     private static IInstallationTask updateFilesProgress(InstallationContext context, IInstallationTask task) {
@@ -1037,12 +1063,14 @@ public class Start {
     private static boolean doPause() {
         logger.info("Performing installation pause");
         installationPaused = true;
+        informUI("Installation paused",InstallationState.PAUSED);
         return true;
     }
 
     private static boolean doResume() {
         logger.info("Performing installation resume");
         installationPaused = false;
+        informUI("Installation resumed",InstallationState.RESUMED);
         return true;
     }
 
@@ -1659,12 +1687,12 @@ public class Start {
                                 info("Have started service: " + service);
                                 task.setMessage("Service started");
                                 //doUpdateService(context,new Service().setName(service),task);
-                               // doUpdateUI(task, installationContext);
+                                // doUpdateUI(task, installationContext);
                             } else {
                                 severe("Have failed to start service: " + service);
                                 task.setMessage("Service failed to start");
-                              //  doUpdateService(context,new Service().setName(service),task);
-                              //  doUpdateUI(task, installationContext);
+                                //  doUpdateService(context,new Service().setName(service),task);
+                                //  doUpdateUI(task, installationContext);
                             }
                         }
                     }
@@ -1682,13 +1710,13 @@ public class Start {
 
                             if (!dry) {
                                 result = installationTask.finalizeInstallation(context);
-                                if (result.getInstallationStatus().equals(InstallationStatus.COMPLETED))  {
+                                if (result.getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
                                     result.setInstallationStatus(InstallationStatus.FINALIZERCOMPELETED);
                                 }
                             } else {
                                 result = new InstallationResult().setInstallationStatus(InstallationStatus.FINALIZERCOMPELETED);
                             }
-                            InstallationStatus status=result.getInstallationStatus();
+                            InstallationStatus status = result.getInstallationStatus();
                             if (status.equals(InstallationStatus.COMPLETED) || status.equals(InstallationStatus.FINALIZERCOMPELETED)) {
                                 completed++;
                                 installationTask.setMessage("Finalizer completed");
