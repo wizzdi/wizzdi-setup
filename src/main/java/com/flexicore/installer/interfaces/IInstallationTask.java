@@ -72,6 +72,15 @@ public interface IInstallationTask extends ExtensionPoint {
     UserMessage[] getRunningMessages();
     UserMessage[] getFinalMessageOnError();
     boolean cleanup();
+
+    /**
+     * provide the number of seconds for typical installation on a known hardware platform
+     * this can be used for a more accurate progress indication.
+     * @return
+     */
+    Integer averageDuration();
+    Integer averageFinalizerDuration();
+    Integer averageServiceDuration();
     Service getService();
     boolean completedReported();
     boolean finalizerCompletedReported();

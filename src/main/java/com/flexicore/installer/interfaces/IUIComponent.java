@@ -61,12 +61,14 @@ public interface IUIComponent extends ExtensionPoint {
     /**
      * Update the status of the installation
      * @param context
+     * @param progress recommended progress for now, the installation state may tell the UI component just to update progress.
      * @param additional
      * @param message
      * @param state
      * @return
      */
-    boolean updateStatus(InstallationContext context, Map<String, Set<String>> additional, String message, InstallationState state);
+    boolean updateStatus(InstallationContext context,double progress,
+                         Map<String, Set<String>> additional, String message, InstallationState state);
     boolean refreshFilesCount(InstallationContext context,IInstallationTask task);
 
     /**

@@ -1316,6 +1316,35 @@ public class InstallationTask implements IInstallationTask {
         return false;
     }
 
+    /**
+     * provide the number of seconds for typical installation on a known hardware platform
+     * this can be used for a more accurate progress indication.
+     *
+     * @return
+     */
+    @Override
+    public Integer averageDuration() {
+        return 60;
+    }
+
+    @Override
+    public Integer averageFinalizerDuration() {
+        return 5;
+    }
+
+    @Override
+    public Integer averageServiceDuration() {
+        return 2;
+    }
+
+    /**
+     * provide the number of seconds for typical installation on a known hardware platform
+     * this can be used for a more accurate progress indication.
+     *
+     * @return
+     */
+
+
     @Override
     public Service getService() {
         return service;
@@ -2537,6 +2566,14 @@ public class InstallationTask implements IInstallationTask {
         } else return WindowsVersion.Windows_10;
     }
 
+    public boolean isDry() {
+        return dry;
+    }
+
+    public InstallationTask setDry(boolean dry) {
+        this.dry = dry;
+        return this;
+    }
 }
 
 
