@@ -308,6 +308,11 @@ public class DeployFlexicore extends InstallationTask {
     }
 
     @Override
+    public Integer averageFinalizerDuration() {
+        return dry ? 0 : 120;
+    }
+
+    @Override
     public String getName() {
         return "deploy-flexicore";
     }
