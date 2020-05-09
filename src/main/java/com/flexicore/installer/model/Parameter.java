@@ -23,6 +23,8 @@ public class Parameter {
     private ParameterSource originalSource = null;
     private Integer minValue = 0;
     private Integer maxValue = 256 * 256 - 1;
+    private Double minDoubleValue = Double.MIN_VALUE;
+    private Double maxDoubleValue = Double.MAX_VALUE;
     private ParameterType type = ParameterType.STRING;
 
     private ParameterSource source = ParameterSource.CODE;
@@ -207,7 +209,30 @@ public class Parameter {
         this.setHidden(hidden);
 
     }
+    public Parameter(String name,
+                     String description,
+                     boolean hasValue,
+                     String defaultValue,
+                     ParameterType parameterType,
+                     Parameter.parameterValidator validator,
+                     double maxDoubleValue,
+                     double minDoubleValue,
+                     int ordinal,
+                     boolean autoCreate,
+                     boolean hidden) {
+        this.type = parameterType;
+        this.hasValue = hasValue;
+        this.name = name;
+        this.description = description;
+        this.defaultValue = defaultValue;
+        this.parameterValidator = validator;
+        this.maxDoubleValue=maxDoubleValue;
+        this.minDoubleValue=minDoubleValue;
+        this.ordinal=ordinal;
+        this.autocreate = autoCreate;
+        this.setHidden(hidden);
 
+    }
     public Parameter(String name, String description, boolean hasValue, String defaultValue,
                      ParameterType parameterType, ParameterSource parameterSource, int ordinal, Parameter.parameterValidator validator, boolean autoCreate, boolean hidden, OperatingSystem os) {
         this.type = parameterType;
@@ -467,6 +492,24 @@ public class Parameter {
         return this;
     }
 
+    public Double getMinDoubleValue() {
+        return minDoubleValue;
+    }
+
+    public Parameter setMinDoubleValue(Double minDoubleValue) {
+        this.minDoubleValue = minDoubleValue;
+        return this;
+    }
+
+    public Double getMaxDoubleValue() {
+        return maxDoubleValue;
+    }
+
+    public Parameter setMaxDoubleValue(Double maxDoubleValue) {
+        this.maxDoubleValue = maxDoubleValue;
+        return this;
+    }
+
     public boolean storeValue() {
         if (originalValue == null) {
             originalValue = value;
@@ -607,6 +650,27 @@ public class Parameter {
         if (!result) validationMessage.setMessage("URL is not a valid URL");
         return result;
     }
+    public static boolean validateDouble(InstallationContext context, Parameter parameter, Object newValue, ValidationMessage validationMessage) {
+        try {
+           double value=Double.parseDouble(newValue.toString());
+            if (parameter.getMaxDoubleValue()!=Double.MAX_VALUE) {
+                if (value>parameter.getMaxDoubleValue()) {
+                    validationMessage.setMessage("Value is too big, max value is: "+parameter.getMaxDoubleValue());
+                    return false;
+                }
+            }
+            if (parameter.getMinDoubleValue()!=Double.MIN_VALUE) {
+                if (value<parameter.getMinDoubleValue()) {
+                    validationMessage.setMessage("Value is too small, min value is: "+parameter.getMinDoubleValue());
+                    return false;
+                }
+            }
+            return true;
+        } catch (NumberFormatException e) {
+            validationMessage.setMessage("Value is not a double");
+           return false;
+        }
+     }
 
     /**
      * validate if new value is in a list

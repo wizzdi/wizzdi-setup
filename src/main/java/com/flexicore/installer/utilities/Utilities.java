@@ -110,4 +110,13 @@ public class Utilities {
         }
 
     }
+    public static Double getDouble(String strDouble) {
+        try {
+            Double d = Double.parseDouble(strDouble);
+            return d;
+        }catch (Exception e) {
+            return 0d;
+        }
+
+    }
 }
