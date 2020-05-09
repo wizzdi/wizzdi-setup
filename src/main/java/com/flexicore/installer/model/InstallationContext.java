@@ -15,6 +15,7 @@ public class InstallationContext {
     private boolean helpRunning=false;
     private Parameters parameters;
     private Properties properties;
+    private double timeFactor=1.0;
     private LinkedHashMap<String,IInstallationTask> iInstallationTasks =new LinkedHashMap<>();
     private HashMap<String,Service> services=new HashMap<>();
     private LinkedHashMap<String,IInstallationTask> cleanupTasks=new LinkedHashMap<>();
@@ -420,6 +421,25 @@ public class InstallationContext {
     }
 
 
+    public double getTimeFactor() {
+        return timeFactor;
+    }
+
+    public InstallationContext setTimeFactor(double timeFactor) {
+        this.timeFactor = timeFactor;
+        return this;
+    }
+
+    /**
+     * use the parameter 'timefactor' to change the estimated speed of installation and the progress
+     */
+    public void calculateFactor() {
+        try {
+            timeFactor= Double.parseDouble(getParameter("timefactor").getValue());
+        } catch (Exception e) {
+
+        }
+    }
 }
 
 

@@ -1327,14 +1327,25 @@ public class InstallationTask implements IInstallationTask {
         return 60;
     }
 
+    public double getFactoredDuration() {
+        return averageDuration()*getContext().getTimeFactor();
+    }
+
     @Override
     public Integer averageFinalizerDuration() {
         return 5;
     }
 
+    public double getFactoredFinalizerDuration() {
+        return averageFinalizerDuration()*getContext().getTimeFactor();
+    }
     @Override
     public Integer averageServiceDuration() {
         return 2;
+    }
+
+    public double getFactoredServiceDuration() {
+        return averageServiceDuration()*getContext().getTimeFactor();
     }
 
     /**
@@ -2574,6 +2585,8 @@ public class InstallationTask implements IInstallationTask {
         this.dry = dry;
         return this;
     }
+
+
 }
 
 

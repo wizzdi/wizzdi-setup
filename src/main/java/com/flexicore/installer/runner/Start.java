@@ -1114,7 +1114,7 @@ public class Start {
 
     private static boolean install(InstallationContext context, boolean unInstall, boolean dry) {
         if (!dry) {
-            dry=context.getParamaters().getBooleanValue("dry");
+            dry = context.getParamaters().getBooleanValue("dry");
         }
         UserResponse response = showInstallPrompt(context, unInstall, dry);
         if (response.equals(UserResponse.CONTINUE) || response.equals(UserResponse.YES) || response.equals(UserResponse.TRUE)) {
@@ -1566,16 +1566,22 @@ public class Start {
 
 
         public InstallProper invoke() {
+            double totalInstallersTime = 0d;
+            double totalServiceRestartTime = 0d;
+            double totalFinalizersTime = 0d;
+            context.calculateFactor(); //allow properties file to affect duration (an UI too)
             for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
-
                 ((InstallationTask) installationTask).setDry(dry); //cater for dry in parameters
-                totalTime += (installationTask.isEnabled() && !installationTask.isWrongOS()) ? installationTask.averageDuration() : 0d;
-                totalTime += (installationTask.isEnabled() && !installationTask.isWrongOS()) ? installationTask.averageServiceDuration() : 0d;
-                totalTime += (installationTask.isEnabled() && !installationTask.isWrongOS()) ? installationTask.averageFinalizerDuration() : 0d;
+                totalInstallersTime += (installationTask.isEnabled() && !installationTask.isWrongOS()) ? ((InstallationTask) installationTask).getFactoredDuration() : 0d;
+                totalServiceRestartTime += (installationTask.isEnabled() && !installationTask.isWrongOS()) ? ((InstallationTask) installationTask).getFactoredServiceDuration() : 0d;
+                totalFinalizersTime += (installationTask.isEnabled() && !installationTask.isWrongOS()) ? ((InstallationTask) installationTask).getFactoredFinalizerDuration() : 0d;
             }
-
-
+             info("Total installer time is: " + totalInstallersTime);
+            info("Total service restart time is: " + totalServiceRestartTime);
+            info("total finalizers time is: " + totalFinalizersTime);
+            totalTime=totalInstallersTime+totalServiceRestartTime+totalFinalizersTime;
             info("Total time is: " + totalTime);
+
             startLoop = System.currentTimeMillis();
 
 
@@ -1622,15 +1628,15 @@ public class Start {
                             }
                         }
                         InstallationResult result = null;
-                        currentTaskDuration = installationTask.averageDuration();
+                        currentTaskDuration = ((InstallationTask) installationTask).getFactoredDuration();
                         if (!dry) {
                             result = unInstall ? installationTask.unInstall(context) : installationTask.install(context);
                         } else {
                             result = new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
                         }
-                        completedTime += installationTask.averageDuration();
+                        completedTime += ((InstallationTask) installationTask).getFactoredDuration();
                         long actualTime = System.currentTimeMillis() - taskStarted;
-                        info("Actual time for task: " + installationTask.getName() + " is:" + getSeconds(actualTime) + " defined time: " + installationTask.averageDuration());
+                        info("Actual time for task: " + installationTask.getName() + " is:" + getSeconds(actualTime) + " defined time: " + ((InstallationTask) installationTask).getFactoredDuration());
                         if (result.getUserAction() != null) response = getUserResponse(context, result.getUserAction());
 
                         switch (result.getInstallationStatus()) {
@@ -1703,6 +1709,8 @@ public class Start {
             myResult = false;
             return this;
         }
+
+
     }
 
     private static class FinishInstall {
@@ -1752,7 +1760,7 @@ public class Start {
                 InstallationTask task = (InstallationTask) context.getiInstallationTasks().values().toArray()[0]; //use first task, as the function
                 if (!dry) {
 
-                    taskStarted=System.currentTimeMillis();
+                    taskStarted = System.currentTimeMillis();
                     for (String service : restarters.values()) {
 
                         if (!task.testServiceRunning(service, "Installer runner", false)) {
@@ -1769,7 +1777,7 @@ public class Start {
                             }
                         }
                     }
-                    info("restarted all required services in: "+getSeconds(taskStarted)+" seconds");
+                    info("restarted all required services in: " + getSeconds(taskStarted) + " seconds");
                 }
             }
 /**
@@ -1781,14 +1789,14 @@ public class Start {
                     InstallationResult result;
                     try {
                         if (installationTask.isEnabled()) {
-                           
+
                             if (!dry) {
-                                taskStarted=System.currentTimeMillis();
-                                currentTaskDuration=installationTask.averageFinalizerDuration();
+                                taskStarted = System.currentTimeMillis();
+                                currentTaskDuration = ((InstallationTask) installationTask).getFactoredFinalizerDuration();
 
                                 result = installationTask.finalizeInstallation(context);
-                                info("Finalizer for task: "+ installationTask.getName()+" took "+getSeconds(taskStarted) +" seconds");
-                                completed+=installationTask.averageFinalizerDuration();
+                                info("Finalizer for task: " + installationTask.getName() + " took " + getSeconds(taskStarted) + " seconds");
+                                completedTime += ((InstallationTask) installationTask).getFactoredFinalizerDuration();
                                 if (result.getInstallationStatus().equals(InstallationStatus.COMPLETED)) {
                                     result.setInstallationStatus(InstallationStatus.FINALIZERCOMPELETED);
                                 }
