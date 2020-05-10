@@ -309,7 +309,7 @@ public class DeployFlexicore extends InstallationTask {
 
     @Override
     public Integer averageFinalizerDuration() {
-        return dry ? 0 : 120;
+        return dry ? 0 : 60;
     }
 
     @Override
