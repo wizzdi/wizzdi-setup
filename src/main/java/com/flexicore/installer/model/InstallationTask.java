@@ -13,6 +13,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.zeroturnaround.zip.ZipUtil;
 
 import java.io.*;
+import java.net.DatagramSocket;
+import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.GroupPrincipal;
@@ -1625,6 +1627,40 @@ public class InstallationTask implements IInstallationTask {
         }
     }
 
+    /**
+     * allows installers to check if port is available and free to use
+     * 
+     * @param port
+     * @return
+     */
+    public static boolean checkPortAvailable(int port) {
+
+
+        ServerSocket ss = null;
+        DatagramSocket ds = null;
+        try {
+            ss = new ServerSocket(port);
+            ss.setReuseAddress(true);
+            ds = new DatagramSocket(port);
+            ds.setReuseAddress(true);
+            return true;
+        } catch (IOException e) {
+        } finally {
+            if (ds != null) {
+                ds.close();
+            }
+
+            if (ss != null) {
+                try {
+                    ss.close();
+                } catch (IOException e) {
+                    /* should not be thrown */
+                }
+            }
+        }
+
+        return false;
+    }
     public boolean move(String source, String target) {
         boolean result = false;
         try {

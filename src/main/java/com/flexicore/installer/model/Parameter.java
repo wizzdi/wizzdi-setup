@@ -21,8 +21,8 @@ public class Parameter {
     private OperatingSystem os = OperatingSystem.All;
     private String originalValue = null;
     private ParameterSource originalSource = null;
-    private Integer minValue = 0;
-    private Integer maxValue = 256 * 256 - 1;
+    private Integer minValue = Integer.MIN_VALUE;
+    private Integer maxValue = Integer.MAX_VALUE;
     private Double minDoubleValue = Double.MIN_VALUE;
     private Double maxDoubleValue = Double.MAX_VALUE;
     private ParameterType type = ParameterType.STRING;
@@ -228,6 +228,30 @@ public class Parameter {
         this.parameterValidator = validator;
         this.maxDoubleValue=maxDoubleValue;
         this.minDoubleValue=minDoubleValue;
+        this.ordinal=ordinal;
+        this.autocreate = autoCreate;
+        this.setHidden(hidden);
+
+    }
+    public Parameter(String name,
+                     String description,
+                     boolean hasValue,
+                     String defaultValue,
+                     ParameterType parameterType,
+                     Parameter.parameterValidator validator,
+                     int maxDoubleValue,
+                     int minDoubleValue,
+                     int ordinal,
+                     boolean autoCreate,
+                     boolean hidden) {
+        this.type = parameterType;
+        this.hasValue = hasValue;
+        this.name = name;
+        this.description = description;
+        this.defaultValue = defaultValue;
+        this.parameterValidator = validator;
+        this.maxValue=maxDoubleValue;
+        this.minValue=minDoubleValue;
         this.ordinal=ordinal;
         this.autocreate = autoCreate;
         this.setHidden(hidden);
@@ -671,7 +695,27 @@ public class Parameter {
            return false;
         }
      }
-
+    public static boolean validateInteger(InstallationContext context, Parameter parameter, Object newValue, ValidationMessage validationMessage) {
+        try {
+            Integer value=Integer.parseInt(newValue.toString());
+            if (parameter.getMaxValue()!=Integer.MAX_VALUE) {
+                if (value>parameter.getMaxValue()) {
+                    validationMessage.setMessage("Value is too big, max value is: "+parameter.getMaxValue());
+                    return false;
+                }
+            }
+            if (parameter.getMinValue()!=Integer.MIN_VALUE) {
+                if (value<parameter.getMinValue()) {
+                    validationMessage.setMessage("Value is too small, min value is: "+parameter.getMinValue());
+                    return false;
+                }
+            }
+            return true;
+        } catch (NumberFormatException e) {
+            validationMessage.setMessage("Value is not an Integer");
+            return false;
+        }
+    }
     /**
      * validate if new value is in a list
      *
