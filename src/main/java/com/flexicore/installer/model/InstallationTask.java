@@ -1629,7 +1629,7 @@ public class InstallationTask implements IInstallationTask {
 
     /**
      * allows installers to check if port is available and free to use
-     * 
+     *
      * @param port
      * @return
      */
@@ -2171,7 +2171,7 @@ public class InstallationTask implements IInstallationTask {
         return false;
     }
 
-    private String fixWindows(String fileAsString) {
+    public  String fixWindows(String fileAsString) {
         info("Fixing Windows backslash");
         fileAsString = fileAsString.replaceAll("/", "\\\\");
         String lines[] = fileAsString.split("\n");
