@@ -77,7 +77,12 @@ public class InstallationTask implements IInstallationTask {
     public boolean isWindows() {
         return SystemUtils.IS_OS_WINDOWS;
     }
-
+    public InstallationResult failed() {
+        return new InstallationResult().setInstallationStatus(InstallationStatus.FAILED);
+    }
+    public InstallationResult succeeded() {
+        return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
+    }
     @Override
     public OperatingSystem getCurrentOperatingSystem() {
         if (isWindows) return OperatingSystem.Windows;
@@ -362,7 +367,22 @@ public class InstallationTask implements IInstallationTask {
         }
         return false;
     }
+    public String getUbuntuServicesLocation() {
+        return "/etc/systemd/system/";
+    }
 
+    /**
+     * added here although this is not a general requirement. todo: decide if to leave it here
+     * @param installationContext
+     * @return
+     */
+    public boolean installSpring(InstallationContext installationContext) {
+
+            Parameter container = installationContext.getParameter("container");
+            if (container != null) return container.getValue().toLowerCase().equals("spring");
+           return true;
+
+    }
     /**
      * install service from a service file, Linux only
      *
@@ -378,7 +398,7 @@ public class InstallationTask implements IInstallationTask {
             if (testServiceRunning(serviceName, ownerName, false)) {
                 setServiceToStop(serviceName, ownerName);
             }
-            Files.copy(Paths.get(serviceLocation), Paths.get("/etc/systemd/system/" + serviceName + ".service"), StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(Paths.get(serviceLocation), Paths.get(getUbuntuServicesLocation() + serviceName + ".service"), StandardCopyOption.REPLACE_EXISTING);
 
             if (executeCommand("systemctl enable " + serviceName, "", "Set " + serviceName + " to start automatically")) {
                 updateProgress(getContext(), serviceName + " service will automatically start");
@@ -726,19 +746,21 @@ public class InstallationTask implements IInstallationTask {
      */
     public static PowerShellReturn executePowerShellCommand(String command, Logger logger) {
         PowerShellReturn powerShellReturn = null;
-        Runtime runtime = Runtime.getRuntime();
-        Process proc = null;
+        if (isWindows) {
+            Runtime runtime = Runtime.getRuntime();
+            Process proc = null;
 
-        try {
-            proc = runtime.exec("powershell.exe " + command);
-            int result = proc.waitFor();
-            powerShellReturn = new PowerShellReturn(result);
+            try {
+                proc = runtime.exec("powershell.exe " + command);
+                int result = proc.waitFor();
+                powerShellReturn = new PowerShellReturn(result);
 
-            powerShellReturn.fillInput(proc, null);
-            powerShellReturn.fillError(proc, null);
-            proc.getOutputStream().close();
-        } catch (IOException | InterruptedException e) {
-            if (logger != null) logger.log(Level.SEVERE, "Error while executing PS command: ", e);
+                powerShellReturn.fillInput(proc, null);
+                powerShellReturn.fillError(proc, null);
+                proc.getOutputStream().close();
+            } catch (IOException | InterruptedException e) {
+                if (logger != null) logger.log(Level.SEVERE, "Error while executing PS command: ", e);
+            }
         }
 
         return powerShellReturn;
@@ -2170,30 +2192,34 @@ public class InstallationTask implements IInstallationTask {
         }
         return false;
     }
-
+    public String fixIfWindows(String fileAsString) {
+        return fixWindows(fileAsString);
+    }
     public  String fixWindows(String fileAsString) {
-        info("Fixing Windows backslash");
-        fileAsString = fileAsString.replaceAll("/", "\\\\");
-        String lines[] = fileAsString.split("\n");
-        boolean replaced = false;
-        String[] newLines = new String[lines.length];
-        int i = 0;
-        for (String line : lines) {
-            String eq[] = line.split("=");
-            if (eq.length == 2) {
-                if (eq[1].trim().startsWith("\\")) {
-                    line = eq[0] + "=" + "c:" + eq[1];
-                    replaced = true;
+        if (isWindows()) {
+            info("Fixing Windows backslash");
+            fileAsString = fileAsString.replaceAll("/", "\\\\");
+            String lines[] = fileAsString.split("\n");
+            boolean replaced = false;
+            String[] newLines = new String[lines.length];
+            int i = 0;
+            for (String line : lines) {
+                String eq[] = line.split("=");
+                if (eq.length == 2) {
+                    if (eq[1].trim().startsWith("\\")) {
+                        line = eq[0] + "=" + "c:" + eq[1];
+                        replaced = true;
+                    }
                 }
+                newLines[i++] = line;
             }
-            newLines[i++] = line;
-        }
-        if (replaced) {
-            StringBuilder sb = new StringBuilder();
-            for (String line : newLines) {
-                sb.append(line).append("\n");
+            if (replaced) {
+                StringBuilder sb = new StringBuilder();
+                for (String line : newLines) {
+                    sb.append(line).append("\n");
+                }
+                fileAsString = sb.toString();
             }
-            fileAsString = sb.toString();
         }
         return fileAsString;
     }

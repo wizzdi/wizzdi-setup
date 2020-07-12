@@ -69,39 +69,40 @@ public class Start {
         CommandLine mainCmd = parser.parse(options, trueArgs, false); //will not fail if fed with plugins options.
 
         logger = initLogger("Installer", mainCmd.getOptionValue(LOG_PATH_OPT, "logs"));
-        PowerShellReturn result = InstallationTask.executeScript(logger, "c:\\Users\\Avishay Ben Natan\\AppData\\Local\\Temp\\PSScript12339471847618652481.ps1", new String[]{});
-        Thread startThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                systemData.setStart(System.currentTimeMillis());
-                info("************* starting data gathering ");
+       // PowerShellReturn result = InstallationTask.executeScript(logger, "c:\\Users\\Avishay Ben Natan\\AppData\\Local\\Temp\\PSScript12339471847618652481.ps1", new String[]{});
+        if (isWindows()) {
+            Thread startThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    systemData.setStart(System.currentTimeMillis());
+                    info("************* starting data gathering ");
 
 
-                processorData = getProcessorData();
-                systemData.setProcessorData(processorData);
-                int logical = getNumberOfLogicalProcessor();
-                if (logical > 0) {
+                    processorData = getProcessorData();
+                    systemData.setProcessorData(processorData);
+                    int logical = getNumberOfLogicalProcessor();
+                    if (logical > 0) {
 
-                    processorData.setLogicalCores(logical);
-                } else {
-                    info("****************************** no logical processors received");
+                        processorData.setLogicalCores(logical);
+                    } else {
+                        info("****************************** no logical processors received");
+                    }
+
+                    systemData.setPhysicalMemory(getPhysicalMemory());
+                    systemData.setFreeDiskSpace(getFreeDiskSpace("C:"));
+                    systemData.setWindowsVersion(getWindowsVersion());
+                    info("************* ended  data gathering in: " + (systemData.setTotal(System.currentTimeMillis() - systemData.getStart()).getTotal() / 1000 + " Seconds"));
+
+                    info("System data: " + systemData);
+                    systemData.setDone(true);
+                    if (errorInUiComponents) {
+                        ahowErrorandExit();
+                    }
                 }
 
-                systemData.setPhysicalMemory(getPhysicalMemory());
-                systemData.setFreeDiskSpace(getFreeDiskSpace("C:"));
-                systemData.setWindowsVersion(getWindowsVersion());
-                info("************* ended  data gathering in: " + (systemData.setTotal(System.currentTimeMillis() - systemData.getStart()).getTotal() / 1000 + " Seconds"));
-
-                info("System data: " + systemData);
-                systemData.setDone(true);
-                if (errorInUiComponents) {
-                    ahowErrorandExit();
-                }
-            }
-
-        });
-        startThread.start();
-
+            });
+            startThread.start();
+        }
         installationContext = new InstallationContext()
                 .setLogger(logger).setParameters(new Parameters()).
                         setOperatingSystem(InstallationTask.isWindows ?
@@ -144,9 +145,7 @@ public class Start {
 
         for (IInstallationTask task : installationTasks.values()) {
             versions.add(task.getVersion());
-            if (task.getVersion().equals("1.0.0")) {
-                int a = 3;
-            }
+
         }
         for (IInstallationTask task : installationTasks.values()) {
             if (task.isSnooper()) {
@@ -230,6 +229,10 @@ public class Start {
         loadUiComponents();  //currently asynchronous
         if (!uiFoundandRun) {
             checkHelp(mainCmd);
+            if (installationContext.getiInstallationTasks().size()==0) {
+                info(" no installation tasks found in tasks folder, cannot proceed, quitting");
+                exit(0);
+            }
             if (installationContext.getParamaters().getBooleanValue("install")) {
                 install(installationContext, false, false);
             } else {
@@ -338,70 +341,74 @@ public class Start {
     static ProcessorData cacheProcessorData = null;
 
     public static ProcessorData getProcessorData() {
-        if (cacheProcessorData != null) return cacheProcessorData;
-        PowerShellReturn response = executePowerShellCommand(
-                "Get-CimInstance -ClassName 'Win32_Processor'   | Select-Object -Property 'DeviceID', 'Name', 'NumberOfCores'", null);
-        ProcessorData processorData = new ProcessorData();
+        if (isWindows()) {
+            if (cacheProcessorData != null) return cacheProcessorData;
+            PowerShellReturn response = executePowerShellCommand(
+                    "Get-CimInstance -ClassName 'Win32_Processor'   | Select-Object -Property 'DeviceID', 'Name', 'NumberOfCores'", null);
+            ProcessorData processorData = new ProcessorData();
 
-        try {
-            if (response.isTimeout() || response.isError()) {
-                if (response.isTimeout()) severe("Time out in getting processor data");
-                if (response.isError()) severe("error in getting processor data");
-                return processorData;
+            try {
+                if (response.isTimeout() || response.isError()) {
+                    if (response.isTimeout()) severe("Time out in getting processor data");
+                    if (response.isError()) severe("error in getting processor data");
+                    return processorData;
+                }
+
+                String[] lines = response.getCommandOutput().split("\n");
+
+                // info("Get-CimInstance -ClassName 'Win32_Processor'  ");
+                String theLine = lines[3];
+
+                boolean found = false;
+                for (String line : lines) {
+                    if (line.toLowerCase().startsWith("cpu")) {
+                        theLine = line;
+                        found = true;
+                    }
+
+                }
+                if (theLine.toLowerCase().startsWith("cpu")) {
+                    String[] split = theLine.split("\\s+");
+                    int i = 0;
+                    int at = -1;
+                    for (String s : split) {
+                        if (s.equals("@")) at = i;
+                        i++;
+                    }
+                    StringBuilder b = new StringBuilder();
+                    for (int j = 1; j < at; j++) {
+                        b.append(split[j]);
+                        if (j + 1 != at) b.append(" ");
+                    }
+                    processorData.setName(b.toString());
+                    try {
+                        processorData.setProcessorFrequency(Double.parseDouble(split[at + 1].replaceAll("[^\\d.]", "")));
+                    } catch (NumberFormatException e) {
+                        severe("Issue while parsing processor frequency");
+                    }
+                    try {
+                        processorData.setNumberOfCores(Integer.parseInt(split[at + 2]));
+                    } catch (NumberFormatException e) {
+                        severe("Issue while parsing processor number of true cores");
+                    }
+                    try {
+                        processorData.setLogicalCores(getNumberOfLogicalProcessor());
+                    } catch (Exception e) {
+                        severe("Issue while parsing get number of logical processors");
+                    }
+                    processorData.setProcessorType(getPorcessorType());
+                } else {
+                    severe("Could not parse processor data ");
+                }
+
+            } catch (NumberFormatException e) {
+                severe("General Error while parsing processor data ", e);
             }
-
-            String[] lines = response.getCommandOutput().split("\n");
-
-            // info("Get-CimInstance -ClassName 'Win32_Processor'  ");
-            String theLine = lines[3];
-
-            boolean found = false;
-            for (String line : lines) {
-                if (line.toLowerCase().startsWith("cpu")) {
-                    theLine = line;
-                    found = true;
-                }
-
-            }
-            if (theLine.toLowerCase().startsWith("cpu")) {
-                String[] split = theLine.split("\\s+");
-                int i = 0;
-                int at = -1;
-                for (String s : split) {
-                    if (s.equals("@")) at = i;
-                    i++;
-                }
-                StringBuilder b = new StringBuilder();
-                for (int j = 1; j < at; j++) {
-                    b.append(split[j]);
-                    if (j + 1 != at) b.append(" ");
-                }
-                processorData.setName(b.toString());
-                try {
-                    processorData.setProcessorFrequency(Double.parseDouble(split[at + 1].replaceAll("[^\\d.]", "")));
-                } catch (NumberFormatException e) {
-                    severe("Issue while parsing processor frequency");
-                }
-                try {
-                    processorData.setNumberOfCores(Integer.parseInt(split[at + 2]));
-                } catch (NumberFormatException e) {
-                    severe("Issue while parsing processor number of true cores");
-                }
-                try {
-                    processorData.setLogicalCores(getNumberOfLogicalProcessor());
-                } catch (Exception e) {
-                    severe("Issue while parsing get number of logical processors");
-                }
-                processorData.setProcessorType(getPorcessorType());
-            } else {
-                severe("Could not parse processor data ");
-            }
-
-        } catch (NumberFormatException e) {
-            severe("General Error while parsing processor data ", e);
+            cacheProcessorData = processorData;
+            return processorData;
+        }else {
+            return null;
         }
-        cacheProcessorData = processorData;
-        return processorData;
     }
 
     static ProcessorType cacheProcessorType = null;
@@ -533,18 +540,20 @@ public class Start {
                 selected = component;
             }
         }
-        uiComponents.clear();
-        uiComponents.add(selected);
-        versions.add(0, selected.getVersion());
-        selected.setContext(installationContext);
-        installationContext.addUIComponent(selected);
-        if (selected.isAutoStart()) {
-            info("Have started  a UI plugin");
-            if (selected.startAsynch(installationContext)) {
-                uiFoundandRun = true; //will not run the installation from command line.
+        if (selected!=null) {
+            uiComponents.clear();
+            uiComponents.add(selected);
+            versions.add(0, selected.getVersion());
+            selected.setContext(installationContext);
+            installationContext.addUIComponent(selected);
+            if (selected.isAutoStart()) {
+                info("Have started  a UI plugin");
+                if (selected.startAsynch(installationContext)) {
+                    uiFoundandRun = true; //will not run the installation from command line.
+                }
+
+
             }
-
-
         }
 
     }
@@ -892,7 +901,7 @@ public class Start {
             if (installationContext.isExtraLogs())
                 info("Have added " + count + " parameters to installation task: " + task.getId() + " ->>" + task.getDescription());
         } catch (ParseException e) {
-            logger.log(Level.SEVERE, "error while parsing command line", e);
+            logger.log(Level.SEVERE, "error while parsing command line: "+e.getMessage(), e);
             return false;
         }
         return true;
@@ -1304,7 +1313,7 @@ public class Start {
                 if (task.isEnabled()) {
                     ua.addMessage(new UserMessage().setMessage(task.getName()).
                             setEmphasize(1).
-                            setColor(Color.BLACK).setLeftMargin(10));
+                            setColor(uiFoundandRun ? Color.BLACK :Color.WHITE).setLeftMargin(10));
                 }
             }
             ua.setPossibleAnswers(new UserResponse[]{UserResponse.CONTINUE, UserResponse.STOP});
@@ -1645,6 +1654,7 @@ public class Start {
                         currentTaskDuration = ((InstallationTask) installationTask).getFactoredDuration();
                         Start.finishIngTask.getAndSet(false);
                         if (!dry) {
+                            info("++++++++++++ about to install: "+installationTask.getName());
                             result = unInstall ? installationTask.unInstall(context) : installationTask.install(context);
                         } else {
                             result = new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
@@ -1811,6 +1821,7 @@ public class Start {
                                 taskStarted = System.currentTimeMillis();
                                 currentTaskDuration = ((InstallationTask) installationTask).getFactoredFinalizerDuration();
                                 Start.finishIngTask.getAndSet(false);
+                                info ("******* going to finalize task: "+installationTask.getName());
                                 result = installationTask.finalizeInstallation(context);
                                 info("Finalizer for task: " + installationTask.getName() + " took " + getSeconds(taskStarted) + " seconds");
                                 Start.finishIngTask.getAndSet(true);
