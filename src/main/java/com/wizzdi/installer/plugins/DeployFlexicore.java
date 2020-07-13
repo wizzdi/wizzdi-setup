@@ -51,18 +51,44 @@ public class DeployFlexicore extends InstallationTask {
                     250,
                     false, false),
             new Parameter("heapsize",
-                    "Heap size for Spring Boot ,\n do not exceed 80% of available memory\n do not change unless you understand",
+                    "Java heap size for Spring \n" +
+                            "shouldn't exceed 60-85% of availble memory",
                     true,
-                    "1024",
+                    "612",
                     ParameterType.NUMBER,
+                    null,
+                    255,
+                    false, false),
+            new Parameter("loglocationlinux",
+                    "log folder for Spring on Linux systems",
+                    true,
+                    "/var/log/flexicore",
+                    ParameterType.STRING,
                     ParameterSource.CODE,
-                    Parameter::validateHeap
-                    , false,
-                    false
+                    251,
+                    null,
+                    false,
+                    false,
+                    OperatingSystem.Linux
+            ),
+            new Parameter("loglocationWindows",
+                    "log folder for Spring on Windows systems",
+                    true,
+                    "&flexicorehome/logs",
+                    ParameterType.STRING,
+                    ParameterSource.CODE,
+                    251,
+                    null,
+                    false,
+                    false,
+                    OperatingSystem.Windows
             ),
 
     };
-    private boolean serviceRunning;
+//    public Parameter(String name, String description, boolean hasValue, String defaultValue,
+//                     ParameterType parameterType, ParameterSource parameterSource, int ordinal, Parameter.parameterValidator validator, boolean autoCreate, boolean hidden, OperatingSystem os) {
+
+        private boolean serviceRunning;
 
     /**
      * parameters are best provided by a different plugin
@@ -399,14 +425,45 @@ public class DeployFlexicore extends InstallationTask {
                         }
                         boolean result = executeCommand("id -u flexicore &>/dev/null || useradd flexicore ", "", ownerName);
                         result =executeCommand("chmod 500 "+springTargetFolder+"/flexicore.jar","",ownerName);
+                        if (!result) {
+                            info ("failed to chmod 500 on flexicore.jar");
+                            return false;
+                        }
                         result =executeCommand("chown flexicore.flexicore "+springTargetFolder+"/flexicore.jar","",ownerName);
+                        if (!result) {
+                            if (!result) {
+                                info ("failed to change owner of flexicore.jar");
+                            }
+                            return false;
+                        }
+                        Parameter loglocationParameter =installationContext.getParameter("loglocationlinux");
+                        String loglocation=loglocationParameter!=null ?loglocationParameter.getValue():"/var/log/flexicore";
+                        File logs = new File(loglocation);
+                        if (!logs.exists()) {
+                            if (!logs.mkdirs()) {
+                               info ("Failed to create logs folder: "+loglocation);
+                               return false;
+                            }
+                        }
+                        result =executeCommand("chown -R flexicore.flexicore "+loglocation,"",ownerName);
+                        if (!result) {
+                            if (!result) {
+                                info ("failed to change owner on logs folder at: "+logs.getAbsolutePath());
+                            }
+                            return false;
+                        }
                         if (installService(serviceLocation, serviceName, ownerName)) {
                             info("Have successfully installed: " + serviceName);
-                            String intermediate = "";
-                            intermediate = Utilities.editFile(serviceFile, intermediate, "2048M", heapMemory + "M", true, false, true);
-                            setServiceToStop(serviceName, ownerName);
-                            if (setServiceToStart(serviceName, ownerName)) {
-                                return true;
+                            if (heapMemory!=null &!heapMemory.isEmpty()) {
+                                String intermediate = "";
+                                intermediate = Utilities.editFile(serviceFile, intermediate, "2048m", heapMemory + "m", true, false, true);
+                                setServiceToStop(serviceName, ownerName);
+                                executeCommand("systemctl daemon-reload","",ownerName);
+                                if (setServiceToStart(serviceName, ownerName)) {
+                                    return true;
+                                }
+                            }else {
+                                severe("Heap memory was not set to a legal value");
                             }
                         }
 
