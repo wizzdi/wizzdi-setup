@@ -49,7 +49,17 @@ public class DeployFlexicore extends InstallationTask {
                     ParameterType.BOOLEAN,
                     null,
                     250,
-                    false, false)
+                    false, false),
+            new Parameter("heapsize",
+                    "Heap size for Spring Boot ,\n do not exceed 80% of available memory\n do not change unless you understand",
+                    true,
+                    "1024",
+                    ParameterType.NUMBER,
+                    ParameterSource.CODE,
+                    Parameter::validateHeap
+                    , false,
+                    false
+            ),
 
     };
     private boolean serviceRunning;
@@ -140,12 +150,17 @@ public class DeployFlexicore extends InstallationTask {
      */
     private boolean copyFlexicoreFiles(InstallationContext installationContext) throws InterruptedException {
         String flexicoreSourceFolder = getServerPath() + "flexicore";
-        if (exists(flexicoreSourceFolder)) {
-            if (copy(flexicoreSourceFolder, flexicoreHome, installationContext)) {
-                updateProgress(installationContext, "Have copied flexicore folder");
-                return true;
+        if (exists(flexicoreSourceFolder)) { //todo: fix files to correct flexicoreHome location
+            if (!exists(flexicoreHome) || update) {
+                if (copy(flexicoreSourceFolder, flexicoreHome, installationContext)) {
+                    updateProgress(installationContext, "Have copied flexicore folder");
+                    return true;
+                } else {
+                    updateProgress(installationContext, "failed to copy flexicore from: " + flexicoreSourceFolder + " to: " + flexicoreHome);
+                }
             } else {
-                updateProgress(installationContext, "failed to copy flexicore from: " + flexicoreSourceFolder + " to: " + flexicoreHome);
+                updateProgress(installationContext, "Flexicore home folder exists and update was not specified, skipping flexicore home update");
+                return true;
             }
         } else {
             updateProgress(installationContext, "Have not found Flexicore Source folder at: " + flexicoreSourceFolder);
@@ -340,9 +355,9 @@ public class DeployFlexicore extends InstallationTask {
             } else {
                 //Spring installation here.
                 if (copySucceeded) {
-                   if (installSpringAsService(installationContext)) {
-                       return succeeded();
-                   }else return failed();
+                    if (installSpringAsService(installationContext)) {
+                        return succeeded();
+                    } else return failed();
                 } else {
                     updateProgress(installationContext, "copy of files failed so Spring cannot be started as a service");
                     return failed();
@@ -358,7 +373,7 @@ public class DeployFlexicore extends InstallationTask {
 
         String heapMemory = getContext().getParamaters().getValue("heapsize");
         String serviceLocation = getServicesPath() + serviceName + ".service";
-          if (!dry) {
+        if (!dry) {
 
             String tempDir = System.getProperty("java.io.tmpdir");
             try {
@@ -374,48 +389,29 @@ public class DeployFlexicore extends InstallationTask {
                 }
 
                 if (exists(springSourceFolder)) {
-                    if (!exists(flexicoreHome)) {
-                        ensureTarget(flexicoreHome);
-                    }
-                    if (exists(springTargetFolder)) { //this is an update.
-                        if (update) {
 
-                            //todo: Make sure everything is backedup
-                            if (setServiceToStop(serviceName, ownerName)) {
-                                if (copyRequired(installationContext)) {
-                                    //no need to update any files as this is an update.
-                                    return true;
-                                } else {
-                                    return false;
-                                }
-
-                            } else {
-                                updateProgress(installationContext, "cannot stop service: " + serviceName);
-                                return false;
-                            }
-                        } else {
-                            updateProgress(getContext(), "update is not set, Spring will not not be installed ");
-                            return true;
-                        }
-
-                    } else { // this is a fresh installation
-                        if (isLinux) {
-                            if (installService(serviceLocation, serviceName, ownerName)) {
-                                if (!setServiceToStop(serviceName, ownerName)) {
-                                    updateProgress(installationContext, "cannot stop service: " + serviceName);
-                                    return false;
-                                }
-                            }
-                            String serviceFile = getUbuntuServicesLocation() + serviceName + ".service";
-                            if (exists(serviceFile)) {
-                                String intermediate = "";
-                                intermediate = Utilities.editFile(serviceFile, intermediate, "2048M", heapMemory + "M", true, false, true);
-                            }
-
-                        } else {
+                    //the files in flexicoreHome were copied in install
+                    if (isLinux) {
+                        String serviceFile = getUbuntuServicesLocation() + serviceName + ".service";
+                        if (exists(serviceFile)) {
+                            boolean result = setServiceToStop(serviceName, ownerName);
 
                         }
+                        if (installService(serviceLocation, serviceName, ownerName)) {
+                            info("Have successfully installed: " + serviceName);
+                            String intermediate = "";
+                            intermediate = Utilities.editFile(serviceFile, intermediate, "2048M", heapMemory + "M", true, false, true);
+                            setServiceToStop(serviceName, ownerName);
+                            if (setServiceToStart(serviceName, ownerName)) {
+                                return true;
+                            }
+                        }
+
+
+                    } else {
+
                     }
+
                     updateProgress(getContext(), "copying components, may take few minutes");
 
                 } else {
@@ -450,6 +446,7 @@ public class DeployFlexicore extends InstallationTask {
 
         }
     }
+
     @Override
     public InstallationResult unInstall(InstallationContext installationContext) throws Throwable {
         if (!dry) {
@@ -507,7 +504,7 @@ public class DeployFlexicore extends InstallationTask {
     public String getDescription() {
         if (installSpring) {
             return "Copy default flexicore folder, Install Spring Boot Flexicore jar as a service";
-        }else {
+        } else {
             return "Deploys Flexicore into existing Wildfly Installation";
         }
     }
