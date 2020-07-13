@@ -174,12 +174,20 @@ public class DeployFlexicore extends InstallationTask {
      * @return
      * @throws InterruptedException
      */
-    private boolean copyFlexicoreFiles(InstallationContext installationContext) throws InterruptedException {
+    private boolean copyFlexicoreFiles(InstallationContext installationContext) throws InterruptedException, IOException {
         String flexicoreSourceFolder = getServerPath() + "flexicore";
         if (exists(flexicoreSourceFolder)) { //todo: fix files to correct flexicoreHome location
             if (!exists(flexicoreHome) || update) {
+                boolean fixed= fixFlexicoreHome(installationContext);
                 if (copy(flexicoreSourceFolder, flexicoreHome, installationContext)) {
                     updateProgress(installationContext, "Have copied flexicore folder");
+                    if (fixed) { //restore the backup
+                        File file = new File(((new File(currentFolder)).getParent()) + "/resources/server/flexicore/config/application.properties");
+
+                        if(!copySingleFile(file.getParent()+"application-temp.properties",file.getAbsolutePath())) {
+                            info("could not copy application.properties to original");
+                        }
+                    }
                     return true;
                 } else {
                     updateProgress(installationContext, "failed to copy flexicore from: " + flexicoreSourceFolder + " to: " + flexicoreHome);
@@ -190,6 +198,22 @@ public class DeployFlexicore extends InstallationTask {
             }
         } else {
             updateProgress(installationContext, "Have not found Flexicore Source folder at: " + flexicoreSourceFolder);
+        }
+        return false;
+    }
+
+    private  boolean fixFlexicoreHome(InstallationContext installationContext) throws IOException {
+        if (isLinux) {
+            if (!flexicoreHome.equals("/home/flexicore/")) {
+                File file = new File(((new File(currentFolder)).getParent()) + "/resources/server/flexicore/config/application.properties");
+                if (file.exists()) {
+                    if (copySingleFile(file.getAbsolutePath(),file.getParent()+"application-temp.properties")) {
+
+                        String intermediate = editFile(file.getAbsolutePath(), "", "/home/flexicore/", flexicoreHome, false, false, true, true);
+                        return true;
+                    }
+                }
+            }
         }
         return false;
     }
