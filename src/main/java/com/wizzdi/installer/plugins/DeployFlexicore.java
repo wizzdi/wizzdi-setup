@@ -399,6 +399,7 @@ public class DeployFlexicore extends InstallationTask {
                         }
                         boolean result = executeCommand("id -u flexicore &>/dev/null || useradd flexicore ", "", ownerName);
                         result =executeCommand("chmod 500 "+springTargetFolder+"/flexicore.jar","",ownerName);
+                        result =executeCommand("chown flexicore.flexicore "+springTargetFolder+"/flexicore.jar","",ownerName);
                         if (installService(serviceLocation, serviceName, ownerName)) {
                             info("Have successfully installed: " + serviceName);
                             String intermediate = "";
