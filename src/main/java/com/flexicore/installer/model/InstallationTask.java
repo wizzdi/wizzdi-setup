@@ -386,7 +386,7 @@ public class InstallationTask implements IInstallationTask {
     /**
      * install service from a service file, Linux only
      *
-     * @param serviceLocation
+     * @param serviceLocation the location of the service file to be copied to /etc/systemd/system (on Ubuntu), if NULL will not copy
      * @param serviceName
      * @param ownerName
      * @return
@@ -398,8 +398,9 @@ public class InstallationTask implements IInstallationTask {
             if (testServiceRunning(serviceName, ownerName, false)) {
                 setServiceToStop(serviceName, ownerName);
             }
-            Files.copy(Paths.get(serviceLocation), Paths.get(getUbuntuServicesLocation() + serviceName + ".service"), StandardCopyOption.REPLACE_EXISTING);
-
+            if (serviceLocation!=null) {
+                Files.copy(Paths.get(serviceLocation), Paths.get(getUbuntuServicesLocation() + serviceName + ".service"), StandardCopyOption.REPLACE_EXISTING);
+            }
             if (executeCommand("systemctl enable " + serviceName, "", "Set " + serviceName + " to start automatically")) {
                 updateProgress(getContext(), serviceName + " service will automatically start");
 
