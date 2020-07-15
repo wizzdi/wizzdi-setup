@@ -555,7 +555,7 @@ public class DeployFlexicore extends InstallationTask {
             info("Found Flexicore version");
             new File(flexicoreHome + "spring/flexicore.jar").delete();
 
-            String[] args = {"ln", "-s",flexicoreHome+"spring/"+candidate,"flexicore.jar"};
+            String[] args = {"ln", "-s",candidate,flexicoreHome+"spring/flexicore.jar"};
             boolean result=executeCommandByBuilder(args,"",false,ownerName,false);
             return result;
         } else {
