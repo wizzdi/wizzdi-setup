@@ -485,8 +485,10 @@ public class DeployFlexicore extends InstallationTask {
                             return false;
                         }
                         //must copy the service before fixing links
-                        Files.copy(Paths.get(serviceLocation), Paths.get(getUbuntuServicesLocation() + serviceName + ".service"), StandardCopyOption.REPLACE_EXISTING);
-                        fixServiceFile(serviceLocation,installationContext);
+                        String targetServiceLocation;
+                        Files.copy(Paths.get(serviceLocation), Paths.get(targetServiceLocation=getUbuntuServicesLocation() + serviceName + ".service"), StandardCopyOption.REPLACE_EXISTING);
+
+                        fixServiceFile(targetServiceLocation,installationContext);
                         if (installService(null, serviceName, ownerName)) {
                             info("Have successfully installed: " + serviceName);
                             if (heapMemory != null & !heapMemory.isEmpty()) {
