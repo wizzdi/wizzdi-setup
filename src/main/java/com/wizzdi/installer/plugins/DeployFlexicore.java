@@ -88,7 +88,7 @@ public class DeployFlexicore extends InstallationTask {
 //    public Parameter(String name, String description, boolean hasValue, String defaultValue,
 //                     ParameterType parameterType, ParameterSource parameterSource, int ordinal, Parameter.parameterValidator validator, boolean autoCreate, boolean hidden, OperatingSystem os) {
 
-        private boolean serviceRunning;
+    private boolean serviceRunning;
 
     /**
      * parameters are best provided by a different plugin
@@ -145,7 +145,7 @@ public class DeployFlexicore extends InstallationTask {
                     }
                     return succeeded();
                 } else {
-                    if (copyFlexicoreFiles(installationContext)) {
+                    if (copyFlexicoreFilesForSpring(installationContext)) {
                         copySucceeded = true;
                         return succeeded();
                     }
@@ -174,19 +174,15 @@ public class DeployFlexicore extends InstallationTask {
      * @return
      * @throws InterruptedException
      */
-    private boolean copyFlexicoreFiles(InstallationContext installationContext) throws InterruptedException, IOException {
+    private boolean copyFlexicoreFilesForSpring(InstallationContext installationContext) throws InterruptedException, IOException {
         String flexicoreSourceFolder = getServerPath() + "flexicore";
         if (exists(flexicoreSourceFolder)) { //todo: fix files to correct flexicoreHome location
             if (!exists(flexicoreHome) || update) {
-                boolean fixed= fixFlexicoreHome(installationContext);
                 if (copy(flexicoreSourceFolder, flexicoreHome, installationContext)) {
                     updateProgress(installationContext, "Have copied flexicore folder");
-                    if (fixed) { //restore the backup
-                        File file = new File(((new File(currentFolder)).getParent()) + "/resources/server/flexicore/config/application.properties");
-
-                        if(!copySingleFile(file.getParent()+"application-temp.properties",file.getAbsolutePath())) {
-                            info("could not copy application.properties to original");
-                        }
+                    boolean fixed = fixFlexicoreHome(installationContext);
+                    if (fixed) {
+                        info("Have fixed paths in application.properties file in: "+flexicoreHome+"config/ folder");
                     }
                     return true;
                 } else {
@@ -202,16 +198,23 @@ public class DeployFlexicore extends InstallationTask {
         return false;
     }
 
-    private  boolean fixFlexicoreHome(InstallationContext installationContext) throws IOException {
+    /**
+     * change the path of properties in application.properties file in flexicoreHome+"/config"
+     *
+     * @param installationContext
+     * @return
+     * @throws IOException
+     */
+    private boolean fixFlexicoreHome(InstallationContext installationContext) throws IOException {
         if (isLinux) {
             if (!flexicoreHome.equals("/home/flexicore/")) {
-                File file = new File(((new File(currentFolder)).getParent()) + "/resources/server/flexicore/config/application.properties");
+                File file = new File(flexicoreHome + "config/application.properties");
                 if (file.exists()) {
-                    if (copySingleFile(file.getAbsolutePath(),file.getParent()+"application-temp.properties")) {
+                  String intermediate = editFile(file.getAbsolutePath(), "", "/home/flexicore/", flexicoreHome, false, false, true, true);
+                    return true;
 
-                        String intermediate = editFile(file.getAbsolutePath(), "", "/home/flexicore/", flexicoreHome, false, false, true, true);
-                        return true;
-                    }
+                } else {
+
                 }
             }
         }
@@ -219,7 +222,7 @@ public class DeployFlexicore extends InstallationTask {
     }
 
     /**
-     * Deploy Flexicore inside Wildfly.
+     * Deploy Flexicore inside Wildfly. Not used for Spring
      *
      * @param installationContext
      * @return
@@ -306,6 +309,11 @@ public class DeployFlexicore extends InstallationTask {
         return !controlFile || !folderFound;
     }
 
+    /**
+     * For Wildfly only, wait on the file in /opt/wildfly/standalone/deployments
+     * @param deployments
+     * @return
+     */
     private InstallationResult waitForDeployment(File deployments) {
         //was an update
         updateProgress(getContext(), "Waiting up to 200 seconds till Flexicore starts");
@@ -431,8 +439,8 @@ public class DeployFlexicore extends InstallationTask {
                 boolean keepOld = false;
                 springSourceFolder = fixWindows(getServerPath() + "flexicore/spring");
                 springConfigFolder = fixWindows(getServerPath() + "flexicore/config");
-                springTargetFolder = fixWindows(getFlexicoreHome() + "/spring");
-                springConfigTargetFolder = fixWindows(getFlexicoreHome() + "/config");
+                springTargetFolder = fixWindows(getFlexicoreHome() + "spring");
+                springConfigTargetFolder = fixWindows(getFlexicoreHome() + "config");
                 if (isWindows) {
                     springXML = springSourceFolder + "/flexicore.xml";
                     if (!exists(springXML)) return false;
@@ -448,45 +456,48 @@ public class DeployFlexicore extends InstallationTask {
 
                         }
                         boolean result = executeCommand("id -u flexicore &>/dev/null || useradd flexicore ", "", ownerName);
-                        result =executeCommand("chmod 500 "+springTargetFolder+"/flexicore.jar","",ownerName);
+                        result = executeCommand("chmod 500 " + springTargetFolder + "/flexicore.jar", "", ownerName);
                         if (!result) {
-                            info ("failed to chmod 500 on flexicore.jar");
+                            info("failed to chmod 500 on flexicore.jar");
                             return false;
                         }
-                        result =executeCommand("chown flexicore.flexicore "+springTargetFolder+"/flexicore.jar","",ownerName);
+                        result = executeCommand("chown flexicore.flexicore " + springTargetFolder + "/flexicore.jar", "", ownerName);
                         if (!result) {
                             if (!result) {
-                                info ("failed to change owner of flexicore.jar");
+                                info("failed to change owner of flexicore.jar");
                             }
                             return false;
                         }
-                        Parameter loglocationParameter =installationContext.getParameter("loglocationlinux");
-                        String loglocation=loglocationParameter!=null ?loglocationParameter.getValue():"/var/log/flexicore";
+                        Parameter loglocationParameter = installationContext.getParameter("loglocationlinux");
+                        String loglocation = loglocationParameter != null ? loglocationParameter.getValue() : "/var/log/flexicore";
                         File logs = new File(loglocation);
                         if (!logs.exists()) {
                             if (!logs.mkdirs()) {
-                               info ("Failed to create logs folder: "+loglocation);
-                               return false;
+                                info("Failed to create logs folder: " + loglocation);
+                                return false;
                             }
                         }
-                        result =executeCommand("chown -R flexicore.flexicore "+loglocation,"",ownerName);
+                        result = executeCommand("chown -R flexicore.flexicore " + loglocation, "", ownerName);
                         if (!result) {
                             if (!result) {
-                                info ("failed to change owner on logs folder at: "+logs.getAbsolutePath());
+                                info("failed to change owner on logs folder at: " + logs.getAbsolutePath());
                             }
                             return false;
                         }
+                        //must copy the service before fixing links
+                        Files.copy(Paths.get(serviceLocation), Paths.get(getUbuntuServicesLocation() + serviceName + ".service"), StandardCopyOption.REPLACE_EXISTING);
+                        fixServiceFile(serviceLocation,installationContext);
                         if (installService(serviceLocation, serviceName, ownerName)) {
                             info("Have successfully installed: " + serviceName);
-                            if (heapMemory!=null &!heapMemory.isEmpty()) {
+                            if (heapMemory != null & !heapMemory.isEmpty()) {
                                 String intermediate = "";
                                 intermediate = Utilities.editFile(serviceFile, intermediate, "2048m", heapMemory + "m", true, false, true);
                                 setServiceToStop(serviceName, ownerName);
-                                executeCommand("systemctl daemon-reload","",ownerName);
+                                executeCommand("systemctl daemon-reload", "", ownerName);
                                 if (setServiceToStart(serviceName, ownerName)) {
                                     return true;
                                 }
-                            }else {
+                            } else {
                                 severe("Heap memory was not set to a legal value");
                             }
                         }
@@ -514,22 +525,23 @@ public class DeployFlexicore extends InstallationTask {
         return true;
     }
 
-    private boolean copyRequired(InstallationContext installationContext) throws InterruptedException {
-        if (copy(springSourceFolder, springTargetFolder, ownerName)) {
-            updateProgress(getContext(), "have updated Flexicore Spring successfully ");
-            if (copy(springConfigFolder, springConfigTargetFolder, ownerName)) {
-                updateProgress(getContext(), "have copied configuration folder ");
-                return true;
-            } else {
-                updateProgress(installationContext, "have failed to copy configuration folder: " + springConfigFolder);
-                return false;
-            }
-        } else {
-            updateProgress(installationContext, "have failed to copy Spring folder: " + springSourceFolder);
-            return false;
+    /**
+     * change paths in service file, points to the correct flexicore home
+     * @param installationContext
+     * @return
+     */
+    private boolean fixServiceFile(String serviceLocation,InstallationContext installationContext) throws IOException {
+        if (flexicoreHome.equals("/home/flexicore")) return false;
 
-        }
+            String result=editFile(serviceLocation,"","/home/flexicore/",flexicoreHome,false,false,true,true);
+
+
+            return !result.isEmpty();
+
+
     }
+
+
 
     @Override
     public InstallationResult unInstall(InstallationContext installationContext) throws Throwable {
