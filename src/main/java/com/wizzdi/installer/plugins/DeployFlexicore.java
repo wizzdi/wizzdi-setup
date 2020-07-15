@@ -182,7 +182,7 @@ public class DeployFlexicore extends InstallationTask {
                     updateProgress(installationContext, "Have copied flexicore folder");
                     boolean fixed = fixFlexicoreHome(installationContext);
                     if (fixed) {
-                        info("Have fixed paths in application.properties file in: "+flexicoreHome+"config/ folder");
+                        info("Have fixed paths in application.properties file in: " + flexicoreHome + "config/ folder");
                     }
                     return true;
                 } else {
@@ -210,7 +210,7 @@ public class DeployFlexicore extends InstallationTask {
             if (!flexicoreHome.equals("/home/flexicore/")) {
                 File file = new File(flexicoreHome + "config/application.properties");
                 if (file.exists()) {
-                  String intermediate = editFile(file.getAbsolutePath(), "", "/home/flexicore/", flexicoreHome, false, false, true, true);
+                    String intermediate = editFile(file.getAbsolutePath(), "", "/home/flexicore/", flexicoreHome, false, false, true, true);
                     return true;
 
                 } else {
@@ -311,6 +311,7 @@ public class DeployFlexicore extends InstallationTask {
 
     /**
      * For Wildfly only, wait on the file in /opt/wildfly/standalone/deployments
+     *
      * @param deployments
      * @return
      */
@@ -414,7 +415,12 @@ public class DeployFlexicore extends InstallationTask {
                 //Spring installation here.
                 if (copySucceeded) {
                     if (installSpringAsService(installationContext)) {
-                        return succeeded();
+                        if (executeCommand("chwon -R flexicore.flexicore " + flexicoreHome, "", ownerName)) {
+                            return succeeded();
+                        } else {
+                            info("Cannot set " + flexicoreHome + " to flexicore owner");
+                            return failed();
+                        }
                     } else return failed();
                 } else {
                     updateProgress(installationContext, "copy of files failed in installation phase so Spring cannot be started as a service");
@@ -456,6 +462,11 @@ public class DeployFlexicore extends InstallationTask {
 
                         }
                         boolean result = executeCommand("id -u flexicore &>/dev/null || useradd flexicore ", "", ownerName);
+                        if (!fixLinks(installationContext)) {
+                            info("failed to fix links on latest flexicore.jar");
+                            return false;
+
+                        }
                         result = executeCommand("chmod 500 " + springTargetFolder + "/flexicore.jar", "", ownerName);
                         if (!result) {
                             info("failed to chmod 500 on flexicore.jar");
@@ -486,16 +497,17 @@ public class DeployFlexicore extends InstallationTask {
                         }
                         //must copy the service before fixing links
                         String targetServiceLocation;
-                        Files.copy(Paths.get(serviceLocation), Paths.get(targetServiceLocation=getUbuntuServicesLocation() + serviceName + ".service"), StandardCopyOption.REPLACE_EXISTING);
+                        Files.copy(Paths.get(serviceLocation), Paths.get(targetServiceLocation = getUbuntuServicesLocation() + serviceName + ".service"), StandardCopyOption.REPLACE_EXISTING);
 
-                        fixServiceFile(targetServiceLocation,installationContext);
-                        if (installService(null, serviceName, ownerName)) {
+                        fixServiceFile(targetServiceLocation, installationContext);
+
+                        if (installService(null, serviceName, ownerName, false)) {
                             info("Have successfully installed: " + serviceName);
                             if (heapMemory != null & !heapMemory.isEmpty()) {
                                 String intermediate = "";
                                 intermediate = Utilities.editFile(serviceFile, intermediate, "2048m", heapMemory + "m", true, false, true);
-                                setServiceToStop(serviceName, ownerName);
-                                executeCommand("systemctl daemon-reload", "", ownerName);
+
+
                                 if (setServiceToStart(serviceName, ownerName)) {
                                     return true;
                                 }
@@ -503,6 +515,10 @@ public class DeployFlexicore extends InstallationTask {
                                 severe("Heap memory was not set to a legal value");
                             }
                         }
+//                        } else {
+//                            severe("Cannot install Flexicore as a service!");
+//                            return false;
+//                        }
 
 
                     } else {
@@ -528,21 +544,42 @@ public class DeployFlexicore extends InstallationTask {
     }
 
     /**
+     * find latest Spring Boot Flexicore file and create a standard link for the service.
+     * @param installationContext
+     * @return
+     * @throws IOException
+     */
+    private boolean fixLinks(InstallationContext installationContext) throws IOException {
+        String candidate = getLatestVersion(flexicoreHome + "spring", "FlexiCore-");
+        if (!candidate.isEmpty()) {
+            info("Found Flexicore version");
+            new File(flexicoreHome + "spring/flexicore.jar").delete();
+
+            String[] args = {"ln", "-s",flexicoreHome+"spring/"+candidate,"flexicore.jar"};
+            boolean result=executeCommandByBuilder(args,"",false,ownerName,false);
+            return result;
+        } else {
+            info("couldn't find a candidate for flexicore.jar");
+        }
+        return false;
+    }
+
+    /**
      * change paths in service file, points to the correct flexicore home
+     *
      * @param installationContext
      * @return
      */
-    private boolean fixServiceFile(String serviceLocation,InstallationContext installationContext) throws IOException {
+    private boolean fixServiceFile(String serviceLocation, InstallationContext installationContext) throws IOException {
         if (flexicoreHome.equals("/home/flexicore")) return false;
 
-            String result=editFile(serviceLocation,"","/home/flexicore/",flexicoreHome,false,false,true,true);
+        String result = editFile(serviceLocation, "", "/home/flexicore/", flexicoreHome, false, false, true, true);
 
 
-            return !result.isEmpty();
+        return !result.isEmpty();
 
 
     }
-
 
 
     @Override
