@@ -383,6 +383,9 @@ public class InstallationTask implements IInstallationTask {
            return true;
 
     }
+    public boolean installService(String serviceLocation, String serviceName, String ownerName) {
+        return  installService(serviceLocation,serviceName,ownerName,true);
+    }
     /**
      * install service from a service file, Linux only
      *
@@ -391,7 +394,7 @@ public class InstallationTask implements IInstallationTask {
      * @param ownerName
      * @return
      */
-    public boolean installService(String serviceLocation, String serviceName, String ownerName) {
+    public boolean installService(String serviceLocation, String serviceName, String ownerName,boolean startService) {
 
         if (isWindows) return false;
         try {
@@ -405,15 +408,21 @@ public class InstallationTask implements IInstallationTask {
                 updateProgress(getContext(), serviceName + " service will automatically start");
 
                 if (executeCommand("systemctl daemon-reload", "", "setting service" + serviceName)) {
-                    if (setServiceToStart(serviceName, ownerName)) {
-                        if (testServiceRunning(serviceName, ownerName, true)) {
-                            updateProgress(getContext(), serviceName + " service has been started");
-                            return true;
+                    if (startService) {
+                        if (setServiceToStart(serviceName, ownerName)) {
+                            if (testServiceRunning(serviceName, ownerName, true)) {
+                                updateProgress(getContext(), serviceName + " service has been started");
+                                return true;
+                            } else {
+                                info("Cannot start service: " + serviceName);
+                            }
                         } else {
                             info("Cannot start service: " + serviceName);
                         }
-                    } else {
-                        info("Cannot start service: " + serviceName);
+                    }else {
+                        setServiceToStop(serviceName, ownerName);
+                        info("was not set to start service : " + serviceName);
+                        return true;
                     }
                 } else {
                     info("Cannot reload systemctl daemon: " + serviceName);
