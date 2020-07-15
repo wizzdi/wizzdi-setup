@@ -417,7 +417,7 @@ public class DeployFlexicore extends InstallationTask {
                         return succeeded();
                     } else return failed();
                 } else {
-                    updateProgress(installationContext, "copy of files failed so Spring cannot be started as a service");
+                    updateProgress(installationContext, "copy of files failed in installation phase so Spring cannot be started as a service");
                     return failed();
                 }
             }
@@ -487,7 +487,7 @@ public class DeployFlexicore extends InstallationTask {
                         //must copy the service before fixing links
                         Files.copy(Paths.get(serviceLocation), Paths.get(getUbuntuServicesLocation() + serviceName + ".service"), StandardCopyOption.REPLACE_EXISTING);
                         fixServiceFile(serviceLocation,installationContext);
-                        if (installService(serviceLocation, serviceName, ownerName)) {
+                        if (installService(null, serviceName, ownerName)) {
                             info("Have successfully installed: " + serviceName);
                             if (heapMemory != null & !heapMemory.isEmpty()) {
                                 String intermediate = "";
