@@ -506,7 +506,7 @@ public class DeployFlexicore extends InstallationTask {
                             if (heapMemory != null & !heapMemory.isEmpty()) {
                                 String intermediate = "";
                                 intermediate = Utilities.editFile(serviceFile, intermediate, "2048m", heapMemory + "m", true, false, true);
-
+                                executeCommand("systemctl daemon-reload","",ownerName);
 
                                 if (setServiceToStart(serviceName, ownerName)) {
                                     return true;
