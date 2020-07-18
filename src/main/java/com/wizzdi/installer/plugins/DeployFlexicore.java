@@ -415,7 +415,7 @@ public class DeployFlexicore extends InstallationTask {
                 //Spring installation here.
                 if (copySucceeded) {
                     if (installSpringAsService(installationContext)) {
-                        if (executeCommand("chwon -R flexicore.flexicore " + flexicoreHome, "", ownerName)) {
+                        if (executeCommand("chown -R flexicore.flexicore " + flexicoreHome, "", ownerName)) {
                             return succeeded();
                         } else {
                             info("Cannot set " + flexicoreHome + " to flexicore owner");
