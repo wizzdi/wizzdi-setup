@@ -847,7 +847,7 @@ public class Start {
                 writer.write("#in other parameters\n");
                 writer.write("#if this file is named 'properties' and placed in the bin folder of the installer it will replace default values set in code\n");
                 for (IInstallationTask task : context.getiInstallationTasks().values()) {
-                    writer.write("# -----------------task:" + task.getName() + " :" + task.getDescription() + " task id is: " + task.getId() + "\n");
+                    writer.write("# -----------------task:" + task.getName() + " :" + getTaskDescription(task)+ " task id is: " + task.getId() + "\n");
                     writer.write(task.getId() + "=" + task.isEnabled() + "\n");
                     List<Parameter> parameters = context.getParamaters().byTask(task);
                     if (parameters != null && parameters.size() != 0) {
@@ -857,20 +857,20 @@ public class Start {
                             if (parameter.getValue() != null) {
                                 if (parameter.isSandSymbolPresent()) {
                                     if (parameter.getValue().contains("&")) {
-                                        writer.write(parameter.getName() + "=" + parameter.getValue() + "\n");
+                                        writer.write(parameter.getName() + "=" + parameter.getValue() + getParameterDescription(parameter));
                                     } else {
                                         if (parameter.getNonTranslatedValue() != null)
-                                            writer.write(parameter.getName() + "=" + parameter.getNonTranslatedValue() + "\n");
+                                            writer.write(parameter.getName() + "=" + parameter.getNonTranslatedValue() + getParameterDescription(parameter));
                                     }
                                 } else {
-                                    writer.write(parameter.getName() + "=" + parameter.getValue() + "\n");
+                                    writer.write(parameter.getName() + "=" + parameter.getValue() + getParameterDescription(parameter));
                                 }
                             }
                         }
                     } else {
                         writer.write("# task  " + task.getName() + " id: " + task.getId() + " has no parameters \n");
                     }
-                    writer.write("#----------------- end of task: " + task.getName() + "\n");
+                    writer.write("#----------------- end of task: " + task.getName() + "\n\n\n");
 
                 }
                 logger.log(Level.INFO, "Have saved properties file :" + file.getAbsolutePath());
@@ -880,7 +880,26 @@ public class Start {
 
         }
     }
+    //make sure multiple lines are properly commanted
+    private static String getParameterDescription(Parameter parameter) {
+        String result= !(parameter.getDescription()==null || parameter.getDescription().isEmpty()) ? "#"+parameter.getDescription():"";
+        return getCommented(result);
+    }
 
+    private static String getCommented(String result) {
+        if (result.isEmpty()) return result;
+        String[] lines = result.split("\n");
+        StringBuilder sb = new StringBuilder();
+        for (String line : lines) {
+            sb.append("      #" + line + "\n");
+        }
+        return sb.toString();
+    }
+
+    private static String getTaskDescription(IInstallationTask task) {
+        String result= !(task.getDescription()==null || task.getDescription().isEmpty()) ? "#"+task.getDescription():"";
+        return getCommented(result);
+    }
     /**
      * adjust args to options, otherwise Apache library get confused.
      *
