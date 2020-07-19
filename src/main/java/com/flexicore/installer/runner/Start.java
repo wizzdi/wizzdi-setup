@@ -17,6 +17,7 @@ import org.pf4j.DefaultPluginManager;
 import org.pf4j.PluginManager;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -40,8 +41,8 @@ public class Start {
     private static final String INSTALLATION_TASKS_FOLDER = "tasks";
     private static final String DEMO_POWERSHELL = "ps";
     private static final long PROGRESS_DELAY = 300;
-    private static final String CONFIG_FILENAME = "jpowershell.properties";
-    private static final int LOG_PAGE_SIZE = 50;
+
+
     private static Logger logger;
     private static List<String> versions = new ArrayList<>();
     private static PluginManager pluginManager;
@@ -233,6 +234,23 @@ public class Start {
                 info(" no installation tasks found in tasks folder, cannot proceed, quitting");
                 exit(0);
             }
+            Parameter psave=installationContext.getParameter("psave");
+            String savePath;
+            File file;
+            if (psave!=null && !(savePath=psave.getValue()).isEmpty()) {
+                //save all paramters in a properties file
+                try {
+                     file=new File(savePath);
+                    saveProperties(installationContext,file);
+                    info("Have saved a properties file at: "+savePath+"\n will now exit");
+                    exit(0);
+                }catch (Exception e) {
+                    severe("Error while saving properties file to: "+savePath,e);
+                    exit(0);
+                }
+
+            }
+           
             if (installationContext.getParamaters().getBooleanValue("install")) {
                 install(installationContext, false, false);
             } else {
@@ -815,6 +833,51 @@ public class Start {
         } catch (IOException ex) {
             info("No properties file provided, one can be placed in the current folder: " + System.getProperty("user.dir"));
             installationContext.setProperties(new Properties());
+        }
+    }
+    private static void saveProperties(InstallationContext context,File file) {
+        if (file != null) {
+
+            try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(file.getAbsolutePath()), StandardCharsets.UTF_8)) {
+                writer.write("# properties file created on: " + LocalDateTime.now() + "\n");
+                writer.write("#Important notes:\n");
+                writer.write("#you can edit locations in this file to reference other locations\n");
+                writer.write("#so for example, it is possible to replace c:\\temp\\installations\\\n");
+                writer.write("#so for example, with &installations , see names of parameters pointing to folder and files and use them as references\n");
+                writer.write("#in other parameters\n");
+                writer.write("#if this file is named 'properties' and placed in the bin folder of the installer it will replace default values set in code\n");
+                for (IInstallationTask task : context.getiInstallationTasks().values()) {
+                    writer.write("# -----------------task:" + task.getName() + " :" + task.getDescription() + " task id is: " + task.getId() + "\n");
+                    writer.write(task.getId() + "=" + task.isEnabled() + "\n");
+                    List<Parameter> parameters = context.getParamaters().byTask(task);
+                    if (parameters != null && parameters.size() != 0) {
+
+                        for (Parameter parameter : parameters) {
+                            if (parameter.getName().equals("psave")) continue; // we need a properties file that cannot save itself
+                            if (parameter.getValue() != null) {
+                                if (parameter.isSandSymbolPresent()) {
+                                    if (parameter.getValue().contains("&")) {
+                                        writer.write(parameter.getName() + "=" + parameter.getValue() + "\n");
+                                    } else {
+                                        if (parameter.getNonTranslatedValue() != null)
+                                            writer.write(parameter.getName() + "=" + parameter.getNonTranslatedValue() + "\n");
+                                    }
+                                } else {
+                                    writer.write(parameter.getName() + "=" + parameter.getValue() + "\n");
+                                }
+                            }
+                        }
+                    } else {
+                        writer.write("# task  " + task.getName() + " id: " + task.getId() + " has no parameters \n");
+                    }
+                    writer.write("#----------------- end of task: " + task.getName() + "\n");
+
+                }
+                logger.log(Level.INFO, "Have saved properties file :" + file.getAbsolutePath());
+            } catch (IOException e) {
+                logger.log(Level.SEVERE, " Error while writing properties file", e);
+            }
+
         }
     }
 

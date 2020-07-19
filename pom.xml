@@ -6,7 +6,7 @@
 
     <groupId>com.flexicore</groupId>
     <artifactId>flexicore-installer</artifactId>
-    <version>1.0.22</version>
+    <version>1.0.23</version>
     <distributionManagement>
         <repository>
             <id>flexicore-local</id>
@@ -145,7 +145,7 @@
             <plugin>
                 <groupId>org.moditect</groupId>
                 <artifactId>moditect-maven-plugin</artifactId>
-                <version>1.0.0.Beta2</version>
+                <version>1.0.0.beta2</version>
                 <executions>
                     <execution>
                         <id>add-module-info-to-dependencies</id>
