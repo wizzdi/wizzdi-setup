@@ -37,12 +37,13 @@ import static org.fusesource.jansi.Ansi.ansi;
 public class Start {
 
     private static final String HELP = "h";
+    private static final String PROPERTIES = "p";
     private static final String LOG_PATH_OPT = "l";
     private static final String INSTALLATION_TASKS_FOLDER = "tasks";
     private static final String DEMO_POWERSHELL = "ps";
     private static final long PROGRESS_DELAY = 300;
 
-
+    private static String currentFolder = System.getProperty("user.dir");
     private static Logger logger;
     private static List<String> versions = new ArrayList<>();
     private static PluginManager pluginManager;
@@ -58,6 +59,7 @@ public class Start {
     static ProcessorData processorData;
     static SystemData systemData = new SystemData();
     static boolean errorInUiComponents = false;
+    private static String propertiesFile;
 
     public static void main(String[] args) throws MissingInstallationTaskDependency, ParseException, InterruptedException {
 
@@ -70,7 +72,7 @@ public class Start {
         CommandLine mainCmd = parser.parse(options, trueArgs, false); //will not fail if fed with plugins options.
 
         logger = initLogger("Installer", mainCmd.getOptionValue(LOG_PATH_OPT, "logs"));
-       // PowerShellReturn result = InstallationTask.executeScript(logger, "c:\\Users\\Avishay Ben Natan\\AppData\\Local\\Temp\\PSScript12339471847618652481.ps1", new String[]{});
+        // PowerShellReturn result = InstallationTask.executeScript(logger, "c:\\Users\\Avishay Ben Natan\\AppData\\Local\\Temp\\PSScript12339471847618652481.ps1", new String[]{});
         if (isWindows()) {
             Thread startThread = new Thread(new Runnable() {
                 @Override
@@ -155,7 +157,8 @@ public class Start {
             }
         }
         TopologicalOrderIterator<String, DefaultEdge> topologicalOrderIterator = getInstallationTaskIterator(installationTasks);
-        readProperties(installationContext);
+        if (mainCmd.hasOption(PROPERTIES)) propertiesFile = mainCmd.getOptionValue(PROPERTIES,currentFolder+"/properties");
+        readProperties(installationContext,propertiesFile);
         installationContext.getiInstallationTasks().clear();
         ArrayList<String> softRequired = new ArrayList<>();
         ArrayList<IInstallationTask> finalizers = new ArrayList<>();
@@ -230,27 +233,27 @@ public class Start {
         loadUiComponents();  //currently asynchronous
         if (!uiFoundandRun) {
             checkHelp(mainCmd);
-            if (installationContext.getiInstallationTasks().size()==0) {
+            if (installationContext.getiInstallationTasks().size() == 0) {
                 info(" no installation tasks found in tasks folder, cannot proceed, quitting");
                 exit(0);
             }
-            Parameter psave=installationContext.getParameter("psave");
+            Parameter psave = installationContext.getParameter("psave");
             String savePath;
             File file;
-            if (psave!=null && !(savePath=psave.getValue()).isEmpty()) {
+            if (psave != null && !(savePath = psave.getValue()).isEmpty()) {
                 //save all paramters in a properties file
                 try {
-                     file=new File(savePath);
-                    saveProperties(installationContext,file);
-                    info("Have saved a properties file at: "+savePath+"\n will now exit");
+                    file = new File(savePath);
+                    saveProperties(installationContext, file);
+                    info("Have saved a properties file at: " + savePath + "\n will now exit");
                     exit(0);
-                }catch (Exception e) {
-                    severe("Error while saving properties file to: "+savePath,e);
+                } catch (Exception e) {
+                    severe("Error while saving properties file to: " + savePath, e);
                     exit(0);
                 }
 
             }
-           
+
             if (installationContext.getParamaters().getBooleanValue("install")) {
                 install(installationContext, false, false);
             } else {
@@ -424,7 +427,7 @@ public class Start {
             }
             cacheProcessorData = processorData;
             return processorData;
-        }else {
+        } else {
             return null;
         }
     }
@@ -558,7 +561,7 @@ public class Start {
                 selected = component;
             }
         }
-        if (selected!=null) {
+        if (selected != null) {
             uiComponents.clear();
             uiComponents.add(selected);
             versions.add(0, selected.getVersion());
@@ -821,21 +824,24 @@ public class Start {
      * Look for properties file if exists override code based default properties
      *
      * @param installationContext
+     * @param propertiesFile
      */
-    private static void readProperties(InstallationContext installationContext) {
-        String currentFolder = System.getProperty("user.dir");
-        info("Will look for  properties file in: " + currentFolder);
-        try (InputStream input = new FileInputStream(currentFolder + "/" + "properties")) {
+    private static void readProperties(InstallationContext installationContext, String propertiesFile) {
+
+
+        info("Will look for  properties file in: " + propertiesFile);
+        try (InputStream input = new FileInputStream(propertiesFile)) {
             Properties prop = new Properties();
             // load a properties file
             prop.load(input);
             installationContext.setProperties(prop);
         } catch (IOException ex) {
-            info("No properties file provided, one can be placed in the current folder: " + System.getProperty("user.dir"));
+            info("No properties file provided at: "+propertiesFile);
             installationContext.setProperties(new Properties());
         }
     }
-    private static void saveProperties(InstallationContext context,File file) {
+
+    private static void saveProperties(InstallationContext context, File file) {
         if (file != null) {
 
             try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(file.getAbsolutePath()), StandardCharsets.UTF_8)) {
@@ -847,23 +853,31 @@ public class Start {
                 writer.write("#in other parameters\n");
                 writer.write("#if this file is named 'properties' and placed in the bin folder of the installer it will replace default values set in code\n");
                 for (IInstallationTask task : context.getiInstallationTasks().values()) {
-                    writer.write("# -----------------task:" + task.getName() + " :" + getTaskDescription(task)+ " task id is: " + task.getId() + "\n");
+                    writer.write("# -----------------task:" + task.getName() + " :" + getTaskDescription(task) + "# task id is: " + task.getId() + "\n");
                     writer.write(task.getId() + "=" + task.isEnabled() + "\n");
                     List<Parameter> parameters = context.getParamaters().byTask(task);
+                    String toWrite = null;
                     if (parameters != null && parameters.size() != 0) {
 
                         for (Parameter parameter : parameters) {
-                            if (parameter.getName().equals("psave")) continue; // we need a properties file that cannot save itself
+                            if (parameter.getName().equals("psave"))
+                                continue; // we need a properties file that cannot save itself
                             if (parameter.getValue() != null) {
                                 if (parameter.isSandSymbolPresent()) {
                                     if (parameter.getValue().contains("&")) {
-                                        writer.write(parameter.getName() + "=" + parameter.getValue() + getParameterDescription(parameter));
+                                        toWrite = parameter.getName() + "=" + parameter.getValue() + getParameterDescription(parameter);
+                                        writer.write(toWrite);
                                     } else {
-                                        if (parameter.getNonTranslatedValue() != null)
-                                            writer.write(parameter.getName() + "=" + parameter.getNonTranslatedValue() + getParameterDescription(parameter));
+                                        if (parameter.getNonTranslatedValue() != null) {
+                                            String description = getParameterDescription(parameter);
+                                            String nonT = parameter.getNonTranslatedValue();
+                                            toWrite = parameter.getName() + "=" + nonT + description;
+                                            writer.write(toWrite);
+                                        }
                                     }
                                 } else {
-                                    writer.write(parameter.getName() + "=" + parameter.getValue() + getParameterDescription(parameter));
+                                    toWrite = parameter.getName() + "=" + parameter.getValue() + getParameterDescription(parameter);
+                                    writer.write(toWrite);
                                 }
                             }
                         }
@@ -880,9 +894,10 @@ public class Start {
 
         }
     }
+
     //make sure multiple lines are properly commanted
     private static String getParameterDescription(Parameter parameter) {
-        String result= !(parameter.getDescription()==null || parameter.getDescription().isEmpty()) ? "#"+parameter.getDescription():"";
+        String result = !(parameter.getDescription() == null || parameter.getDescription().isEmpty()) ? "\n#" + parameter.getDescription() : "\n";
         return getCommented(result);
     }
 
@@ -891,15 +906,22 @@ public class Start {
         String[] lines = result.split("\n");
         StringBuilder sb = new StringBuilder();
         for (String line : lines) {
-            sb.append("      #" + line + "\n");
+            if (line.isEmpty()) continue;
+            if (line.startsWith("#")) {
+                sb.append("\n" + line);
+            } else {
+                sb.append("\n      #" + line + "\n");
+            }
+
         }
         return sb.toString();
     }
 
     private static String getTaskDescription(IInstallationTask task) {
-        String result= !(task.getDescription()==null || task.getDescription().isEmpty()) ? "#"+task.getDescription():"";
+        String result = !(task.getDescription() == null || task.getDescription().isEmpty()) ? "#" + task.getDescription() : "";
         return getCommented(result);
     }
+
     /**
      * adjust args to options, otherwise Apache library get confused.
      *
@@ -983,7 +1005,7 @@ public class Start {
             if (installationContext.isExtraLogs())
                 info("Have added " + count + " parameters to installation task: " + task.getId() + " ->>" + task.getDescription());
         } catch (ParseException e) {
-            logger.log(Level.SEVERE, "error while parsing command line: "+e.getMessage(), e);
+            logger.log(Level.SEVERE, "error while parsing command line: " + e.getMessage(), e);
             return false;
         }
         return true;
@@ -1138,7 +1160,8 @@ public class Start {
                 .addOption(LOG_PATH_OPT, true, "log folder")
 
                 .addOption(HELP, false, "shows this message")
-                .addOption(DEMO_POWERSHELL, false, "Add powerShell command for tests");
+                .addOption(DEMO_POWERSHELL, false, "Add powerShell command for tests")
+                .addOption(PROPERTIES, true, "points to a properties file");
 
     }
 
@@ -1202,7 +1225,8 @@ public class Start {
     static double startLoop;
 
     static Thread updateThread;
-    public static AtomicBoolean finishIngTask=new AtomicBoolean(false);
+    public static AtomicBoolean finishIngTask = new AtomicBoolean(false);
+
     private static boolean install(InstallationContext context, boolean unInstall, boolean dry) {
         if (!dry) {
             dry = context.getParamaters().getBooleanValue("dry");
@@ -1229,17 +1253,17 @@ public class Start {
                                 double completedTimeLocal = completedTime;
                                 double currentTaskDurationLocal = currentTaskDuration;
                                 if (totalTime != 0 && !finishIngTask.get()) {
-                                    long elapsedInTask=getSeconds(taskStarted);
-                                    double suggestedTimeInSec = Math.min(elapsedInTask + completedTimeLocal,completedTimeLocal+currentTaskDurationLocal);
+                                    long elapsedInTask = getSeconds(taskStarted);
+                                    double suggestedTimeInSec = Math.min(elapsedInTask + completedTimeLocal, completedTimeLocal + currentTaskDurationLocal);
 
-                                   // info ("Suggested time in seconds: "+suggestedTimeInSec+"\n" +
-                                   //         "completedTime: "+completedTimeLocal+" current task duration: "+currentTaskDurationLocal+" current task is: "+currentTask.getName());
+                                    // info ("Suggested time in seconds: "+suggestedTimeInSec+"\n" +
+                                    //         "completedTime: "+completedTimeLocal+" current task duration: "+currentTaskDurationLocal+" current task is: "+currentTask.getName());
 
-                                    if (suggestedTimeInSec>totalTime) {
+                                    if (suggestedTimeInSec > totalTime) {
                                         //info("************ suggested time is bigger than total time");
-                                        suggestedTimeInSec=0.98*totalTime;
+                                        suggestedTimeInSec = 0.98 * totalTime;
                                     }
-                                    
+
                                     progress = suggestedTimeInSec / totalTime;
                                     informUI("", InstallationState.PROGRESSREPORT, progress);
                                 }
@@ -1395,7 +1419,7 @@ public class Start {
                 if (task.isEnabled()) {
                     ua.addMessage(new UserMessage().setMessage(task.getName()).
                             setEmphasize(1).
-                            setColor(uiFoundandRun ? Color.BLACK :Color.WHITE).setLeftMargin(10));
+                            setColor(uiFoundandRun ? Color.BLACK : Color.WHITE).setLeftMargin(10));
                 }
             }
             ua.setPossibleAnswers(new UserResponse[]{UserResponse.CONTINUE, UserResponse.STOP});
@@ -1680,10 +1704,10 @@ public class Start {
                 totalServiceRestartTime += (installationTask.isEnabled() && !installationTask.isWrongOS()) ? ((InstallationTask) installationTask).getFactoredServiceDuration() : 0d;
                 totalFinalizersTime += (installationTask.isEnabled() && !installationTask.isWrongOS()) ? ((InstallationTask) installationTask).getFactoredFinalizerDuration() : 0d;
             }
-             info("Total installer time is: " + totalInstallersTime);
+            info("Total installer time is: " + totalInstallersTime);
             info("Total service restart time is: " + totalServiceRestartTime);
             info("total finalizers time is: " + totalFinalizersTime);
-            totalTime=totalInstallersTime+totalServiceRestartTime+totalFinalizersTime;
+            totalTime = totalInstallersTime + totalServiceRestartTime + totalFinalizersTime;
             info("Total time is: " + totalTime);
 
             startLoop = System.currentTimeMillis();
@@ -1725,7 +1749,7 @@ public class Start {
 
                 try {
                     taskStarted = System.currentTimeMillis();
-                    currentTask= (InstallationTask) installationTask;
+                    currentTask = (InstallationTask) installationTask;
                     if (!installationTask.isSnooper()) {
                         if (!installationTask.getNeedRestartTasks().isEmpty()) {
                             for (String service : installationTask.getNeedRestartTasks()) {
@@ -1736,7 +1760,7 @@ public class Start {
                         currentTaskDuration = ((InstallationTask) installationTask).getFactoredDuration();
                         Start.finishIngTask.getAndSet(false);
                         if (!dry) {
-                            info("++++++++++++ about to install: "+installationTask.getName());
+                            info("++++++++++++ about to install: " + installationTask.getName());
                             result = unInstall ? installationTask.unInstall(context) : installationTask.install(context);
                         } else {
                             result = new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
@@ -1869,7 +1893,7 @@ public class Start {
                 if (!dry) {
 
                     taskStarted = System.currentTimeMillis();
-                    currentTask=task;
+                    currentTask = task;
                     for (String service : restarters.values()) {
 
                         if (!task.testServiceRunning(service, "Installer runner", false)) {
@@ -1903,7 +1927,7 @@ public class Start {
                                 taskStarted = System.currentTimeMillis();
                                 currentTaskDuration = ((InstallationTask) installationTask).getFactoredFinalizerDuration();
                                 Start.finishIngTask.getAndSet(false);
-                                info ("******* going to finalize task: "+installationTask.getName());
+                                info("******* going to finalize task: " + installationTask.getName());
                                 result = installationTask.finalizeInstallation(context);
                                 info("Finalizer for task: " + installationTask.getName() + " took " + getSeconds(taskStarted) + " seconds");
                                 Start.finishIngTask.getAndSet(true);

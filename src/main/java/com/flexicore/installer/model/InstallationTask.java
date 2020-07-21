@@ -383,6 +383,22 @@ public class InstallationTask implements IInstallationTask {
            return true;
 
     }
+    /**
+     * change paths in service file, points to the correct flexicore home
+     *
+     * @param installationContext
+     * @return
+     */
+    private boolean fixServiceFile(String serviceLocation, InstallationContext installationContext) throws IOException {
+        if (flexicoreHome.equals("/home/flexicore")) return false;
+
+        String result = editFile(serviceLocation, "", "/home/flexicore/", flexicoreHome, false, false, true, true);
+
+
+        return !result.isEmpty();
+
+
+    }
     public boolean installService(String serviceLocation, String serviceName, String ownerName) {
         return  installService(serviceLocation,serviceName,ownerName,true);
     }

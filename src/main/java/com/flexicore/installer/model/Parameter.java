@@ -434,8 +434,10 @@ public class Parameter {
     }
 
     public String getSplitValue() {
+
         String v = getValue();
         String[] split = v.split(":");
+
         if (split.length > 0) return split[1];
         return v;
     }
