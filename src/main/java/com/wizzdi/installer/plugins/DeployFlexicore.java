@@ -550,7 +550,7 @@ public class DeployFlexicore extends InstallationTask {
      * @throws IOException
      */
     private boolean fixLinks(InstallationContext installationContext) throws IOException {
-        String candidate = getLatestVersion(flexicoreHome + "spring", "FlexiCore-");
+        String candidate = getLatestVersion(flexicoreHome + "spring", "FlexiCore-",".jar");
         if (!candidate.isEmpty()) {
             info("Found Flexicore version");
             new File(flexicoreHome + "spring/flexicore.jar").delete();
@@ -564,22 +564,7 @@ public class DeployFlexicore extends InstallationTask {
         return false;
     }
 
-    /**
-     * change paths in service file, points to the correct flexicore home
-     *
-     * @param installationContext
-     * @return
-     */
-    private boolean fixServiceFile(String serviceLocation, InstallationContext installationContext) throws IOException {
-        if (flexicoreHome.equals("/home/flexicore")) return false;
 
-        String result = editFile(serviceLocation, "", "/home/flexicore/", flexicoreHome, false, false, true, true);
-
-
-        return !result.isEmpty();
-
-
-    }
 
 
     @Override
@@ -632,6 +617,9 @@ public class DeployFlexicore extends InstallationTask {
         if (!installSpring) {
             result.add("Wildfly-installer"); //otherwise we cannot install deployment
         }
+        result.add("mongodb-installer");
+        result.add("PostgresSQL-installer");
+
         return result;
     }
 
