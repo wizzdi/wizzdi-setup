@@ -156,9 +156,13 @@ public class Start {
                 installationContext.addTask(task);
             }
         }
-        
+
         TopologicalOrderIterator<String, DefaultEdge> topologicalOrderIterator = getInstallationTaskIterator(installationTasks);
-        if (mainCmd.hasOption(PROPERTIES)) propertiesFile = mainCmd.getOptionValue(PROPERTIES,currentFolder+"/properties");
+        if (!mainCmd.hasOption(PROPERTIES)) {
+            propertiesFile = currentFolder+"/properties";
+        }else {
+            propertiesFile = mainCmd.getOptionValue(PROPERTIES,currentFolder+"/properties");
+        }
         readProperties(installationContext,propertiesFile);
         installationContext.getiInstallationTasks().clear();
         ArrayList<String> softRequired = new ArrayList<>();

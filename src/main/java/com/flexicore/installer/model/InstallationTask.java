@@ -77,12 +77,15 @@ public class InstallationTask implements IInstallationTask {
     public boolean isWindows() {
         return SystemUtils.IS_OS_WINDOWS;
     }
+
     public InstallationResult failed() {
         return new InstallationResult().setInstallationStatus(InstallationStatus.FAILED);
     }
+
     public InstallationResult succeeded() {
         return new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
     }
+
     @Override
     public OperatingSystem getCurrentOperatingSystem() {
         if (isWindows) return OperatingSystem.Windows;
@@ -367,29 +370,32 @@ public class InstallationTask implements IInstallationTask {
         }
         return false;
     }
+
     public String getUbuntuServicesLocation() {
         return "/etc/systemd/system/";
     }
 
     /**
      * added here although this is not a general requirement. todo: decide if to leave it here
+     *
      * @param installationContext
      * @return
      */
     public boolean installSpring(InstallationContext installationContext) {
 
-            Parameter container = installationContext.getParameter("container");
-            if (container != null) return container.getValue().toLowerCase().equals("spring");
-           return true;
+        Parameter container = installationContext.getParameter("container");
+        if (container != null) return container.getValue().toLowerCase().equals("spring");
+        return true;
 
     }
+
     /**
      * change paths in service file, points to the correct flexicore home
      *
      * @param installationContext
      * @return
      */
-    private boolean fixServiceFile(String serviceLocation, InstallationContext installationContext) throws IOException {
+    public boolean fixServiceFile(String serviceLocation, InstallationContext installationContext) throws IOException {
         if (flexicoreHome.equals("/home/flexicore")) return false;
 
         String result = editFile(serviceLocation, "", "/home/flexicore/", flexicoreHome, false, false, true, true);
@@ -399,9 +405,92 @@ public class InstallationTask implements IInstallationTask {
 
 
     }
+
     public boolean installService(String serviceLocation, String serviceName, String ownerName) {
-        return  installService(serviceLocation,serviceName,ownerName,true);
+        return installService(serviceLocation, serviceName, ownerName, true);
     }
+
+    /**
+     * copy and install as service based on a jar file, take latest version and use a symvolic link
+     * handle jar files with the same prefix as the service file too
+     * for example:
+     * screenshot-taker.jar and screenshot-taker.service
+     * and for example
+     * screenshot-taker-1.03.jar and screenshot-taker.service
+     * in this case a link to screenshot-taker.jar will be created in the target folder using latest jar found
+     * the service file knows nothing about versions and will always point, in this example, to screenshot-taker.jar, be it a link or not
+     *
+     * @param servicesLocation where to take the service from (xxx.service file)
+     * @param serviceName      name of the service
+     * @param jarLocation      location to get the Java jar (of the service) from
+     * @param targetLocation   where to put the jar files
+     * @param startWith        what common string is there for all versions of the Jar so we can create a soft link to latest
+     * @param toFind           string to find in service file when changing the target jar default location
+     * @param ownerName        used in internal logging, should be sent to idnetify the caller.
+     * @param startService     if true, starts service
+     * @return
+     * @throws InterruptedException
+     */
+    public boolean installLatestService(String servicesLocation, String serviceName, String jarLocation,
+                                        String targetLocation, String startWith, String toFind,
+                                        String ownerName, boolean startService) throws InterruptedException, IOException {
+        if (!isLinux) return false;
+
+        String latest = null;
+        boolean ignoreLink = false;
+        //fix an issue where there is no versioning, will use the file ''as is', no versioning information
+        if (!exists(latest = jarLocation + "/" + startWith + ".jar")) {
+            latest = getLatestVersion(jarLocation, startWith, ".jar");
+        } else ignoreLink = true;
+
+        if (latest == null || latest.isEmpty()) return false;
+        String target = targetLocation +"/"+ new File(latest).getName();
+        if (!copySingleFile(latest, target)) {
+            updateProgress(getContext(), "failed to copy : " + latest + " to: " + target);
+            return false;
+        }
+        String cleanName =target.substring(0,target.lastIndexOf(".jar"));
+        String targetServiceJarPath = target;
+
+
+        boolean linkResult = true;
+        if (!ignoreLink) {
+            targetServiceJarPath = (cleanName = target.substring(0, target.lastIndexOf("-"))) + ".jar";
+            if (exists(targetServiceJarPath) ) Files.deleteIfExists(Paths.get(targetServiceJarPath));
+            String[] args = {"ln", "-s", target, targetServiceJarPath};
+            linkResult = executeCommandByBuilder(args, "", false, ownerName, false);
+
+        }
+        if (linkResult) {
+            String sourceServiceFile;
+            String targetServiceFile;
+            String filename = null;
+            if (exists(sourceServiceFile = servicesLocation + "/" +
+                    (filename = new File(cleanName).getName() + ".service"))) {
+                if (copySingleFile(sourceServiceFile, targetServiceFile = getUbuntuServicesLocation() + "/" + filename)) {
+
+                    if (exists(targetServiceFile)) {
+                        String result = editFile(targetServiceFile,
+                                "",
+                                toFind,
+                                targetLocation,
+                                false, false, true, true);
+                        if (!(result == null && !result.isEmpty())) {
+                            return installService(null, serviceName, ownerName, startService);
+                        }
+
+                    }
+
+                }
+            } else {
+                info("failed to find the source service file at: " + sourceServiceFile);
+            }
+        } else {
+            info("failed to create softlink to: " + latest + " " + targetServiceJarPath);
+        }
+        return false;
+    }
+
     /**
      * install service from a service file, Linux only
      *
@@ -410,14 +499,14 @@ public class InstallationTask implements IInstallationTask {
      * @param ownerName
      * @return
      */
-    public boolean installService(String serviceLocation, String serviceName, String ownerName,boolean startService) {
+    public boolean installService(String serviceLocation, String serviceName, String ownerName, boolean startService) {
 
         if (isWindows) return false;
         try {
             if (testServiceRunning(serviceName, ownerName, false)) {
                 setServiceToStop(serviceName, ownerName);
             }
-            if (serviceLocation!=null) {
+            if (serviceLocation != null) {
                 Files.copy(Paths.get(serviceLocation), Paths.get(getUbuntuServicesLocation() + serviceName + ".service"), StandardCopyOption.REPLACE_EXISTING);
             }
             if (executeCommand("systemctl enable " + serviceName, "", "Set " + serviceName + " to start automatically")) {
@@ -435,7 +524,7 @@ public class InstallationTask implements IInstallationTask {
                         } else {
                             info("Cannot start service: " + serviceName);
                         }
-                    }else {
+                    } else {
                         setServiceToStop(serviceName, ownerName);
                         info("was not set to start service : " + serviceName);
                         return true;
@@ -529,11 +618,11 @@ public class InstallationTask implements IInstallationTask {
             String[] data = new String[]{"$Shell = New-Object -ComObject (\"WScript.Shell\")",
                     "$public=[Environment]::GetFolderPath(\"CommonDesktopDirectory\")",
                     "$public",
-                    shortCutType==ShortCutType.desktop ?
+                    shortCutType == ShortCutType.desktop ?
                             (allUsers ?
-                                    "$objShortCut = $Shell.CreateShortcut(\"$public\\"+linkName+  "\")" :
-                                    "$objShortCut = $Shell.CreateShortcut($env:USERPROFILE + \"\\Desktop\\"+linkName+  "\")" )
-                            :(allUsers ?
+                                    "$objShortCut = $Shell.CreateShortcut(\"$public\\" + linkName + "\")" :
+                                    "$objShortCut = $Shell.CreateShortcut($env:USERPROFILE + \"\\Desktop\\" + linkName + "\")")
+                            : (allUsers ?
                             "$objShortCut = $Shell.CreateShortcut(\"C:\\Users\\All Users\\Microsoft\\Windows\\Start Menu\\\" + \"" + linkName + "\")" :
                             "$objShortCut = $Shell.CreateShortcut(\"C:\\Users\\All Users\\Microsoft\\Windows\\Start Menu\\\" + \"" + linkName + "\")"),
 
@@ -544,11 +633,11 @@ public class InstallationTask implements IInstallationTask {
             fillTempFile(data, tempFile);
             PowerShellReturn result = executeScript(context.getLogger(), tempFile.getAbsolutePath(), new String[]{});
             if (!result.isError()) {
-                info("Short cut created for: "+targeLocation+ " on "+ (shortCutType.equals(ShortCutType.startmenu) ? " Start menu ": "Desktop"));
+                info("Short cut created for: " + targeLocation + " on " + (shortCutType.equals(ShortCutType.startmenu) ? " Start menu " : "Desktop"));
                 return true;
             } else {
 
-                severe("Error while creating shortcut: "+result.getError());
+                severe("Error while creating shortcut: " + result.getError());
             }
             Files.deleteIfExists(Paths.get(tempFile.getAbsolutePath()));
         } catch (IOException e) {
@@ -608,7 +697,7 @@ public class InstallationTask implements IInstallationTask {
                     "$public=[Environment]::GetFolderPath(\"CommonDesktopDirectory\")",
                     "$public",
                     !allUsers ? "$Favorite = $Shell.CreateShortcut($env:USERPROFILE + \"\\Desktop\\" + linkName + "\")" :
-                            "$Favorite = $Shell.CreateShortcut(\"$public\\"+linkName+  "\")" ,
+                            "$Favorite = $Shell.CreateShortcut(\"$public\\" + linkName + "\")",
                     "$Favorite.TargetPath = \"" + url + "\"",
                     "$Favorite.Save()"
             };
@@ -996,13 +1085,16 @@ public class InstallationTask implements IInstallationTask {
      * @param startwith common start string for all files.
      * @return
      */
-    public String getLatestVersion(String path, String startwith) {
+    public String getLatestVersion(String path, String startwith, String endWith) {
         String result = null;
         if (exists(path)) {
             File folder = new File(path);
             File[] files = folder.listFiles();
             for (File file : files) {
                 if (!file.getName().startsWith(startwith)) continue;
+                if (endWith != null) {
+                    if (!file.getName().endsWith(endWith)) continue;
+                }
                 if (result == null) {
                     result = file.getAbsolutePath();
                 } else {
@@ -1343,7 +1435,7 @@ public class InstallationTask implements IInstallationTask {
      */
     @Override
     public UserMessage[] getFinalMessage() {
-       return null;
+        return null;
     }
 
     @Override
@@ -1378,7 +1470,7 @@ public class InstallationTask implements IInstallationTask {
     }
 
     public double getFactoredDuration() {
-        return averageDuration()*getContext().getTimeFactor();
+        return averageDuration() * getContext().getTimeFactor();
     }
 
     @Override
@@ -1387,15 +1479,16 @@ public class InstallationTask implements IInstallationTask {
     }
 
     public double getFactoredFinalizerDuration() {
-        return averageFinalizerDuration()*getContext().getTimeFactor();
+        return averageFinalizerDuration() * getContext().getTimeFactor();
     }
+
     @Override
     public Integer averageServiceDuration() {
         return 2;
     }
 
     public double getFactoredServiceDuration() {
-        return averageServiceDuration()*getContext().getTimeFactor();
+        return averageServiceDuration() * getContext().getTimeFactor();
     }
 
     /**
@@ -1475,8 +1568,8 @@ public class InstallationTask implements IInstallationTask {
 
     @Override
     public InstallationTask setStarted(LocalDateTime started) {
-        completedReported=false;
-        finalizerReported=false;
+        completedReported = false;
+        finalizerReported = false;
         this.started = started;
         return this;
     }
@@ -1709,6 +1802,7 @@ public class InstallationTask implements IInstallationTask {
 
         return false;
     }
+
     public boolean move(String source, String target) {
         boolean result = false;
         try {
@@ -1789,9 +1883,15 @@ public class InstallationTask implements IInstallationTask {
      * @return
      * @throws IOException
      */
-    public boolean copySingleFile(String source, String target) throws IOException {
+    public boolean copySingleFile(String source, String target) {
         if (exists(source)) {
-            Files.copy(Paths.get(source), Paths.get(target), StandardCopyOption.REPLACE_EXISTING);
+            try {
+                ensureTarget(Paths.get(target).getParent().toString());
+                Files.copy(Paths.get(source), Paths.get(target), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                severe("Error while copying: " + source + " to: " + target, e);
+                return false;
+            }
             return true;
         }
         return false;
@@ -2218,10 +2318,12 @@ public class InstallationTask implements IInstallationTask {
         }
         return false;
     }
+
     public String fixIfWindows(String fileAsString) {
         return fixWindows(fileAsString);
     }
-    public  String fixWindows(String fileAsString) {
+
+    public String fixWindows(String fileAsString) {
         if (isWindows()) {
             info("Fixing Windows backslash");
             fileAsString = fileAsString.replaceAll("/", "\\\\");
