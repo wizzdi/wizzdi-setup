@@ -870,19 +870,29 @@ public class Start {
                             if (parameter.getValue() != null) {
                                 if (parameter.isSandSymbolPresent()) {
                                     if (parameter.getValue().contains("&")) {
-                                        toWrite = parameter.getName() + "=" + parameter.getValue() + getParameterDescription(parameter);
+                                        toWrite = parameter.getName() + "=" + parameter.getValueForProperties() + getParameterDescription("1",parameter)+"\n";
                                         writer.write(toWrite);
                                     } else {
                                         if (parameter.getNonTranslatedValue() != null) {
-                                            String description = getParameterDescription(parameter);
+                                            String description = getParameterDescription("2",parameter);
                                             String nonT = parameter.getNonTranslatedValue();
                                             toWrite = parameter.getName() + "=" + nonT + description;
                                             writer.write(toWrite);
                                         }
                                     }
                                 } else {
-                                    toWrite = parameter.getName() + "=" + parameter.getValue() + getParameterDescription(parameter);
+                                    toWrite = parameter.getName() + "=" + parameter.getValueForProperties() + getParameterDescription("3",parameter)+"\n\n";
                                     writer.write(toWrite);
+                                }
+                                if (parameter.getType().equals(ParameterType.LIST)) {
+                                    if (parameter.getListOptions()!=null) {
+                                        writer.write("\n# possible options for "+parameter.getName());
+                                        int i=1;
+                                        for (String option :parameter.getListOptions()) {
+                                            writer.write("\n#     "+ (i++)+"."+ option);
+                                        }
+                                        writer.write("\n");
+                                    }
                                 }
                             }
                         }
@@ -901,8 +911,8 @@ public class Start {
     }
 
     //make sure multiple lines are properly commanted
-    private static String getParameterDescription(Parameter parameter) {
-        String result = !(parameter.getDescription() == null || parameter.getDescription().isEmpty()) ? "\n#" + parameter.getDescription() : "\n";
+    private static String getParameterDescription(String source,Parameter parameter) {
+        String result = !(parameter.getDescription() == null || parameter.getDescription().isEmpty()) ? "\n#" + parameter.getDescription()+"---"+source : "\n";
         return getCommented(result);
     }
 
@@ -1024,7 +1034,7 @@ public class Start {
     private static boolean getNewParameterFromProperties(Parameter parameter, InstallationContext installationContext) {
         String result = installationContext.getProperties().getProperty(parameter.getName());
         if (result != null) {
-            parameter.setValue(result);
+            parameter.setValueFromProperties(result);
             return true; //was changed.
         }
         return false;

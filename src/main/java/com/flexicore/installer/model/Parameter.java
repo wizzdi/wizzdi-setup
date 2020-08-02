@@ -6,10 +6,12 @@ import org.apache.commons.validator.routines.UrlValidator;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
 public class Parameter {
+    private  boolean donotSave=false;
     private String name;
     private String description;
     private String defaultValue;
@@ -34,10 +36,10 @@ public class Parameter {
     private ArrayList<String> listOptions = new ArrayList<>();
     private boolean autocreate = false;
     private boolean hidden = false;
-    private ArrayList<Parameter> subscribers=new ArrayList<>();
+    private ArrayList<Parameter> subscribers = new ArrayList<>();
     private IInstallationTask iInstallationTask;
     private InstallationContext installationContext;
-    private boolean editable=true;
+    private boolean editable = true;
 
 
     /**
@@ -196,8 +198,9 @@ public class Parameter {
      * @param validator
      * @param autoCreate
      * @param hidden
+     * @param donotSave if true will not be saved in a properties file
      */
-    public Parameter(String name, String description, boolean hasValue, String defaultValue, ParameterType parameterType, ParameterSource parameterSource, Parameter.parameterValidator validator, boolean autoCreate, boolean hidden) {
+    public Parameter(String name, String description, boolean hasValue, String defaultValue, ParameterType parameterType, ParameterSource parameterSource, Parameter.parameterValidator validator, boolean autoCreate, boolean hidden, boolean donotSave) {
         this.type = parameterType;
         this.hasValue = hasValue;
         this.name = name;
@@ -207,8 +210,10 @@ public class Parameter {
         this.parameterValidator = validator;
         this.autocreate = autoCreate;
         this.setHidden(hidden);
+        this.donotSave=donotSave;
 
     }
+
     public Parameter(String name,
                      String description,
                      boolean hasValue,
@@ -226,13 +231,14 @@ public class Parameter {
         this.description = description;
         this.defaultValue = defaultValue;
         this.parameterValidator = validator;
-        this.maxDoubleValue=maxDoubleValue;
-        this.minDoubleValue=minDoubleValue;
-        this.ordinal=ordinal;
+        this.maxDoubleValue = maxDoubleValue;
+        this.minDoubleValue = minDoubleValue;
+        this.ordinal = ordinal;
         this.autocreate = autoCreate;
         this.setHidden(hidden);
 
     }
+
     public Parameter(String name,
                      String description,
                      boolean hasValue,
@@ -250,13 +256,14 @@ public class Parameter {
         this.description = description;
         this.defaultValue = defaultValue;
         this.parameterValidator = validator;
-        this.maxValue=maxDoubleValue;
-        this.minValue=minDoubleValue;
-        this.ordinal=ordinal;
+        this.maxValue = maxDoubleValue;
+        this.minValue = minDoubleValue;
+        this.ordinal = ordinal;
         this.autocreate = autoCreate;
         this.setHidden(hidden);
 
     }
+
     public Parameter(String name, String description, boolean hasValue, String defaultValue,
                      ParameterType parameterType, ParameterSource parameterSource, int ordinal, Parameter.parameterValidator validator, boolean autoCreate, boolean hidden, OperatingSystem os) {
         this.type = parameterType;
@@ -392,6 +399,50 @@ public class Parameter {
         return value != null ? value : (defaultValue != null ? defaultValue : "");
     }
 
+    /**
+     * creates a correct value for List type.
+     * @return
+     */
+    public String getValueForProperties() {
+        if (type.equals(ParameterType.LIST)) {
+            if (listOptions != null && listOptions.size() != 0) {
+                String result = value + ":";
+                boolean first = true;
+                for (String v : listOptions) {
+                    if (v.isEmpty()) continue;
+                    if (first) {
+                        first = false;
+                        result = result + v;
+                    } else {
+                        result = result+"|" + v;
+                    }
+                }
+                return result;
+            }
+        }
+        return value;
+    }
+
+    /**
+     * split options from properties file
+     * @param value
+     * @return
+     */
+    public Parameter setValueFromProperties(String value) {
+        if (type.equals(ParameterType.LIST)) {
+            if (value.contains(":")) {
+                String[] split = value.split(":");
+                setValue(split[0]);
+                split = split[1].split("|");
+                listOptions.clear();
+                listOptions.addAll(Arrays.asList(split));
+                return this;
+            }
+
+        }
+        return setValue(value);
+    }
+
     public Parameter setValue(String value) {
 
         if (type.equals(ParameterType.FOLDER) || type.equals(ParameterType.FILE)) {
@@ -407,22 +458,24 @@ public class Parameter {
         }
         return this;
     }
+
     private void informSubscribers() {
-        if ( !preventCircular) {
+        if (!preventCircular) {
             preventCircular = true;
-            for (Parameter parameter:subscribers) {
+            for (Parameter parameter : subscribers) {
                 parameter.refreshData();
             }
             preventCircular = false;
-        }else {
-            // TODO: 02-Feb-20 add logging for circular dependency cases. 
+        } else {
+            // TODO: 02-Feb-20 add logging for circular dependency cases.
         }
     }
+
     /**
      * trigger datarefresh in a task parameter. task may inform UI (if there is any) of the change.
      */
     private void refreshData() {
-        iInstallationTask.refreshData(installationContext,this);
+        iInstallationTask.refreshData(installationContext, this);
     }
 
     boolean preventCircular = false;
@@ -625,7 +678,8 @@ public class Parameter {
      * @param validationMessage
      * @return
      */
-    public static boolean validateEmail(InstallationContext context, Parameter parameter, Object newValue, ValidationMessage validationMessage) {
+    public static boolean validateEmail(InstallationContext context, Parameter parameter, Object
+            newValue, ValidationMessage validationMessage) {
         String email = newValue.toString();
         email = email.trim();
         EmailValidator eValidator = EmailValidator.getInstance();
@@ -669,46 +723,51 @@ public class Parameter {
         return true;
     }
 
-    public static boolean validateURL(InstallationContext context, Parameter parameter, Object newValue, ValidationMessage validationMessage) {
+    public static boolean validateURL(InstallationContext context, Parameter parameter, Object
+            newValue, ValidationMessage validationMessage) {
         String[] schemes = {"http", "https"};
         UrlValidator urlValidator = new UrlValidator(schemes);
         boolean result = urlValidator.isValid(newValue.toString());
         if (!result) validationMessage.setMessage("URL is not a valid URL");
         return result;
     }
-    public static boolean validateDouble(InstallationContext context, Parameter parameter, Object newValue, ValidationMessage validationMessage) {
+
+    public static boolean validateDouble(InstallationContext context, Parameter parameter, Object
+            newValue, ValidationMessage validationMessage) {
         try {
-           double value=Double.parseDouble(newValue.toString());
-            if (parameter.getMaxDoubleValue()!=Double.MAX_VALUE) {
-                if (value>parameter.getMaxDoubleValue()) {
-                    validationMessage.setMessage("Value is too big, max value is: "+parameter.getMaxDoubleValue());
+            double value = Double.parseDouble(newValue.toString());
+            if (parameter.getMaxDoubleValue() != Double.MAX_VALUE) {
+                if (value > parameter.getMaxDoubleValue()) {
+                    validationMessage.setMessage("Value is too big, max value is: " + parameter.getMaxDoubleValue());
                     return false;
                 }
             }
-            if (parameter.getMinDoubleValue()!=Double.MIN_VALUE) {
-                if (value<parameter.getMinDoubleValue()) {
-                    validationMessage.setMessage("Value is too small, min value is: "+parameter.getMinDoubleValue());
+            if (parameter.getMinDoubleValue() != Double.MIN_VALUE) {
+                if (value < parameter.getMinDoubleValue()) {
+                    validationMessage.setMessage("Value is too small, min value is: " + parameter.getMinDoubleValue());
                     return false;
                 }
             }
             return true;
         } catch (NumberFormatException e) {
             validationMessage.setMessage("Value is not a double");
-           return false;
+            return false;
         }
-     }
-    public static boolean validateInteger(InstallationContext context, Parameter parameter, Object newValue, ValidationMessage validationMessage) {
+    }
+
+    public static boolean validateInteger(InstallationContext context, Parameter parameter, Object
+            newValue, ValidationMessage validationMessage) {
         try {
-            Integer value=Integer.parseInt(newValue.toString());
-            if (parameter.getMaxValue()!=Integer.MAX_VALUE) {
-                if (value>parameter.getMaxValue()) {
-                    validationMessage.setMessage("Value is too big, max value is: "+parameter.getMaxValue());
+            Integer value = Integer.parseInt(newValue.toString());
+            if (parameter.getMaxValue() != Integer.MAX_VALUE) {
+                if (value > parameter.getMaxValue()) {
+                    validationMessage.setMessage("Value is too big, max value is: " + parameter.getMaxValue());
                     return false;
                 }
             }
-            if (parameter.getMinValue()!=Integer.MIN_VALUE) {
-                if (value<parameter.getMinValue()) {
-                    validationMessage.setMessage("Value is too small, min value is: "+parameter.getMinValue());
+            if (parameter.getMinValue() != Integer.MIN_VALUE) {
+                if (value < parameter.getMinValue()) {
+                    validationMessage.setMessage("Value is too small, min value is: " + parameter.getMinValue());
                     return false;
                 }
             }
@@ -718,6 +777,7 @@ public class Parameter {
             return false;
         }
     }
+
     /**
      * validate if new value is in a list
      *
@@ -727,7 +787,8 @@ public class Parameter {
      * @param validationMessage
      * @return
      */
-    public static boolean validateList(InstallationContext context, Parameter parameter, Object newValue, ValidationMessage validationMessage) {
+    public static boolean validateList(InstallationContext context, Parameter parameter, Object
+            newValue, ValidationMessage validationMessage) {
         if (parameter.getListOptions() != null) {
             if (parameter.getListOptions().contains(newValue)) {
                 return true;
@@ -747,7 +808,8 @@ public class Parameter {
      * @param validationMessage
      * @return
      */
-    public static boolean validateDualList(InstallationContext context, Parameter parameter, Object newValue, ValidationMessage validationMessage) {
+    public static boolean validateDualList(InstallationContext context, Parameter parameter, Object
+            newValue, ValidationMessage validationMessage) {
         if (parameter.getListOptions() != null) {
             for (String option : parameter.getListOptions()) {
                 if (option.contains(":")) {
@@ -773,7 +835,8 @@ public class Parameter {
      * @param validationMessage
      * @return
      */
-    public static boolean validateExistingFolder(InstallationContext context, Parameter parameter, Object newValue, ValidationMessage validationMessage) {
+    public static boolean validateExistingFolder(InstallationContext context, Parameter parameter, Object
+            newValue, ValidationMessage validationMessage) {
         File file = new File(getReplaced(context, newValue.toString(), parameter, null));
         if (!file.exists()) {
             if (parameter.isAutocreate()) {
@@ -798,7 +861,8 @@ public class Parameter {
      * @param validationMessage
      * @return
      */
-    public static boolean validateExistingFile(InstallationContext context, Parameter parameter, Object newValue, ValidationMessage validationMessage) {
+    public static boolean validateExistingFile(InstallationContext context, Parameter parameter, Object
+            newValue, ValidationMessage validationMessage) {
         File file = new File(getReplaced(context, newValue.toString(), parameter, null));
         if (!file.exists()) {
             validationMessage.setMessage("Cannot locate file: " + newValue);
@@ -807,7 +871,8 @@ public class Parameter {
         return true;
     }
 
-    public static boolean validateHttpPort(InstallationContext context, Parameter parameter, Object newValue, ValidationMessage validationMessage) {
+    public static boolean validateHttpPort(InstallationContext context, Parameter parameter, Object
+            newValue, ValidationMessage validationMessage) {
         try {
             int p = Integer.parseInt(newValue.toString());
             if (p != 80 && (p > 8085 || p < 8079)) {
@@ -821,7 +886,8 @@ public class Parameter {
         return true;
     }
 
-    public static boolean validatePort(InstallationContext context, Parameter parameter, Object newValue, ValidationMessage validationMessage) {
+    public static boolean validatePort(InstallationContext context, Parameter parameter, Object
+            newValue, ValidationMessage validationMessage) {
         try {
             int p = Integer.parseInt(newValue.toString());
             if (p < 1000 || p < 65535) {
@@ -844,7 +910,8 @@ public class Parameter {
      * @param validationMessage
      * @return
      */
-    public static boolean validateHeap(InstallationContext context, Parameter parameter, Object newValue, ValidationMessage validationMessage) {
+    public static boolean validateHeap(InstallationContext context, Parameter parameter, Object
+            newValue, ValidationMessage validationMessage) {
         try {
             int heap = Integer.parseInt(newValue.toString());
             if (heap % 256 != 0 || heap < 768) {
@@ -883,12 +950,13 @@ public class Parameter {
 
     /**
      * add subscription using parameter names of subscriber and subscribe to.
+     *
      * @param context
      * @param subscriber
      * @param subscribeTo
      * @return
      */
-    public static boolean subscribe(InstallationContext context,String subscriber,String subscribeTo) {
+    public static boolean subscribe(InstallationContext context, String subscriber, String subscribeTo) {
         if (context != null) {
             Parameter parameterSubscriber = context.getParameter(subscriber);
             if (parameterSubscriber != null) {
@@ -903,12 +971,14 @@ public class Parameter {
         }
         return false;
     }
+
     public Parameter setOs(OperatingSystem os) {
         this.os = os;
         return this;
     }
 
-    public static String getReplaced(InstallationContext installationContext, String result, Parameter parameter, Parameter onlyParameter) {
+    public static String getReplaced(InstallationContext installationContext, String result, Parameter
+            parameter, Parameter onlyParameter) {
         Logger logger = installationContext.getLogger();
         if (installationContext.isExtraLogs()) logger.info("got to replace: " + result);
         int a = result.indexOf("&");
@@ -949,12 +1019,15 @@ public class Parameter {
     public void addSubscriber(Parameter parameter) {
         if (!subscribers.contains(parameter)) subscribers.add(parameter);
     }
+
     public void removeSubscriber(Parameter parameter) {
         if (subscribers.contains(parameter)) subscribers.remove(parameter);
     }
+
     public void testSubscribers() {
         informSubscribers();
     }
+
     public IInstallationTask getiInstallationTask() {
         return iInstallationTask;
     }
