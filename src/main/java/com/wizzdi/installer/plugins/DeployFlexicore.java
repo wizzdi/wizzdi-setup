@@ -60,8 +60,8 @@ public class DeployFlexicore extends InstallationTask {
                     "location for flexicore.jar link \n" +
                             "default is /opt/flexicore/",
                     true,
-                    "/opt/flexicore",
-                    ParameterType.STRING,
+                    "/opt/flexicore/",
+                    ParameterType.FOLDER,
                     null,
                     260,
                     false, false),
@@ -479,7 +479,7 @@ public class DeployFlexicore extends InstallationTask {
                             info("failed to chmod 500 on flexicore.jar");
                             return false;
                         }
-                        result = executeCommand("chown flexicore.flexicore " + springTargetFolder + "/flexicore.jar", "", ownerName);
+                        result = executeCommand("chown -R flexicore.flexicore " + springTargetFolder , "", ownerName);
                         if (!result) {
                             if (!result) {
                                 info("failed to change owner of flexicore.jar");
@@ -513,7 +513,7 @@ public class DeployFlexicore extends InstallationTask {
                             if (heapMemory != null & !heapMemory.isEmpty()) {
                                 String intermediate = "";
                                 intermediate = Utilities.editFile(serviceFile, intermediate, "2048m", heapMemory + "m", true, false, true);
-                                executeCommand("systemctl daemon-reload","",ownerName);
+                                executeCommand("systemctl daemon-reload", "", ownerName);
 
                                 if (setServiceToStart(serviceName, ownerName)) {
                                     return true;
@@ -552,25 +552,30 @@ public class DeployFlexicore extends InstallationTask {
 
     /**
      * find latest Spring Boot Flexicore file and create a standard link for the service.
+     *
      * @param installationContext
      * @return
      * @throws IOException
      */
     private boolean fixLinks(InstallationContext installationContext) throws IOException {
-        String candidate = getLatestVersion(flexicoreHome + "spring", "FlexiCore-",".jar");
+        String candidate = getLatestVersion(flexicoreHome + "spring", "FlexiCore-", ".jar");
 
         if (!candidate.isEmpty()) {
 
-            info("Found Flexicore version");
-            Parameter springTarget= getContext().getParameter("jarlocationlinux");
-            if (springTarget==null) {
-                updateProgress(installationContext,"no target for flexicore.jar has been specified");
+            info("Found Flexicore version: " + candidate);
+            Parameter springTarget = getContext().getParameter("jarlocationlinux");
+            if (springTarget == null) {
+                updateProgress(installationContext, "no target for flexicore.jar has been specified");
                 return false;
             }
-            String target=springTarget.getValue();
+            String target = springTarget.getValue();
+            if (!exists(target)) {
+                boolean result = (new File(target)).mkdir();
+            }
 
-            Path path=Files.copy(Paths.get(candidate),Paths.get(target),StandardCopyOption.REPLACE_EXISTING);
-            if (path!=null) {
+
+            Path path = Files.copy(Paths.get(candidate), Paths.get(target+"/"+new File(candidate).getName()), StandardCopyOption.REPLACE_EXISTING);
+            if (path != null) {
                 String[] args = {"ln", "-fs", path.toString(), target + "/flexicore.jar"};
                 boolean result = executeCommandByBuilder(args, "", false, ownerName, false);
                 return result;
@@ -580,8 +585,6 @@ public class DeployFlexicore extends InstallationTask {
         }
         return false;
     }
-
-
 
 
     @Override
