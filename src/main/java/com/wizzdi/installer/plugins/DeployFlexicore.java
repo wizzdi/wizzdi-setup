@@ -8,10 +8,7 @@ import org.zeroturnaround.zip.ZipUtil;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -52,12 +49,21 @@ public class DeployFlexicore extends InstallationTask {
                     false, false),
             new Parameter("heapsize",
                     "Java heap size for Spring \n" +
-                            "shouldn't exceed 60-85% of availble memory",
+                            "shouldn't exceed 60-85% of available memory",
                     true,
                     "612",
                     ParameterType.NUMBER,
                     null,
                     255,
+                    false, false),
+            new Parameter("jarlocationlinux",
+                    "location for flexicore.jar link \n" +
+                            "default is /opt/flexicore/",
+                    true,
+                    "/opt/flexicore",
+                    ParameterType.STRING,
+                    null,
+                    260,
                     false, false),
             new Parameter("loglocationlinux",
                     "log folder for Spring on Linux systems",
@@ -65,7 +71,7 @@ public class DeployFlexicore extends InstallationTask {
                     "/var/log/flexicore",
                     ParameterType.STRING,
                     ParameterSource.CODE,
-                    251,
+                    265,
                     null,
                     false,
                     false,
@@ -77,7 +83,7 @@ public class DeployFlexicore extends InstallationTask {
                     "&flexicorehome/logs",
                     ParameterType.STRING,
                     ParameterSource.CODE,
-                    251,
+                    270,
                     null,
                     false,
                     false,
@@ -176,6 +182,7 @@ public class DeployFlexicore extends InstallationTask {
      */
     private boolean copyFlexicoreFilesForSpring(InstallationContext installationContext) throws InterruptedException, IOException {
         String flexicoreSourceFolder = getServerPath() + "flexicore";
+
         if (exists(flexicoreSourceFolder)) { //todo: fix files to correct flexicoreHome location
             if (!exists(flexicoreHome) || update) {
                 if (copy(flexicoreSourceFolder, flexicoreHome, installationContext)) {
@@ -445,7 +452,7 @@ public class DeployFlexicore extends InstallationTask {
                 boolean keepOld = false;
                 springSourceFolder = fixWindows(getServerPath() + "flexicore/spring");
                 springConfigFolder = fixWindows(getServerPath() + "flexicore/config");
-                springTargetFolder = fixWindows(getFlexicoreHome() + "spring");
+                springTargetFolder = fixWindows("/opt/flexicore/");
                 springConfigTargetFolder = fixWindows(getFlexicoreHome() + "config");
                 if (isWindows) {
                     springXML = springSourceFolder + "/flexicore.xml";
@@ -461,7 +468,7 @@ public class DeployFlexicore extends InstallationTask {
                             boolean result = setServiceToStop(serviceName, ownerName);
 
                         }
-                        boolean result = executeCommand("id -u flexicore &>/dev/null || useradd flexicore ", "", ownerName);
+                        boolean result = executeCommand("adduser flexicore --shell=/bin/false --no-create-home", "", ownerName);
                         if (!fixLinks(installationContext)) {
                             info("failed to fix links on latest flexicore.jar");
                             return false;
@@ -551,13 +558,23 @@ public class DeployFlexicore extends InstallationTask {
      */
     private boolean fixLinks(InstallationContext installationContext) throws IOException {
         String candidate = getLatestVersion(flexicoreHome + "spring", "FlexiCore-",".jar");
-        if (!candidate.isEmpty()) {
-            info("Found Flexicore version");
-            new File(flexicoreHome + "spring/flexicore.jar").delete();
 
-            String[] args = {"ln", "-s",candidate,flexicoreHome+"spring/flexicore.jar"};
-            boolean result=executeCommandByBuilder(args,"",false,ownerName,false);
-            return result;
+        if (!candidate.isEmpty()) {
+
+            info("Found Flexicore version");
+            Parameter springTarget= getContext().getParameter("jarlocationlinux");
+            if (springTarget==null) {
+                updateProgress(installationContext,"no target for flexicore.jar has been specified");
+                return false;
+            }
+            String target=springTarget.getValue();
+
+            Path path=Files.copy(Paths.get(candidate),Paths.get(target),StandardCopyOption.REPLACE_EXISTING);
+            if (path!=null) {
+                String[] args = {"ln", "-fs", path.toString(), target + "/flexicore.jar"};
+                boolean result = executeCommandByBuilder(args, "", false, ownerName, false);
+                return result;
+            }
         } else {
             info("couldn't find a candidate for flexicore.jar");
         }
