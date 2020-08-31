@@ -16,6 +16,7 @@ module flexicore.installer {
     requires shortcuts;
     requires jdk.crypto.ec;
     requires org.fusesource.jansi;
+    requires java.prefs;
 
 
     exports com.flexicore.installer.exceptions;
