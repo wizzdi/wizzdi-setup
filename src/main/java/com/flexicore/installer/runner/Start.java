@@ -865,23 +865,26 @@ public class Start {
                     if (parameters != null && parameters.size() != 0) {
 
                         for (Parameter parameter : parameters) {
+                            if (parameter.getDescription().contains("log folder for Spring on Window")) {
+                                int a=3;
+                            }
                             if (parameter.getName().equals("psave"))
                                 continue; // we need a properties file that cannot save itself
                             if (parameter.getValue() != null) {
                                 if (parameter.isSandSymbolPresent()) {
                                     if (parameter.getValue().contains("&")) {
-                                        toWrite = parameter.getName() + "=" + parameter.getValueForProperties() + getParameterDescription("1",parameter)+"\n";
+                                        toWrite = parameter.getName() + "=" + parameter.getValueForProperties() + getParameterDescription(parameter)+"\n";
                                         writer.write(toWrite);
                                     } else {
                                         if (parameter.getNonTranslatedValue() != null) {
-                                            String description = getParameterDescription("2",parameter);
+                                            String description = getParameterDescription(parameter);
                                             String nonT = parameter.getNonTranslatedValue();
-                                            toWrite = parameter.getName() + "=" + nonT + description;
+                                            toWrite = parameter.getName() + "=" + nonT + "\n"+description;
                                             writer.write(toWrite);
                                         }
                                     }
                                 } else {
-                                    toWrite = parameter.getName() + "=" + parameter.getValueForProperties() + getParameterDescription("3",parameter)+"\n\n";
+                                    toWrite = parameter.getName() + "=" + parameter.getValueForProperties() + getParameterDescription(parameter)+"\n\n";
                                     writer.write(toWrite);
                                 }
                                 if (parameter.getType().equals(ParameterType.LIST)) {
@@ -911,8 +914,8 @@ public class Start {
     }
 
     //make sure multiple lines are properly commanted
-    private static String getParameterDescription(String source,Parameter parameter) {
-        String result = !(parameter.getDescription() == null || parameter.getDescription().isEmpty()) ? "\n#" + parameter.getDescription()+"---"+source : "\n";
+    private static String getParameterDescription(Parameter parameter) {
+        String result = !(parameter.getDescription() == null || parameter.getDescription().isEmpty()) ? "\n#" + parameter.getDescription()+"\n" : "\n";
         return getCommented(result);
     }
 
@@ -923,7 +926,7 @@ public class Start {
         for (String line : lines) {
             if (line.isEmpty()) continue;
             if (line.startsWith("#")) {
-                sb.append("\n" + line);
+                sb.append("\n" + line+"\n");
             } else {
                 sb.append("\n      #" + line + "\n");
             }

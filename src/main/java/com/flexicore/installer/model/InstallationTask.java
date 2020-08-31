@@ -2396,7 +2396,7 @@ public class InstallationTask implements IInstallationTask {
                 FileInputStream is = new FileInputStream(path);
                 properties.load(is);
                 is.close();
-                if (!properties.get(key).equals(value)) {
+                if (properties.get(key)==null ||!properties.get(key).equals(value)) {
                     properties.setProperty(key, value);
                     FileWriter fileWriter = new FileWriter(path);
                     properties.store(fileWriter, "Written on: " + LocalDateTime.now());

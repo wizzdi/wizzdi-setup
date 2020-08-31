@@ -200,7 +200,16 @@ public class Parameter {
      * @param hidden
      * @param donotSave if true will not be saved in a properties file
      */
-    public Parameter(String name, String description, boolean hasValue, String defaultValue, ParameterType parameterType, ParameterSource parameterSource, Parameter.parameterValidator validator, boolean autoCreate, boolean hidden, boolean donotSave) {
+    public Parameter(String name,
+                     String description,
+                     boolean hasValue,
+                     String defaultValue,
+                     ParameterType parameterType,
+                     ParameterSource parameterSource,
+                     Parameter.parameterValidator validator,
+                     boolean autoCreate,
+                     boolean hidden,
+                     boolean donotSave) {
         this.type = parameterType;
         this.hasValue = hasValue;
         this.name = name;
