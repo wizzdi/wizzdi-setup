@@ -113,16 +113,12 @@ public class DeployFlexicore extends InstallationTask {
             result.addParameter(parameter, this);
             if (context.isExtraLogs()) logger.info("Got a default parameter: " + parameter.toString());
         }
-        setContainer(context);
+        installSpring=installSpring(context);
         return result;
 
     }
 
-    private static void setContainer(InstallationContext context) {
-        Parameter container = context.getParameter("container");
-        if (container != null) installSpring = container.getValue().toLowerCase().equals("spring");
-        serviceName = installSpring ? "flexicore" : "wildfly";
-    }
+
 
     @Override
     public Parameters getParameters(InstallationContext installationContext) {
@@ -638,6 +634,7 @@ public class DeployFlexicore extends InstallationTask {
             result.add("Wildfly-installer"); //otherwise we cannot install deployment
         }
         result.add("mongodb-installer");
+        result.add("PostgresSQL-installer");
         result.add("PostgresSQL-installer");
 
         return result;
