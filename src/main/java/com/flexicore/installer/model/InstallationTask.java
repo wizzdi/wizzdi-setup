@@ -1114,7 +1114,36 @@ public class InstallationTask implements IInstallationTask {
         return result;
 
     }
+    public boolean executeCommandByBuilder(String[] args, String toFind, boolean notToFind, String ownerName, String  currentFolder) throws IOException {
 
+
+        ProcessBuilder pb = new ProcessBuilder(args);
+        if (currentFolder!=null && !currentFolder.isEmpty()) {
+            if (isLinux) {
+                if (args[0].equals("/bin/sh")) {
+                    pb.directory(new File(args[1]).getParentFile()); //set current directory to the actual location of the script
+                } else {
+                    pb.directory(new File(args[0]).getParentFile());
+                }
+            }else {
+                if (isWindows()) {
+                    pb.directory(new File(currentFolder));
+                }
+            }
+        }
+
+        Process process;
+        process = pb.start();
+
+        boolean result = false;
+        try {
+            result = contWithProcess(process, toFind, notToFind, ownerName);
+        } catch (Exception e) {
+            severe("error", e);
+        }
+        return result;
+
+    }
     /**
      * get latest version , assuming version numbering increases the lexical location
      *
