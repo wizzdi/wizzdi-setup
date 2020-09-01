@@ -425,7 +425,15 @@ public class DeployFlexicore extends InstallationTask {
                                 info("Cannot set " + flexicoreHome + " to flexicore owner");
                                 return failed();
                             }
-                        }else return succeeded();
+                        }else {
+                           if ( setServiceToStart(serviceName,ownerName)) {
+                               updateProgress(getContext(),"have started "+serviceName);
+                               return succeeded();
+                           }else {
+                               updateProgress(getContext(),"have failed to start "+serviceName);
+                               return failed();
+                           }
+                        }
                     } else return failed();
                 } else {
                     updateProgress(installationContext, "copy of files failed in installation phase so Spring cannot be started as a service");
@@ -460,68 +468,73 @@ public class DeployFlexicore extends InstallationTask {
                     }
                 }
 
-                if (exists(springSourceFolder)) {
+
 
                     //the files in flexicoreHome were copied in install
                     if (isLinux) {
-                        String serviceFile = getUbuntuServicesLocation() + serviceName + ".service";
-                        if (exists(serviceFile)) {
-                            boolean result = setServiceToStop(serviceName, ownerName);
+                        if (exists(springSourceFolder)) {
+                            String serviceFile = getUbuntuServicesLocation() + serviceName + ".service";
+                            if (exists(serviceFile)) {
+                                boolean result = setServiceToStop(serviceName, ownerName);
 
-                        }
-                        boolean result = executeCommand("adduser flexicore --shell=/bin/false --no-create-home", "", ownerName);
-                        if (!fixLinks(installationContext)) {
-                            info("failed to fix links on latest flexicore.jar");
-                            return false;
-
-                        }
-                        result = executeCommand("chmod 500 " + springTargetFolder + "/flexicore.jar", "", ownerName);
-                        if (!result) {
-                            info("failed to chmod 500 on flexicore.jar");
-                            return false;
-                        }
-                        result = executeCommand("chown -R flexicore.flexicore " + springTargetFolder , "", ownerName);
-                        if (!result) {
-                            if (!result) {
-                                info("failed to change owner of flexicore.jar");
                             }
-                            return false;
-                        }
-                        Parameter loglocationParameter = installationContext.getParameter("loglocationlinux");
-                        String loglocation = loglocationParameter != null ? loglocationParameter.getValue() : "/var/log/flexicore";
-                        File logs = new File(loglocation);
-                        if (!logs.exists()) {
-                            if (!logs.mkdirs()) {
-                                info("Failed to create logs folder: " + loglocation);
+                            boolean result = executeCommand("adduser flexicore --shell=/bin/false --no-create-home", "", ownerName);
+                            if (!fixLinks(installationContext)) {
+                                info("failed to fix links on latest flexicore.jar");
+                                return false;
+
+                            }
+                            result = executeCommand("chmod 500 " + springTargetFolder + "/flexicore.jar", "", ownerName);
+                            if (!result) {
+                                info("failed to chmod 500 on flexicore.jar");
                                 return false;
                             }
-                        }
-                        result = executeCommand("chown -R flexicore.flexicore " + loglocation, "", ownerName);
-                        if (!result) {
+                            result = executeCommand("chown -R flexicore.flexicore " + springTargetFolder, "", ownerName);
                             if (!result) {
-                                info("failed to change owner on logs folder at: " + logs.getAbsolutePath());
-                            }
-                            return false;
-                        }
-                        //must copy the service before fixing links
-                        String targetServiceLocation;
-                        Files.copy(Paths.get(serviceLocation), Paths.get(targetServiceLocation = getUbuntuServicesLocation() + serviceName + ".service"), StandardCopyOption.REPLACE_EXISTING);
-
-                        fixServiceFile(targetServiceLocation, installationContext);
-
-                        if (installService(null, serviceName, ownerName, false)) {
-                            info("Have successfully installed: " + serviceName);
-                            if (heapMemory != null & !heapMemory.isEmpty()) {
-                                String intermediate = "";
-                                intermediate = Utilities.editFile(serviceFile, intermediate, "2048m", heapMemory + "m", true, false, true);
-                                executeCommand("systemctl daemon-reload", "", ownerName);
-
-                                if (setServiceToStart(serviceName, ownerName)) {
-                                    return true;
+                                if (!result) {
+                                    info("failed to change owner of flexicore.jar");
                                 }
-                            } else {
-                                severe("Heap memory was not set to a legal value");
+                                return false;
                             }
+                            Parameter loglocationParameter = installationContext.getParameter("loglocationlinux");
+                            String loglocation = loglocationParameter != null ? loglocationParameter.getValue() : "/var/log/flexicore";
+                            File logs = new File(loglocation);
+                            if (!logs.exists()) {
+                                if (!logs.mkdirs()) {
+                                    info("Failed to create logs folder: " + loglocation);
+                                    return false;
+                                }
+                            }
+                            result = executeCommand("chown -R flexicore.flexicore " + loglocation, "", ownerName);
+                            if (!result) {
+                                if (!result) {
+                                    info("failed to change owner on logs folder at: " + logs.getAbsolutePath());
+                                }
+                                return false;
+                            }
+                            //must copy the service before fixing links
+                            String targetServiceLocation;
+                            Files.copy(Paths.get(serviceLocation), Paths.get(targetServiceLocation = getUbuntuServicesLocation() + serviceName + ".service"), StandardCopyOption.REPLACE_EXISTING);
+
+                            fixServiceFile(targetServiceLocation, installationContext);
+
+                            if (installService(null, serviceName, ownerName, false)) {
+                                info("Have successfully installed: " + serviceName);
+                                if (heapMemory != null & !heapMemory.isEmpty()) {
+                                    String intermediate = "";
+                                    intermediate = Utilities.editFile(serviceFile, intermediate, "2048m", heapMemory + "m", true, false, true);
+                                    executeCommand("systemctl daemon-reload", "", ownerName);
+
+                                    if (setServiceToStart(serviceName, ownerName)) {
+                                        return true;
+                                    }
+                                } else {
+                                    severe("Heap memory was not set to a legal value");
+                                }
+                            }
+                        }else {
+                            updateProgress(getContext(),"Cannot find Spring source folder: "+springSourceFolder);
+                            return false;
                         }
 //                        } else {
 //                            severe("Cannot install Flexicore as a service!");
@@ -530,20 +543,23 @@ public class DeployFlexicore extends InstallationTask {
 
 
                     } else { //windows here
-                        String args[]={getFlexicoreHome()+"/spring/flexicore.exe"};
-                        if (executeCommandByBuilder(args,"",false,"Deploy flexicore finalizer",getFlexicoreHome()+"/spring")) {
-                            updateProgress (getContext(),"have successfully installed Flexicore as a service on Windows");
-                            return true;
+                        String target=flexicoreHome+"spring/flexicore.exe";
+                        if (exists(target)) {
+                            String args[] = {target,"install"};
+                            if (executeCommandByBuilder(args, "", false, "Deploy flexicore finalizer", new File(target).getParent())) {
+                                updateProgress(getContext(), "have successfully installed Flexicore as a service on Windows");
+                                return true;
+                            } else {
+                                updateProgress(getContext(), "have failed to install Flexicore as a service on Windows");
+                            }
                         }else {
-                            updateProgress (getContext(),"have failed to install Flexicore as a service on Windows");
+                            updateProgress(getContext(), "have failed to find target for service install at: "+target);
                         }
                     }
 
                     updateProgress(getContext(), "copying components, may take few minutes");
 
-                } else {
-                    updateProgress(getContext(), "Cannot find Spring Source Folder at: " + springSourceFolder);
-                }
+
             } catch (Exception e) {
                 error("Error while installing ", e);
 
@@ -646,7 +662,7 @@ public class DeployFlexicore extends InstallationTask {
         }
         result.add("mongodb-installer");
         result.add("PostgresSQL-installer");
-        result.add("PostgresSQL-installer");
+        result.add("common-parameters");
 
         return result;
     }
