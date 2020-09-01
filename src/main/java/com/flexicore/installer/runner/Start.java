@@ -17,6 +17,7 @@ import org.pf4j.DefaultPluginManager;
 import org.pf4j.PluginManager;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -72,8 +73,10 @@ public class Start {
         CommandLine mainCmd = parser.parse(options, trueArgs, false); //will not fail if fed with plugins options.
 
         logger = initLogger("Installer", mainCmd.getOptionValue(LOG_PATH_OPT, "logs"));
-        // PowerShellReturn result = InstallationTask.executeScript(logger, "c:\\Users\\Avishay Ben Natan\\AppData\\Local\\Temp\\PSScript12339471847618652481.ps1", new String[]{});
+
+
         if (isWindows()) {
+
             Thread startThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -85,8 +88,7 @@ public class Start {
                     systemData.setProcessorData(processorData);
                     int logical = getNumberOfLogicalProcessor();
                     if (logical > 0) {
-
-                        processorData.setLogicalCores(logical);
+                      processorData.setLogicalCores(logical);
                     } else {
                         info("****************************** no logical processors received");
                     }
@@ -94,6 +96,8 @@ public class Start {
                     systemData.setPhysicalMemory(getPhysicalMemory());
                     systemData.setFreeDiskSpace(getFreeDiskSpace("C:"));
                     systemData.setWindowsVersion(getWindowsVersion());
+                    systemData.setDotNetVersions(InstallationTask.getDotNetVersions(logger,""));
+                    info ("+-+-+-+-+ .NET  installed: "+ dotNetVersion);
                     info("************* ended  data gathering in: " + (systemData.setTotal(System.currentTimeMillis() - systemData.getStart()).getTotal() / 1000 + " Seconds"));
 
                     info("System data: " + systemData);

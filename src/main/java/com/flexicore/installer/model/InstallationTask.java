@@ -677,7 +677,44 @@ public class InstallationTask implements IInstallationTask {
         return false;
 
     }
+    public static double dotNetVersion=0.0;
 
+    /**
+     *
+     * @param logger
+     * @param scriptLocation if empty, will look for net.ps1 in the parent of this folder
+     * @return a list of available .net versions and build.
+     */
+    public static List<String> getDotNetVersions(Logger logger, String scriptLocation) {
+
+        List<String> versions=new ArrayList<>();
+        if (isWindows) {
+            String current = Paths.get(".").toAbsolutePath().normalize().toString();
+            File file;
+            if (scriptLocation==null || scriptLocation.isEmpty()) {
+                 file =  new File(new File(current).getParent() + "/net.ps1") ;
+            }else {
+                file=new File(scriptLocation);
+            }
+            if (file.exists()) {
+                PowerShellReturn result = InstallationTask.executeScript(logger, file.getAbsolutePath(), new String[]{});
+                for (String line : result.getOutput()) {
+                    String[] lineData = line.split(" ");
+                    if (lineData.length > 3) {
+                        if (lineData[3].contains(".")) {
+                            versions.add(lineData[3]);
+                            String[] version = lineData[3].split("\\.");
+                            if (version.length > 1) {
+                                Float dotnet = Float.valueOf(version[0] + "." + version[1]);
+                                if (dotnet >= dotNetVersion) dotNetVersion = dotnet;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return versions;
+    }
     /**
      * Creates a link to a URL on the desktop
      *
