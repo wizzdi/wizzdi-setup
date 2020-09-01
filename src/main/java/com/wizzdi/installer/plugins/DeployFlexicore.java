@@ -418,12 +418,14 @@ public class DeployFlexicore extends InstallationTask {
                 //Spring installation here.
                 if (copySucceeded) {
                     if (installSpringAsService(installationContext)) {
-                        if (executeCommand("chown -R flexicore.flexicore " + flexicoreHome, "", ownerName)) {
-                            return succeeded();
-                        } else {
-                            info("Cannot set " + flexicoreHome + " to flexicore owner");
-                            return failed();
-                        }
+                        if (isLinux) {
+                            if (executeCommand("chown -R flexicore.flexicore " + flexicoreHome, "", ownerName)) {
+                                return succeeded();
+                            } else {
+                                info("Cannot set " + flexicoreHome + " to flexicore owner");
+                                return failed();
+                            }
+                        }else return succeeded();
                     } else return failed();
                 } else {
                     updateProgress(installationContext, "copy of files failed in installation phase so Spring cannot be started as a service");
@@ -451,8 +453,11 @@ public class DeployFlexicore extends InstallationTask {
                 springTargetFolder = fixWindows("/opt/flexicore/");
                 springConfigTargetFolder = fixWindows(getFlexicoreHome() + "config");
                 if (isWindows) {
-                    springXML = springSourceFolder + "/flexicore.xml";
-                    if (!exists(springXML)) return false;
+                    springXML = getFlexicoreHome() + "/spring/flexicore.xml";
+                    if (!exists(springXML)) {
+                        info ("cannot find the spring XML in: "+springXML);
+                        return false;
+                    }
                 }
 
                 if (exists(springSourceFolder)) {
@@ -524,8 +529,14 @@ public class DeployFlexicore extends InstallationTask {
 //                        }
 
 
-                    } else {
-
+                    } else { //windows here
+                        String args[]={getFlexicoreHome()+"/spring/flexicore.exe"};
+                        if (executeCommandByBuilder(args,"",false,"Deploy flexicore finalizer",getFlexicoreHome()+"/spring")) {
+                            updateProgress (getContext(),"have successfully installed Flexicore as a service on Windows");
+                            return true;
+                        }else {
+                            updateProgress (getContext(),"have failed to install Flexicore as a service on Windows");
+                        }
                     }
 
                     updateProgress(getContext(), "copying components, may take few minutes");
