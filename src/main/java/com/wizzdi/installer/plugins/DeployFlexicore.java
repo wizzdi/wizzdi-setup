@@ -410,7 +410,7 @@ public class DeployFlexicore extends InstallationTask {
             if (!installSpring) {
                 Thread.sleep(300); //allow for Wildfly to start
                 if (testServiceRunning(serviceName, "Flexicore deploy", false)) {
-                    info("Deploy flexicore found service wildfly running");
+                    info("Deploy flexicore found service "+serviceName+" running");
                     InstallationResult result = waitForDeployment(deployments);
                     Parameter p = installationContext.getParameter("flexicore_running");
                     //required so other plugins can test if flexicore is running without knowing the details.
@@ -418,7 +418,7 @@ public class DeployFlexicore extends InstallationTask {
                         p.setValue("true");
                     return result;
                 } else {
-                    info("Deploy flexicore found service wildfly NOT running");
+                    info("Deploy flexicore found service "+serviceName+" NOT running");
                     updateProgress(installationContext, "Deployed, but wildfly service not running");
                     return failed();
                 }
@@ -499,6 +499,10 @@ public class DeployFlexicore extends InstallationTask {
 
                         }
                         boolean result = executeCommand("adduser flexicore --shell=/bin/false --no-create-home", "", ownerName);
+                        if (!result) {
+                            updateProgress(installationContext,"failed to create user flexicore, service will not run");
+                        }
+                        //create a link to the latest version of Flexicore...
                         if (!fixLinks(installationContext)) {
                             info("failed to fix links on latest flexicore.jar");
                             return false;
