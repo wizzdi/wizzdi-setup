@@ -57,7 +57,7 @@ public class DeployFlexicore extends InstallationTask {
                     false, false),
             new Parameter("jarlocationlinux",
                     "location for flexicore.jar link \n" +
-                            "default is /opt/flexicore/",
+                            "default is /home/flexicore/spring",
                     true,
                     "/opt/flexicore/",
                     ParameterType.FOLDER,
@@ -218,7 +218,8 @@ public class DeployFlexicore extends InstallationTask {
      */
     private boolean fixFlexicoreHome(InstallationContext installationContext) throws IOException {
         if (isLinux) {
-            if (!flexicoreHome.equals("/home/flexicore/")) {
+
+            if (!flexicoreHome.equals("/home/flexicore/") && !flexicoreHome.equals("/home/flexicore//")) {
                 File file = new File(flexicoreHome + "config/application.properties");
                 if (file.exists()) {
                     String intermediate = editFile(file.getAbsolutePath(), "", "/home/flexicore/", flexicoreHome, false, false, true, true);
@@ -487,6 +488,13 @@ public class DeployFlexicore extends InstallationTask {
                         info("cannot find the spring XML in: " + springXML);
                         return false;
                     }
+                }else {
+                    Parameter springTarget = getContext().getParameter("jarlocationlinux");
+                    if (springTarget == null) {
+                        updateProgress(installationContext, "no target for flexicore.jar has been specified");
+                        return false;
+                    }
+                    springTargetFolder = springTarget.getValue();
                 }
 
 
@@ -500,7 +508,7 @@ public class DeployFlexicore extends InstallationTask {
                         }
                         boolean result = executeCommand("adduser flexicore --shell=/bin/false --no-create-home", "", ownerName);
                         if (!result) {
-                            updateProgress(installationContext,"failed to create user flexicore, service will not run");
+                            updateProgress(installationContext,"failed to create user flexicore, service will not run  or user already exists");
                         }
                         //create a link to the latest version of Flexicore...
                         if (!fixLinks(installationContext)) {
@@ -540,7 +548,11 @@ public class DeployFlexicore extends InstallationTask {
                         String targetServiceLocation;
                         Files.copy(Paths.get(serviceLocation), Paths.get(targetServiceLocation = getUbuntuServicesLocation() + serviceName + ".service"), StandardCopyOption.REPLACE_EXISTING);
 
-                        fixServiceFile(targetServiceLocation, installationContext);
+
+                        if (!springConfigTargetFolder.equals("/home/flexicore/spring/")) {
+                            String after=editFile(serviceFile,"","/home/flexicore/spring/flexicore.jar",springTargetFolder+"flexicore.jar"
+                                    ,false,false,true,false);
+                        }
 
                         if (installService(null, serviceName, ownerName, false)) {
                             info("Have successfully installed: " + serviceName);
@@ -610,20 +622,15 @@ public class DeployFlexicore extends InstallationTask {
         if (!candidate.isEmpty()) {
 
             info("Found Flexicore version: " + candidate);
-            Parameter springTarget = getContext().getParameter("jarlocationlinux");
-            if (springTarget == null) {
-                updateProgress(installationContext, "no target for flexicore.jar has been specified");
-                return false;
-            }
-            String target = springTarget.getValue();
-            if (!exists(target)) {
-                boolean result = (new File(target)).mkdir();
+
+            if (!exists(springTargetFolder)) {
+                boolean result = (new File(springTargetFolder)).mkdir();
             }
 
-
-            Path path = Files.copy(Paths.get(candidate), Paths.get(target + "/" + new File(candidate).getName()), StandardCopyOption.REPLACE_EXISTING);
+            //this is just for cases where /home/flexicore is on mounted device
+            Path path = Files.copy(Paths.get(candidate), Paths.get(springTargetFolder + "/" + new File(candidate).getName()), StandardCopyOption.REPLACE_EXISTING);
             if (path != null) {
-                String[] args = {"ln", "-fs", path.toString(), target + "/flexicore.jar"};
+                String[] args = {"ln", "-fs", path.toString(), new File(springTargetFolder) + "/flexicore.jar"};
                 boolean result = executeCommandByBuilder(args, "", false, ownerName, false);
                 return result;
             }
@@ -687,6 +694,7 @@ public class DeployFlexicore extends InstallationTask {
         result.add("mongodb-installer");
         result.add("PostgresSQL-installer");
         result.add("common-parameters");
+        result.add("java-installer");
 
         return result;
     }
