@@ -35,8 +35,7 @@ public class DeployFlexicore extends InstallationTask {
     private String springTargetFolder;
     private String springConfigTargetFolder;
     String springXML;
-    static String currentFolder = System.getProperty("user.dir");
-    static String parentFolder = new File(currentFolder).getParent();
+
     static Parameter[] preDefined = {
             new Parameter("flexicore_running",
                     "When checked, it means that flexicore is running\n" +
