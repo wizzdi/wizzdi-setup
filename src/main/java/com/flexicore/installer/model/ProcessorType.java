@@ -3,28 +3,38 @@ package com.flexicore.installer.model;
 import java.util.jar.Manifest;
 
 public class ProcessorType {
-    int family=-1;
-    int model=-1;
-    int stepping=-1;
+    int family = -1;
+    int model = -1;
+    int stepping = -1;
     String caption;
     String deviceId;
     String manufacturer;
     String maxClockSpeed;
     String name;
     String socketDesignation;
+    String architecture="arm64";
+    boolean bits64 = true;
 
+    public static class ByteOrder {
+        public enum Option {
+            BigEndian,
+            LittleEndian
+
+        }
+    }
+    ByteOrder.Option byteOrder=ByteOrder.Option.LittleEndian;
     @Override
     public String toString() {
-        StringBuilder b=new StringBuilder();
-        if (caption!=null) b.append("Caption: "+caption);
-        if (deviceId!=null) b.append("\nDeviceID: "+deviceId);
-        if (manufacturer !=null) b.append("\nManufacturer: "+manufacturer);
-        if (maxClockSpeed!=null) b.append("\nMaxclockSpeed: "+maxClockSpeed);
-        if (name!=null) b.append("\nName: "+name);
-        if (socketDesignation !=null) b.append(",\nSocketDesignation: "+socketDesignation);
-        if (family!=-1) b.append("\nFamily: "+family);
-        if (model!=-1) b.append(",Model: "+model);
-        if (stepping!=-1) b.append(",stepping: "+stepping);
+        StringBuilder b = new StringBuilder();
+        if (caption != null) b.append("Caption: " + caption);
+        if (deviceId != null) b.append("\nDeviceID: " + deviceId);
+        if (manufacturer != null) b.append("\nManufacturer: " + manufacturer);
+        if (maxClockSpeed != null) b.append("\nMaxclockSpeed: " + maxClockSpeed);
+        if (name != null) b.append("\nName: " + name);
+        if (socketDesignation != null) b.append(",\nSocketDesignation: " + socketDesignation);
+        if (family != -1) b.append("\nFamily: " + family);
+        if (model != -1) b.append(",Model: " + model);
+        if (stepping != -1) b.append(",stepping: " + stepping);
         return b.toString();
 
     }
@@ -148,6 +158,33 @@ public class ProcessorType {
 
     public ProcessorType setSocketDesignation(String socketDesignation) {
         this.socketDesignation = socketDesignation;
+        return this;
+    }
+
+    public boolean isBits64() {
+        return bits64;
+    }
+
+    public ProcessorType setBits64(boolean bits64) {
+        this.bits64 = bits64;
+        return this;
+    }
+
+    public ByteOrder.Option getByteOrder() {
+        return byteOrder;
+    }
+
+    public ProcessorType setByteOrder(ByteOrder.Option byteOrder) {
+        this.byteOrder = byteOrder;
+        return this;
+    }
+
+    public String getArchitecture() {
+        return architecture;
+    }
+
+    public ProcessorType setArchitecture(String architecture) {
+        this.architecture = architecture;
         return this;
     }
 }

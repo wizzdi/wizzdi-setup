@@ -109,6 +109,9 @@ public class Start {
 
             });
             startThread.start();
+        }else {
+            String p[]={"lscpu"};
+
         }
         installationContext = new InstallationContext()
                 .setLogger(logger).setParameters(new Parameters()).
@@ -844,6 +847,17 @@ public class Start {
             // load a properties file
             prop.load(input);
             installationContext.setProperties(prop);
+            StringBuilder sb=new StringBuilder();
+            sb.append("\n*******************************************\n");
+            sb.append("********** a properties file is used because one is available here:*******\n");
+            sb.append("*****************");
+            sb.append(propertiesFile);
+            sb.append("********** \n");
+            sb.append("********** edit it, delete or use -p parameter to specify another one*******\n");
+            sb.append("********** you can also save a new one with -psave [filename] options  *********, \n ******** it will be saved with new parameters defined on the command line*******\n");
+            info (sb.toString());
+            System.out.println(sb);
+
         } catch (IOException ex) {
             info("No properties file provided at: "+propertiesFile);
             installationContext.setProperties(new Properties());
@@ -1055,7 +1069,9 @@ public class Start {
      * @return
      */
     private static String getCalculatedDefaultValue(Parameter parameter, InstallationContext installationContext) {
-
+        if (parameter.getName().equals("scriptspath")) {
+            int a=3;
+        }
         String result = installationContext.getProperties().getProperty(parameter.getName());
         if (result == null) {
             result = parameter.getDefaultValue();

@@ -1144,6 +1144,29 @@ public class InstallationTask implements IInstallationTask {
         return result;
 
     }
+//    public List<String> executeCommandByBuilder(String[] args) throws IOException {
+//
+//
+//        ProcessBuilder pb = new ProcessBuilder(args);
+//
+//
+//
+//        Process process;
+//        process = pb.start();
+//
+//
+//        try {
+//            boolean notFailed = contWithProcess(process, "", false, "");
+//            if (notFailed) {
+//                String [] result=new String[lines.szi]
+//            }
+//            String[] result
+//        } catch (Exception e) {
+//            severe("error", e);
+//        }
+//        return result;
+//
+//    }
     /**
      * get latest version , assuming version numbering increases the lexical location
      *
