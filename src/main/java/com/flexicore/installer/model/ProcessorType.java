@@ -1,7 +1,5 @@
 package com.flexicore.installer.model;
 
-import java.util.jar.Manifest;
-
 public class ProcessorType {
     int family = -1;
     int model = -1;

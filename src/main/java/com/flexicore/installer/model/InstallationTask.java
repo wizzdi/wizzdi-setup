@@ -68,11 +68,20 @@ public class InstallationTask implements IInstallationTask {
 
 
     final public static boolean isWindows = SystemUtils.IS_OS_WINDOWS;
+    private static ProcessorType processorType=new ProcessorType();
     final public static boolean isLinux = SystemUtils.IS_OS_LINUX;
     final public static boolean isMac = SystemUtils.IS_OS_MAC;
     final public static boolean is64 = System.getProperty("sun.arch.data.model").equals("64");
     Queue<String> lines = new ConcurrentLinkedQueue<String>();
     Queue<String> errorLines = new ConcurrentLinkedQueue<String>();
+
+    public static ProcessorType getProcessorType() {
+        return processorType;
+    }
+
+    public static void setProcessorType(ProcessorType processorType) {
+        InstallationTask.processorType = processorType;
+    }
 
     public boolean isWindows() {
         return SystemUtils.IS_OS_WINDOWS;
@@ -1116,7 +1125,7 @@ public class InstallationTask implements IInstallationTask {
 
     }
 
-    public boolean executeCommandByBuilder(String[] args, String toFind, boolean notToFind, String ownerName, String currentFolder) throws IOException {
+    public  boolean executeCommandByBuilder(String[] args, String toFind, boolean notToFind, String ownerName, String currentFolder) throws IOException {
 
 
         ProcessBuilder pb = new ProcessBuilder(args);
