@@ -444,19 +444,19 @@ public class InstallationTask implements IInstallationTask {
         } else ignoreLink = true;
 
         if (latest == null || latest.isEmpty()) return false;
-        String target = targetLocation +"/"+ new File(latest).getName();
+        String target = targetLocation + "/" + new File(latest).getName();
         if (!copySingleFile(latest, target)) {
             updateProgress(getContext(), "failed to copy : " + latest + " to: " + target);
             return false;
         }
-        String cleanName =target.substring(0,target.lastIndexOf(".jar"));
+        String cleanName = target.substring(0, target.lastIndexOf(".jar"));
         String targetServiceJarPath = target;
 
 
         boolean linkResult = true;
         if (!ignoreLink) {
             targetServiceJarPath = (cleanName = target.substring(0, target.lastIndexOf("-"))) + ".jar";
-            if (exists(targetServiceJarPath) ) Files.deleteIfExists(Paths.get(targetServiceJarPath));
+            if (exists(targetServiceJarPath)) Files.deleteIfExists(Paths.get(targetServiceJarPath));
             String[] args = {"ln", "-s", target, targetServiceJarPath};
             linkResult = executeCommandByBuilder(args, "", false, ownerName, false);
 
@@ -677,24 +677,24 @@ public class InstallationTask implements IInstallationTask {
         return false;
 
     }
-    public static double dotNetVersion=0.0;
+
+    public static double dotNetVersion = 0.0;
 
     /**
-     *
      * @param logger
      * @param scriptLocation if empty, will look for net.ps1 in the parent of this folder
      * @return a list of available .net versions and build.
      */
     public static List<String> getDotNetVersions(Logger logger, String scriptLocation) {
 
-        List<String> versions=new ArrayList<>();
+        List<String> versions = new ArrayList<>();
         if (isWindows) {
             String current = Paths.get(".").toAbsolutePath().normalize().toString();
             File file;
-            if (scriptLocation==null || scriptLocation.isEmpty()) {
-                 file =  new File(new File(current).getParent() + "/net.ps1") ;
-            }else {
-                file=new File(scriptLocation);
+            if (scriptLocation == null || scriptLocation.isEmpty()) {
+                file = new File(new File(current).getParent() + "/net.ps1");
+            } else {
+                file = new File(scriptLocation);
             }
             if (file.exists()) {
                 PowerShellReturn result = InstallationTask.executeScript(logger, file.getAbsolutePath(), new String[]{});
@@ -715,6 +715,7 @@ public class InstallationTask implements IInstallationTask {
         }
         return versions;
     }
+
     /**
      * Creates a link to a URL on the desktop
      *
@@ -1114,18 +1115,19 @@ public class InstallationTask implements IInstallationTask {
         return result;
 
     }
-    public boolean executeCommandByBuilder(String[] args, String toFind, boolean notToFind, String ownerName, String  currentFolder) throws IOException {
+
+    public boolean executeCommandByBuilder(String[] args, String toFind, boolean notToFind, String ownerName, String currentFolder) throws IOException {
 
 
         ProcessBuilder pb = new ProcessBuilder(args);
-        if (currentFolder!=null && !currentFolder.isEmpty()) {
+        if (currentFolder != null && !currentFolder.isEmpty()) {
             if (isLinux) {
                 if (args[0].equals("/bin/sh")) {
                     pb.directory(new File(args[1]).getParentFile()); //set current directory to the actual location of the script
                 } else {
                     pb.directory(new File(args[0]).getParentFile());
                 }
-            }else {
+            } else {
                 if (isWindows()) {
                     pb.directory(new File(currentFolder));
                 }
@@ -1144,29 +1146,64 @@ public class InstallationTask implements IInstallationTask {
         return result;
 
     }
-//    public List<String> executeCommandByBuilder(String[] args) throws IOException {
-//
-//
-//        ProcessBuilder pb = new ProcessBuilder(args);
-//
-//
-//
-//        Process process;
-//        process = pb.start();
-//
-//
-//        try {
-//            boolean notFailed = contWithProcess(process, "", false, "");
-//            if (notFailed) {
-//                String [] result=new String[lines.szi]
-//            }
-//            String[] result
-//        } catch (Exception e) {
-//            severe("error", e);
-//        }
-//        return result;
-//
-//    }
+
+    /**
+     * run a process, collect output or error lines
+     * @param args
+     * @return
+     * @throws IOException
+     */
+    public ProcessResult executeCommandByBuilder(String[] args) throws IOException {
+        ProcessBuilder pb = new ProcessBuilder(args);
+        Process process;
+        process = pb.start();
+        ProcessResult result=new ProcessResult();
+        try {
+            boolean notFailed = contWithProcess(process, "", false, "");
+            result.setResult(notFailed);
+            if (notFailed) {
+              result.getLines().addAll(lines);
+            }else {
+                result.getErrorLines().addAll(errorLines);
+            }
+        } catch (Exception e) {
+            severe("error", e);
+        }
+        return result;
+
+    }
+    public class ProcessResult {
+        private List<String> lines=new ArrayList<>();
+        private List<String> errorLines=new ArrayList<>();
+        private boolean result;
+
+        public List<String> getLines() {
+            return lines;
+        }
+
+        public ProcessResult setLines(List<String> lines) {
+            this.lines = lines;
+            return this;
+        }
+
+        public List<String> getErrorLines() {
+            return errorLines;
+        }
+
+        public ProcessResult setErrorLines(List<String> errorLines) {
+            this.errorLines = errorLines;
+            return this;
+        }
+
+        public boolean isResult() {
+            return result;
+        }
+
+        public ProcessResult setResult(boolean result) {
+            this.result = result;
+            return this;
+        }
+    }
     /**
      * get latest version , assuming version numbering increases the lexical location
      *
@@ -2485,7 +2522,7 @@ public class InstallationTask implements IInstallationTask {
                 FileInputStream is = new FileInputStream(path);
                 properties.load(is);
                 is.close();
-                if (properties.get(key)==null ||!properties.get(key).equals(value)) {
+                if (properties.get(key) == null || !properties.get(key).equals(value)) {
                     properties.setProperty(key, value);
                     FileWriter fileWriter = new FileWriter(path);
                     properties.store(fileWriter, "Written on: " + LocalDateTime.now());
