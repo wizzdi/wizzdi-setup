@@ -360,7 +360,7 @@
                                 <path>${project.build.directory}/${artifactId}-${version}.jar</path>
 
                             </modulePath>
-                           <baseJdk>${linuxARM64}</baseJdk>
+                           <baseJdk>${windows}</baseJdk>
 <!--                            change above to the correct property for each of the three os-->
                             <modules>
                                 <module>flexicore.installer</module>

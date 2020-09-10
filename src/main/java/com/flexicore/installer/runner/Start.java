@@ -110,37 +110,6 @@ public class Start {
 
             });
             startThread.start();
-        }else {
-            String p[]={"lscpu"};
-            InstallationTask task=new InstallationTask();
-            try {
-                InstallationTask.ProcessResult result = task.executeCommandByBuilder(args);
-                if (result.isResult()) {
-                    info("have received cpu information");
-                    HashMap<String,String> cpuData=new HashMap<>();
-                    for (String line:result.getLines()) {
-                       String[] split=line.split(":") ;
-                       if (split.length>0) {
-                           cpuData.put(split[0],split[1].trim());
-                       }
-                    }
-                    SystemData systemData=new SystemData();
-                    ProcessorType processorType=getLinuxProcessorType(cpuData);
-                    if (processorType!=null) {
-                        InstallationTask.setProcessorType(processorType);
-                    }
-                }else {
-                    StringBuilder sb=new StringBuilder();
-                    sb.append("Error while getting cpu data:\n");
-                    for (String line:result.getErrorLines()) {
-                        sb.append(line+"\n");
-                    }
-                    info(sb.toString());
-                }
-            } catch (IOException e) {
-                severe("Error while executing lscpu on a linux system",e);
-            }
-
         }
         installationContext = new InstallationContext()
                 .setLogger(logger).setParameters(new Parameters()).
@@ -163,7 +132,10 @@ public class Start {
                         setUiAskUSer(Start::getUserResponse).
                         setShowSystemData(Start::uiComponentShowSystemData).
                         setShowPagedData(Start::uiShowPagedList);
+        if (isLinux) {
+            getCPUData();
 
+        }
         File pluginRoot = new File(mainCmd.getOptionValue(INSTALLATION_TASKS_FOLDER, "tasks"));
         String path = pluginRoot.getAbsolutePath();
         if (!pluginRoot.exists()) {
@@ -318,6 +290,39 @@ public class Start {
         cleanSnoopers();
         exit(0);
 
+    }
+
+    private static void getCPUData() {
+        String p[]={"lscpu"};
+        InstallationTask task=new InstallationTask();
+        task.setContext(installationContext);
+        try {
+            InstallationTask.ProcessResult result = task.executeCommandByBuilder(p);
+            if (result.isResult()) {
+                info("have received cpu information");
+                HashMap<String,String> cpuData=new HashMap<>();
+                for (String line:result.getLines()) {
+                    String[] split=line.split(":") ;
+                    if (split.length>0) {
+                        cpuData.put(split[0],split[1].trim());
+                    }
+                }
+
+                ProcessorType processorType=getLinuxProcessorType(cpuData);
+                if (processorType!=null) {
+                    InstallationTask.setProcessorType(processorType);
+                }
+            }else {
+                StringBuilder sb=new StringBuilder();
+                sb.append("Error while getting cpu data:\n");
+                for (String line:result.getErrorLines()) {
+                    sb.append(line+"\n");
+                }
+                info(sb.toString());
+            }
+        } catch (IOException e) {
+            severe("Error while executing lscpu on a linux system",e);
+        }
     }
 
 
@@ -1107,9 +1112,7 @@ public class Start {
      * @return
      */
     private static String getCalculatedDefaultValue(Parameter parameter, InstallationContext installationContext) {
-        if (parameter.getName().equals("scriptspath")) {
-            int a=3;
-        }
+
         String result = installationContext.getProperties().getProperty(parameter.getName());
         if (result == null) {
             result = parameter.getDefaultValue();

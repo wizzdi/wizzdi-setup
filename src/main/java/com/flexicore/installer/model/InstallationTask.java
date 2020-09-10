@@ -687,7 +687,7 @@ public class InstallationTask implements IInstallationTask {
 
     }
 
-    public static double dotNetVersion = 0.0;
+    public static String dotNetVersion ="0.0";
 
     /**
      * @param logger
@@ -714,8 +714,8 @@ public class InstallationTask implements IInstallationTask {
                             versions.add(lineData[3]);
                             String[] version = lineData[3].split("\\.");
                             if (version.length > 1) {
-                                Float dotnet = Float.valueOf(version[0] + "." + version[1]);
-                                if (dotnet >= dotNetVersion) dotNetVersion = dotnet;
+                                String dotnet = version[0] + "." + version[1];
+                                if (dotnet.compareTo(dotNetVersion)>=0) dotNetVersion = dotnet;
                             }
                         }
                     }
@@ -937,6 +937,7 @@ public class InstallationTask implements IInstallationTask {
      * @return PowerShellReturn instance or null, the instance contains return value (usually 0) and list of output lines + list of error lines
      */
     public static PowerShellReturn executeScript(Logger logger, String script, String[] params) {
+        PowerShellReturn unblkesult = executePowerShellCommand("Unblock-File " + script, null);
         PowerShellReturn powerShellReturn = null;
         if (new File(script).exists()) {
             String parameters = prepareParams(params);
