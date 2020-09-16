@@ -20,6 +20,7 @@ public class UserAction {
     private UserResponse[] possibleAnswers;
     private String optionalPrompt="";
     private int defaultLeftMargin=-1;
+    private boolean askForUpdate=false;
 
     public enum ResponseType {
         FROMLIST,BOOLEAN,STRING,FILE,EXISTINGFILE, EXISTINGFOLDER,LIST
@@ -154,6 +155,15 @@ public class UserAction {
 
     public UserAction setDefaultLeftMargin(int defaultLeftMargin) {
         this.defaultLeftMargin = defaultLeftMargin;
+        return this;
+    }
+
+    public boolean isAskForUpdate() {
+        return askForUpdate;
+    }
+
+    public UserAction setAskForUpdate(boolean askForUpdate) {
+        this.askForUpdate = askForUpdate;
         return this;
     }
 }

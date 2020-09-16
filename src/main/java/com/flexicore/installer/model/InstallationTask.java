@@ -10,6 +10,7 @@ import com.wizzdi.installer.*;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.fusesource.jansi.Ansi;
 import org.zeroturnaround.zip.ZipUtil;
 
 import java.io.*;
@@ -68,7 +69,7 @@ public class InstallationTask implements IInstallationTask {
 
 
     final public static boolean isWindows = SystemUtils.IS_OS_WINDOWS;
-    private static ProcessorType processorType=new ProcessorType();
+    private static ProcessorType processorType = new ProcessorType();
     final public static boolean isLinux = SystemUtils.IS_OS_LINUX;
     final public static boolean isMac = SystemUtils.IS_OS_MAC;
     final public static boolean is64 = System.getProperty("sun.arch.data.model").equals("64");
@@ -687,7 +688,7 @@ public class InstallationTask implements IInstallationTask {
 
     }
 
-    public static String dotNetVersion ="0.0";
+    public static String dotNetVersion = "0.0";
 
     /**
      * @param logger
@@ -715,7 +716,7 @@ public class InstallationTask implements IInstallationTask {
                             String[] version = lineData[3].split("\\.");
                             if (version.length > 1) {
                                 String dotnet = version[0] + "." + version[1];
-                                if (dotnet.compareTo(dotNetVersion)>=0) dotNetVersion = dotnet;
+                                if (dotnet.compareTo(dotNetVersion) >= 0) dotNetVersion = dotnet;
                             }
                         }
                     }
@@ -1126,7 +1127,7 @@ public class InstallationTask implements IInstallationTask {
 
     }
 
-    public  boolean executeCommandByBuilder(String[] args, String toFind, boolean notToFind, String ownerName, String currentFolder) throws IOException {
+    public boolean executeCommandByBuilder(String[] args, String toFind, boolean notToFind, String ownerName, String currentFolder) throws IOException {
 
 
         ProcessBuilder pb = new ProcessBuilder(args);
@@ -1159,6 +1160,7 @@ public class InstallationTask implements IInstallationTask {
 
     /**
      * run a process, collect output or error lines
+     *
      * @param args
      * @return
      * @throws IOException
@@ -1167,13 +1169,13 @@ public class InstallationTask implements IInstallationTask {
         ProcessBuilder pb = new ProcessBuilder(args);
         Process process;
         process = pb.start();
-        ProcessResult result=new ProcessResult();
+        ProcessResult result = new ProcessResult();
         try {
             boolean notFailed = contWithProcess(process, "", false, "");
             result.setResult(notFailed);
             if (notFailed) {
-              result.getLines().addAll(lines);
-            }else {
+                result.getLines().addAll(lines);
+            } else {
                 result.getErrorLines().addAll(errorLines);
             }
         } catch (Exception e) {
@@ -1182,9 +1184,10 @@ public class InstallationTask implements IInstallationTask {
         return result;
 
     }
+
     public class ProcessResult {
-        private List<String> lines=new ArrayList<>();
-        private List<String> errorLines=new ArrayList<>();
+        private List<String> lines = new ArrayList<>();
+        private List<String> errorLines = new ArrayList<>();
         private boolean result;
 
         public List<String> getLines() {
@@ -1214,6 +1217,7 @@ public class InstallationTask implements IInstallationTask {
             return this;
         }
     }
+
     /**
      * get latest version , assuming version numbering increases the lexical location
      *
@@ -1291,6 +1295,8 @@ public class InstallationTask implements IInstallationTask {
     public boolean force;
     public boolean dry;
     public boolean update;
+    public boolean updateThis = false;
+
     public String phase = "";
 
     /**
@@ -1764,6 +1770,8 @@ public class InstallationTask implements IInstallationTask {
                 .forEach(File::delete);
     }
 
+
+
     /**
      * delete the content of a folder.
      *
@@ -2032,9 +2040,23 @@ public class InstallationTask implements IInstallationTask {
         }
         return false;
     }
+    public boolean updateFolder(String source,String target,String ownerName) throws IOException, InterruptedException {
+        if (!new File(source).isDirectory()) return copySingleFile(source,target);
+       boolean result= deleteDirectoryStream(target);
+       if (result && !exists(target)) {
+           if (!copy(source,target,ownerName)) {
+               severe("Failed to copy "+source +" to "+ target);
+           }else {
+               return true;
+           }
+       }else {
+           severe("Failed to delete  "+target );
 
+       }
+       return result;
+    }
     /**
-     * recursively copy folders
+     * recursively copy folders, will copy single file too.
      *
      * @param installationDir source of the copy
      * @param targetDir       target of the copy
@@ -2051,6 +2073,10 @@ public class InstallationTask implements IInstallationTask {
         File sourceFile = new File(installationDir);
         if (sourceFile.exists()) {
             if (!dry) {
+                if (!new File(installationDir).isDirectory()) {
+                    return copySingleFile(installationDir,targetDir);
+
+                }
                 ensureTarget(targetDir);
                 try {
                     CopyFileVisitor copyFileVisitor = null;
@@ -2909,6 +2935,34 @@ public class InstallationTask implements IInstallationTask {
 
     public InstallationTask setDry(boolean dry) {
         this.dry = dry;
+        return this;
+    }
+
+    /**
+     * get a dialog (console) prompt for update in indiciudal task
+     *
+     * @param ownerName
+     * @return
+     */
+    protected UserAction askUserFprUpdate(String ownerName) {
+        UserAction ua = new UserAction();
+        ua.addMessage(new UserMessage().setMessage(ownerName + ": a version is already installed").setEmphasize(2)
+                .setSide(UserMessage.Side.left).setColor(Ansi.Color.GREEN).setFontSize(26).setUseFont(true));
+        ua.addMessage(new UserMessage().setMessage("Do you want to update it?").setEmphasize(2)
+                .setSide(UserMessage.Side.left).setColor(Ansi.Color.BLACK).setFontSize(16).setUseFont(true));
+        ua.setPossibleAnswers(new UserResponse[]{UserResponse.YES, UserResponse.NO});
+        ua.setUseAnsiColorsInConsole(true);
+        ua.setDefaultLeftMargin(20).setAskForUpdate(true);
+        return ua;
+
+    }
+
+    public boolean isUpdateThis() {
+        return updateThis;
+    }
+
+    public InstallationTask setUpdateThis(boolean updateThis) {
+        this.updateThis = updateThis;
         return this;
     }
 

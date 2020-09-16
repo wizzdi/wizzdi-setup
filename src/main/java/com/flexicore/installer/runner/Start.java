@@ -98,6 +98,7 @@ public class Start {
                     systemData.setFreeDiskSpace(getFreeDiskSpace("C:"));
                     systemData.setWindowsVersion(getWindowsVersion());
                     systemData.setDotNetVersions(InstallationTask.getDotNetVersions(logger,""));
+
                     info ("+-+-+-+-+ .NET  installed: "+ dotNetVersion);
                     info("************* ended  data gathering in: " + (systemData.setTotal(System.currentTimeMillis() - systemData.getStart()).getTotal() / 1000 + " Seconds"));
 
@@ -1841,6 +1842,14 @@ public class Start {
                         if (!dry) {
                             info("++++++++++++ about to install: " + installationTask.getName());
                             result = unInstall ? installationTask.unInstall(context) : installationTask.install(context);
+                            if (!unInstall &&result.getUserAction()!=null && result.getUserAction().isAskForUpdate() ) {
+                                UserResponse userResponce = getUserResponse(installationContext, result.getUserAction());
+                                if (userResponce.equals(UserResponse.YES)) {
+                                    info("User has asked to update this task: "+installationTask.getName());
+                                    ((InstallationTask) installationTask).setUpdateThis(true);
+                                    result = unInstall ? installationTask.unInstall(context) : installationTask.install(context);
+                                }
+                            }
                         } else {
                             result = new InstallationResult().setInstallationStatus(InstallationStatus.COMPLETED);
                         }
