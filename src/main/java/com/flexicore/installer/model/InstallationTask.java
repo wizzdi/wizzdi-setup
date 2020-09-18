@@ -394,7 +394,9 @@ public class InstallationTask implements IInstallationTask {
     public boolean installSpring(InstallationContext installationContext) {
 
         Parameter container = installationContext.getParameter("container");
-        if (container != null) return container.getValue().toLowerCase().equals("spring");
+        if (container != null) {
+            return container.getValue().toLowerCase().equals("spring");
+        }
         return true;
 
     }
