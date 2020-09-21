@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <properties>
-        <flexicore-installer-version>1.0.23</flexicore-installer-version>
+        <wizzdi-installer-version>1.0.24</wizzdi-installer-version>
         <java-version>11</java-version>
     </properties>
     <groupId>com.wizzdi.installer.plugins</groupId>
@@ -20,9 +20,9 @@
     </distributionManagement>
     <dependencies>
         <dependency>
-            <groupId>com.flexicore</groupId>
-            <artifactId>flexicore-installer</artifactId>
-            <version>${flexicore-installer-version}</version>
+            <groupId>com.wizzdi</groupId>
+            <artifactId>wizzdi-installer</artifactId>
+            <version>${wizzdi-installer-version}</version>
         </dependency>
 
 

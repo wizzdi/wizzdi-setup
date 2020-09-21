@@ -145,6 +145,12 @@ public class DeployFlexicore extends InstallationTask {
                     }
                     return succeeded();
                 } else {
+                    if (exists(flexicoreHome)) {
+                        if (!isUpdateThis() && !update) {
+
+                            return new InstallationResult().setUserAction(askUserFprUpdate(ownerName));
+                        }
+                    }
                     if (copyFlexicoreFilesForSpring(installationContext)) {
                         copySucceeded = true;
                         return succeeded();
@@ -178,8 +184,9 @@ public class DeployFlexicore extends InstallationTask {
         String flexicoreSourceFolder = getServerPath() + "flexicore";
 
         if (exists(flexicoreSourceFolder)) { //todo: fix files to correct flexicoreHome location
-            if (!exists(flexicoreHome) || update) {
-                if (!update) {
+
+            if (!exists(flexicoreHome) || update || isUpdateThis()) {
+                if (!update && !isUpdateThis()) {
                     if (copy(flexicoreSourceFolder, flexicoreHome, installationContext)) {
                         updateProgress(installationContext, "Have copied flexicore folder");
                         boolean fixed = fixFlexicoreHome(installationContext);
@@ -411,7 +418,7 @@ public class DeployFlexicore extends InstallationTask {
             if (!installSpring) {
                 Thread.sleep(300); //allow for Wildfly to start
                 if (testServiceRunning(serviceName, "Flexicore deploy", false)) {
-                    info("Deploy flexicore found service "+serviceName+" running");
+                    info("Deploy flexicore found service " + serviceName + " running");
                     InstallationResult result = waitForDeployment(deployments);
                     Parameter p = installationContext.getParameter("flexicore_running");
                     //required so other plugins can test if flexicore is running without knowing the details.
@@ -419,17 +426,19 @@ public class DeployFlexicore extends InstallationTask {
                         p.setValue("true");
                     return result;
                 } else {
-                    info("Deploy flexicore found service "+serviceName+" NOT running");
+                    info("Deploy flexicore found service " + serviceName + " NOT running");
                     updateProgress(installationContext, "Deployed, but wildfly service not running");
                     return failed();
                 }
             } else {
                 //Spring installation here.
                 if (copySucceeded) {
-                    if (!update) {
+                    if (!update && !isUpdateThis()) {
                         if (installSpringAsService(installationContext)) {
                             if (isLinux) {
                                 if (executeCommand("chown -R flexicore.flexicore " + flexicoreHome, "", ownerName)) {
+                                    setServiceToStart(serviceName, ownerName);
+                                    info ("Have started service: "+serviceName);
                                     return succeeded();
                                 } else {
                                     info("Cannot set " + flexicoreHome + " to flexicore owner");
@@ -445,12 +454,12 @@ public class DeployFlexicore extends InstallationTask {
                                 }
                             }
                         } else return failed();
-                    }else {
-                        deleteDirectoryStream(flexicoreHome+"logs");
-                        if (setServiceToStart(serviceName,ownerName)) {
+                    } else {
+                        deleteDirectoryStream(flexicoreHome + "logs");
+                        if (setServiceToStart(serviceName, ownerName)) {
                             updateProgress(installationContext, "Started FlexiCore as a service (Spring)");
                             return succeeded();
-                        }else {
+                        } else {
                             updateProgress(installationContext, "was not able to start FlexiCore as a service (Spring)");
                             return failed();
 
@@ -472,6 +481,7 @@ public class DeployFlexicore extends InstallationTask {
 
         String heapMemory = getContext().getParamaters().getValue("heapsize");
         String serviceLocation = getServicesPath() + serviceName + ".service";
+        boolean updateHeap = heapMemory != null && !heapMemory.isEmpty() && !heapMemory.equals("2048");
         if (!dry) {
 
             String tempDir = System.getProperty("java.io.tmpdir");
@@ -488,7 +498,7 @@ public class DeployFlexicore extends InstallationTask {
                         info("cannot find the spring XML in: " + springXML);
                         return false;
                     }
-                }else {
+                } else {
                     Parameter springTarget = getContext().getParameter("jarlocationlinux");
                     if (springTarget == null) {
                         updateProgress(installationContext, "no target for flexicore.jar has been specified");
@@ -508,7 +518,7 @@ public class DeployFlexicore extends InstallationTask {
                         }
                         boolean result = executeCommand("adduser flexicore --shell=/bin/false --no-create-home", "", ownerName);
                         if (!result) {
-                            updateProgress(installationContext,"failed to create user flexicore, service will not run  or user already exists");
+                            updateProgress(installationContext, "failed to create user flexicore, service will not run  or user already exists");
                         }
                         //create a link to the latest version of Flexicore...
                         if (!fixLinks(installationContext)) {
@@ -516,11 +526,7 @@ public class DeployFlexicore extends InstallationTask {
                             return false;
 
                         }
-                        result = executeCommand("chmod 500 " + springTargetFolder + "/flexicore.jar", "", ownerName);
-                        if (!result) {
-                            info("failed to chmod 500 on flexicore.jar");
-                            return false;
-                        }
+
                         result = executeCommand("chown -R flexicore.flexicore " + springTargetFolder, "", ownerName);
                         if (!result) {
                             if (!result) {
@@ -549,35 +555,31 @@ public class DeployFlexicore extends InstallationTask {
                         Files.copy(Paths.get(serviceLocation), Paths.get(targetServiceLocation = getUbuntuServicesLocation() + serviceName + ".service"), StandardCopyOption.REPLACE_EXISTING);
 
 
-                        if (!springConfigTargetFolder.equals("/home/flexicore/spring/")) {
-                            String after=editFile(serviceFile,"","/home/flexicore/spring/flexicore.jar",springTargetFolder+"flexicore.jar"
-                                    ,false,false,true,false);
+                        if (!springTargetFolder.equals("/home/flexicore/spring/")) {
+                            String after = editFile(serviceFile, "", "/home/flexicore/spring/flexicore.jar", springTargetFolder + "flexicore.jar"
+                                    , false, false, false, false);
+                            after = editFile(serviceFile, after, "/home/flexicore/spring", springTargetFolder, false, false, !updateHeap, false);
+                            if (after.isEmpty()) {
+                                severe("Error while editing service file");
+                            }
+                            if (updateHeap) {
+                                after = Utilities.editFile(serviceFile, after, "2048m", heapMemory + "m", true, false, true);
+                                executeCommand("systemctl daemon-reload", "", ownerName);
+
+
+                            } else {
+                                severe("Heap memory was not set to a legal value");
+                            }
                         }
 
                         if (installService(null, serviceName, ownerName, false)) {
                             info("Have successfully installed: " + serviceName);
-                            if (heapMemory != null & !heapMemory.isEmpty()) {
-                                String intermediate = "";
-                                intermediate = Utilities.editFile(serviceFile, intermediate, "2048m", heapMemory + "m", true, false, true);
-                                executeCommand("systemctl daemon-reload", "", ownerName);
-
-                                if (setServiceToStart(serviceName, ownerName)) {
-                                    return true;
-                                }
-                            } else {
-                                severe("Heap memory was not set to a legal value");
-                            }
+                            return true;
                         }
                     } else {
                         updateProgress(getContext(), "Cannot find Spring source folder: " + springSourceFolder);
                         return false;
                     }
-//                        } else {
-//                            severe("Cannot install Flexicore as a service!");
-//                            return false;
-//                        }
-
-
                 } else { //windows here
                     String target = flexicoreHome + "spring/flexicore.exe";
                     if (exists(target)) {
@@ -616,26 +618,31 @@ public class DeployFlexicore extends InstallationTask {
      * @return
      * @throws IOException
      */
-    private boolean fixLinks(InstallationContext installationContext) throws IOException {
-        String candidate = getLatestVersion(flexicoreHome + "spring", "FlexiCore-", ".jar");
+    private boolean fixLinks(InstallationContext installationContext)  {
+        try {
+            String candidate = getLatestVersion(springSourceFolder, "FlexiCore-", ".jar");
 
-        if (!candidate.isEmpty()) {
+            if (!candidate.isEmpty()) {
 
-            info("Found Flexicore version: " + candidate);
+                info("Found Flexicore version: " + candidate);
 
-            if (!exists(springTargetFolder)) {
-                boolean result = (new File(springTargetFolder)).mkdir();
+                if (!exists(springTargetFolder)) {
+                    boolean result = (new File(springTargetFolder)).mkdirs();
+                }
+
+                //this is just for cases where /home/flexicore is on mounted device
+                Path path = Files.copy(Paths.get(candidate), Paths.get(springTargetFolder + "/" + new File(candidate).getName()), StandardCopyOption.REPLACE_EXISTING);
+                if (path != null) {
+                    String[] args = {"ln", "-fs", path.toString(), new File(springTargetFolder) + "/flexicore.jar"};
+                    boolean result = executeCommandByBuilder(args, "", false, ownerName, false);
+                    return result;
+                }
+            } else {
+                info("couldn't find a candidate for flexicore.jar");
             }
-
-            //this is just for cases where /home/flexicore is on mounted device
-            Path path = Files.copy(Paths.get(candidate), Paths.get(springTargetFolder + "/" + new File(candidate).getName()), StandardCopyOption.REPLACE_EXISTING);
-            if (path != null) {
-                String[] args = {"ln", "-fs", path.toString(), new File(springTargetFolder) + "/flexicore.jar"};
-                boolean result = executeCommandByBuilder(args, "", false, ownerName, false);
-                return result;
-            }
-        } else {
-            info("couldn't find a candidate for flexicore.jar");
+            return false;
+        } catch (IOException e) {
+            severe("Error while fixing links in "+ownerName,e);
         }
         return false;
     }
