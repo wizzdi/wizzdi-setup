@@ -65,7 +65,6 @@ public class Start {
 
     public static void main(String[] args) throws MissingInstallationTaskDependency, ParseException, InterruptedException {
 
-
         Options options = initOptions();
         CommandLineParser parser = new DefaultParser();
         String[] trueArgs = getTrueArgs(args, options);
@@ -1126,7 +1125,10 @@ public class Start {
                 String[] split1 = result.split(":");
                 if (split1.length>0) {
                     result = split1[0];
-                    String[] split = split1[1].split(",");
+                    String[] split = new String[0];
+                    if (split1[1].contains(","))  split = split1[1].split(",");
+                    if (split1[1].contains("|"))  split = split1[1].split("|");
+                    
                     parameter.getListOptions().clear();
                     //handle special case where there is only one option
 

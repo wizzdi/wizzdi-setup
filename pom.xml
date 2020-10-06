@@ -361,7 +361,8 @@
 
                             </modulePath>
                            <baseJdk>${windows}</baseJdk>
-<!--                            change above to the correct property for each of the three os-->
+<!--                            change above to the correct property for each of the three os!!-->
+
                             <modules>
                                 <module>flexicore.installer</module>
 

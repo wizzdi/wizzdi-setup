@@ -2044,8 +2044,12 @@ public class InstallationTask implements IInstallationTask {
     }
     public boolean updateFolder(String source,String target,String ownerName) throws IOException, InterruptedException {
         if (!new File(source).isDirectory()) return copySingleFile(source,target);
-       boolean result= deleteDirectoryStream(target);
-       if (result && !exists(target)) {
+        boolean result=true;
+        if (exists(target)) {
+         result= deleteDirectoryStream(target);
+        }
+
+       if (result) {
            if (!copy(source,target,ownerName)) {
                severe("Failed to copy "+source +" to "+ target);
            }else {
@@ -2489,7 +2493,17 @@ public class InstallationTask implements IInstallationTask {
 
     public String fixWindows(String fileAsString) {
         if (isWindows()) {
-            info("Fixing Windows backslash");
+            info("Fixing Windows path");
+            if (fileAsString.startsWith("..")) {
+                info("fixing parent replacement for Windows");
+                String userDir=System.getProperty("user.dir");
+                File current=new File(userDir);
+                String parentPath = current.getParent();
+                fileAsString=fileAsString.replace("..",parentPath);
+                fileAsString = fileAsString.replaceAll("/", "\\\\");
+                info ("resulting file is: "+fileAsString);
+
+            }
             fileAsString = fileAsString.replaceAll("/", "\\\\");
             String lines[] = fileAsString.split("\n");
             boolean replaced = false;
