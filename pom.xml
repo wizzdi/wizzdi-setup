@@ -6,7 +6,7 @@
 
     <groupId>com.wizzdi</groupId>
     <artifactId>wizzdi-installer</artifactId>
-    <version>1.0.24</version>
+    <version>1.0.25</version>
     <distributionManagement>
         <repository>
             <id>flexicore-local</id>
@@ -329,7 +329,7 @@
                                     </artifact>
                                     <moduleInfo>
                                         <name>org.fusesource.jansi</name>
-<!--                                        The full name must be provided here-->
+                                        <!--                                        The full name must be provided here-->
                                     </moduleInfo>
 
                                 </module>
@@ -360,9 +360,8 @@
                                 <path>${project.build.directory}/${artifactId}-${version}.jar</path>
 
                             </modulePath>
-                           <baseJdk>${windows}</baseJdk>
-<!--                            change above to the correct property for each of the three os!!-->
-
+                            <baseJdk>${linuxARM64}</baseJdk>
+                            <!--                            change above to the correct property for each of the three os-->
                             <modules>
                                 <module>flexicore.installer</module>
 

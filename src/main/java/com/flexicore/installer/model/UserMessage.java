@@ -12,7 +12,7 @@ import static org.fusesource.jansi.Ansi.Color.*;
  */
 public class UserMessage {
     public enum InputType {
-        none,string,bool,list
+        none,string,bool,list,password
     }
     boolean crlf=true;
     private String message;
@@ -39,6 +39,7 @@ public class UserMessage {
     private List<String> options=new ArrayList<>();
     private String defaultValue;
     private Object value;
+    private boolean createText=false; //if true , this message will become a TextField if UI enabled
     /**
      * will be used as left margin, -1==ignore
      */
@@ -198,6 +199,15 @@ public class UserMessage {
 
     public UserMessage setValue(Object value) {
         this.value = value;
+        return this;
+    }
+
+    public boolean isCreateText() {
+        return createText;
+    }
+
+    public UserMessage setCreateText(boolean createText) {
+        this.createText = createText;
         return this;
     }
 }

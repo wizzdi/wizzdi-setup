@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 
 @SuppressWarnings("LossyEncoding")
 public class InstallationTask implements IInstallationTask {
+
     private LocalDateTime started;
     private LocalDateTime ended;
     private Integer progress = 0;
@@ -1024,6 +1025,22 @@ public class InstallationTask implements IInstallationTask {
         return result;
     }
 
+    /**
+     * get list of services starting with pattern (with * wildcard)
+     * @param pattern
+     * @param logger
+     * @return
+     */
+    public List<WindowsInstalledService> getServices(String pattern,Logger logger) {
+        String command;
+
+        command = "Get-Service " + pattern;
+
+        PowerShellReturn response = executePowerShellCommand(command, logger);
+        return parseServices(response,pattern);
+
+    }
+
     public List<WindowsInstalledComponent> getInstalledClasses(String pattern) {
         String command;
         if (pattern.contains("*")) {
@@ -1084,6 +1101,35 @@ public class InstallationTask implements IInstallationTask {
             }
 
 
+        }
+        return result;
+    }
+
+    private List<WindowsInstalledService> parseServices (PowerShellReturn response,String pattern) {
+        List<WindowsInstalledService> result = new ArrayList<>();
+        if (pattern.endsWith("*")) pattern=pattern.substring(0,pattern.indexOf("*"));
+
+        if (response != null) {
+
+            if (response.getOutput().size() != 0) {
+
+                boolean summaryLineFound = false;
+                for (String line : response.getOutput()) {
+                    if (line.contains("--")) {
+                        summaryLineFound = true;
+                        continue;
+                    } else if (!summaryLineFound) continue;
+
+                    String[] parsed = line.split(pattern);
+                    if (parsed.length != 1) {
+                        WindowsInstalledService service = new WindowsInstalledService();
+                        service.setStatus(parsed[0].trim());
+                        service.setName(pattern+(parsed[1].trim()));
+                        service.setDisplayName(pattern+(parsed[2].trim()));
+                        result.add(service);
+                    }
+                }
+            }
         }
         return result;
     }
@@ -1773,7 +1819,6 @@ public class InstallationTask implements IInstallationTask {
     }
 
 
-
     /**
      * delete the content of a folder.
      *
@@ -2042,25 +2087,27 @@ public class InstallationTask implements IInstallationTask {
         }
         return false;
     }
-    public boolean updateFolder(String source,String target,String ownerName) throws IOException, InterruptedException {
-        if (!new File(source).isDirectory()) return copySingleFile(source,target);
-        boolean result=true;
+
+    public boolean updateFolder(String source, String target, String ownerName) throws IOException, InterruptedException {
+        if (!new File(source).isDirectory()) return copySingleFile(source, target);
+        boolean result = true;
         if (exists(target)) {
-         result= deleteDirectoryStream(target);
+            result = deleteDirectoryStream(target);
         }
 
-       if (result) {
-           if (!copy(source,target,ownerName)) {
-               severe("Failed to copy "+source +" to "+ target);
-           }else {
-               return true;
-           }
-       }else {
-           severe("Failed to delete  "+target );
+        if (result) {
+            if (!copy(source, target, ownerName)) {
+                severe("Failed to copy " + source + " to " + target);
+            } else {
+                return true;
+            }
+        } else {
+            severe("Failed to delete  " + target);
 
-       }
-       return result;
+        }
+        return result;
     }
+
     /**
      * recursively copy folders, will copy single file too.
      *
@@ -2080,7 +2127,7 @@ public class InstallationTask implements IInstallationTask {
         if (sourceFile.exists()) {
             if (!dry) {
                 if (!new File(installationDir).isDirectory()) {
-                    return copySingleFile(installationDir,targetDir);
+                    return copySingleFile(installationDir, targetDir);
 
                 }
                 ensureTarget(targetDir);
@@ -2496,12 +2543,12 @@ public class InstallationTask implements IInstallationTask {
             info("Fixing Windows path");
             if (fileAsString.startsWith("..")) {
                 info("fixing parent replacement for Windows");
-                String userDir=System.getProperty("user.dir");
-                File current=new File(userDir);
+                String userDir = System.getProperty("user.dir");
+                File current = new File(userDir);
                 String parentPath = current.getParent();
-                fileAsString=fileAsString.replace("..",parentPath);
+                fileAsString = fileAsString.replace("..", parentPath);
                 fileAsString = fileAsString.replaceAll("/", "\\\\");
-                info ("resulting file is: "+fileAsString);
+                info("resulting file is: " + fileAsString);
 
             }
             fileAsString = fileAsString.replaceAll("/", "\\\\");

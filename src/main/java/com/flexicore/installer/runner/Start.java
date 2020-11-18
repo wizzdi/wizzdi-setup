@@ -62,6 +62,7 @@ public class Start {
 
     static boolean errorInUiComponents = false;
     private static String propertiesFile;
+    private static boolean tested;
 
     public static void main(String[] args) throws MissingInstallationTaskDependency, ParseException, InterruptedException {
 
@@ -244,6 +245,7 @@ public class Start {
         Collections.sort(versions);
 
         loadUiComponents();  //currently asynchronous
+
         if (!uiFoundandRun) {
             checkHelp(mainCmd);
             if (installationContext.getiInstallationTasks().size() == 0) {
@@ -276,12 +278,18 @@ public class Start {
 
         }
         boolean displayed = false;
+
         while (!stopped) {
 
             Thread.sleep(300);
             if (!displayed) {
                 displayed = true;
                 informUI("Installation ready", InstallationState.READY, progress);
+            }
+            if (!tested) {
+                UserAction ua = getUIAction();
+                tested=true;
+                getUserResponse(installationContext, ua);
             }
 
         }
@@ -290,6 +298,41 @@ public class Start {
         cleanSnoopers();
         exit(0);
 
+    }
+
+    /**
+     * for tests only
+     * @return
+     */
+    private static UserAction getUIAction() {
+        UserAction ua = new UserAction();
+        ua.addMessage(new UserMessage().setMessage("Enter existing database administrator username").
+                setInputType(UserMessage.InputType.string).
+                setCreateText(false).
+                setLeftMargin(50).
+                setSide(UserMessage.Side.left)
+                .setInputWidth(200));
+        ua.addMessage(new UserMessage().setMessage("Enter existing database administrator username********").
+                setInputType(UserMessage.InputType.string).
+                setCreateText(false).
+                setLeftMargin(50).
+                setSide(UserMessage.Side.left)
+                .setInputWidth(200));
+        ua.addMessage(new UserMessage().setPrompt("postgres").
+                setInputType(UserMessage.InputType.string).
+                setCreateText(true).
+                setLeftMargin(50).
+                        setSide(UserMessage.Side.left)
+                        .setInputWidth(200));
+        ua.addMessage(new UserMessage().setMessage("password").
+                setInputType(UserMessage.InputType.password).
+                setCreateText(true).
+
+                setLeftMargin(50).
+                setSide(UserMessage.Side.left)
+                .setInputWidth(200));
+        ua.setPossibleAnswers(new UserResponse[]{UserResponse.IGNORE, UserResponse.CONTINUE});
+        return ua;
     }
 
     private static void getCPUData() {
@@ -687,19 +730,16 @@ public class Start {
     }
 
     private static UserResponse getUserResponse(InstallationContext context, UserAction userAction) {
-        if (context == null || !context.getParamaters().getBooleanValue("quiet")) {
-            if (uiComponents != null) {
-                List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
-                if (filtered.size() > 0) {
-                    return filtered.get(0).askUser(context, userAction);
-                }
 
+        if (uiComponents != null && uiComponents.size()!=0) {
+            List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
+            if (filtered.size() > 0) {
+                return filtered.get(0).askUser(context, userAction);
             }
-            return consoleAskUser(context, userAction);
-        } else {
 
-            return userAction.getDefaultResponse();
         }
+        return consoleAskUser(context, userAction);
+
 
     }
 
@@ -1123,12 +1163,12 @@ public class Start {
         } else {
             if (parameter.getType().equals(ParameterType.LIST)) {
                 String[] split1 = result.split(":");
-                if (split1.length>0) {
+                if (split1.length > 0) {
                     result = split1[0];
                     String[] split = new String[0];
-                    if (split1[1].contains(","))  split = split1[1].split(",");
-                    if (split1[1].contains("|"))  split = split1[1].split("|");
-                    
+                    if (split1[1].contains(",")) split = split1[1].split(",");
+                    if (split1[1].contains("|")) split = split1[1].split("|");
+
                     parameter.getListOptions().clear();
                     //handle special case where there is only one option
 
@@ -1136,8 +1176,8 @@ public class Start {
                     parameter.getListOptions().remove(result);
                     Collections.sort(parameter.getListOptions());
                     parameter.getListOptions().add(0, result); //selected must be first in the list
-                }else {
-                    severe("the parameter: "+parameter.getName()+" is of list type but has no list in the properties file");
+                } else {
+                    severe("the parameter: " + parameter.getName() + " is of list type but has no list in the properties file");
                 }
             }
             parameter.setSource(ParameterSource.PROPERTIES_FILE);
@@ -1835,10 +1875,11 @@ public class Start {
                     continue;
 
                 }
-
-                info("will now " + (unInstall ? "uninstall" : "install ") + installationTask.getName() + " id: " + installationTask.getId());
-                info("details: " + installationTask.getDescription());
-
+                StringBuilder sb=new StringBuilder();
+                sb.append("\n**********************************************");
+                sb.append("\nwill now " + (unInstall ? "uninstall" : "install ") + installationTask.getName() + " id: " + installationTask.getId());
+                sb.append("\ndetails: " + installationTask.getDescription());
+                info(sb.toString());
                 installationTask.setProgress(0).setStatus(InstallationStatus.STARTED).setStarted(LocalDateTime.now()).setMessage(" Started " + getInstallationMessage(unInstall));
                 doUpdateUI(installationTask, installationContext);
 
