@@ -50,7 +50,7 @@ public class DeployFlexicore extends InstallationTask {
                     "Java heap size for Spring \n" +
                             "shouldn't exceed 60-85% of available memory",
                     true,
-                    "612",
+                    "768",
                     ParameterType.NUMBER,
                     null,
                     255,
@@ -88,10 +88,23 @@ public class DeployFlexicore extends InstallationTask {
                     false,
                     OperatingSystem.Windows
             ),
+            new Parameter("freshinstallwithplugins",
+                    "this is a hidden parameter to signal \n" +
+                            "components installers that they do not need to run\n" +
+                            "can be overridden by running update on the \n" +
+                            "plugins installer",
+                    true,
+                    "false",
+                    ParameterType.STRING,
+                    ParameterSource.CODE,
+                    270,
+                    null,
+                    false,
+                    true,
+                    OperatingSystem.All
+            ),
 
     };
-//    public Parameter(String name, String description, boolean hasValue, String defaultValue,
-//                     ParameterType parameterType, ParameterSource parameterSource, int ordinal, Parameter.parameterValidator validator, boolean autoCreate, boolean hidden, OperatingSystem os) {
 
     private boolean serviceRunning;
 
@@ -146,9 +159,24 @@ public class DeployFlexicore extends InstallationTask {
                     return succeeded();
                 } else {
                     if (exists(flexicoreHome)) {
+                        info("Found previous installation at:  "+flexicoreHome);
+                        if (!is64) {
+//                            if (updateToSpring()) {
+//                                return succeeded();
+//                            }else {
+//
+//                            }
+                        }
                         if (!isUpdateThis() && !update) {
 
                             return new InstallationResult().setUserAction(askUserFprUpdate(ownerName));
+                        }
+                    }else {
+                        info("It is assumed that is Flexicore first installation so included plugins need no\n" +
+                                "additional installation from the same package");
+                        Parameter parameter=installationContext.getParameter("freshinstallwithplugins");
+                        if (parameter!=null) {
+                            parameter.setValue("true");
                         }
                     }
                     if (copyFlexicoreFilesForSpring(installationContext)) {
