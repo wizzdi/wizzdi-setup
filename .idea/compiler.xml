@@ -7,7 +7,11 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="flexicore-installer" />
+        <module name="wizzdi-installer" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="flexicore-installer" target="11" />
+    </bytecodeTargetLevel>
   </component>
 </project>

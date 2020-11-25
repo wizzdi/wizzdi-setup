@@ -140,7 +140,7 @@ public class Start {
         File pluginRoot = new File(mainCmd.getOptionValue(INSTALLATION_TASKS_FOLDER, "tasks"));
         String path = pluginRoot.getAbsolutePath();
         if (!pluginRoot.exists()) {
-            severe("cannot fine path for tasks at" + pluginRoot.getAbsolutePath() + " !!, exiting");
+            severe("cannot find path for tasks at" + pluginRoot.getAbsolutePath() + " !!, exiting");
             exit(0);
         }
         logger.info("Will load tasks from " + pluginRoot.getAbsolutePath() + "  exists: " + pluginRoot.exists());
@@ -177,7 +177,11 @@ public class Start {
         ArrayList<String> softRequired = new ArrayList<>();
         ArrayList<IInstallationTask> finalizers = new ArrayList<>();
         ArrayList<IInstallationTask> softNeed = new ArrayList<>();
-
+//        while(topologicalOrderIterator.hasNext()) {
+//            String installationTaskUniqueId = topologicalOrderIterator.next();
+//            System.out.println(installationTaskUniqueId);
+//        }
+//        topologicalOrderIterator = getInstallationTaskIterator(installationTasks);
         while (topologicalOrderIterator.hasNext()) {
             String installationTaskUniqueId = topologicalOrderIterator.next();
             IInstallationTask task = installationTasks.get(installationTaskUniqueId);
@@ -189,7 +193,7 @@ public class Start {
                 //check if required task has been added already.
                 boolean defer = false;
                 for (String req : task.getSoftPrerequisitesTask()) {
-                    if (!installationContext.getiInstallationTasks().containsKey(req)) {
+                    if (installationContext.getiInstallationTasks().containsKey(req)) {
                         defer = true;
                         if (!softRequired.contains(req)) {
                             softRequired.add(req);
@@ -968,9 +972,7 @@ public class Start {
                     if (parameters != null && parameters.size() != 0) {
 
                         for (Parameter parameter : parameters) {
-                            if (parameter.getDescription().contains("log folder for Spring on Window")) {
-                                int a = 3;
-                            }
+
                             if (parameter.getName().equals("psave"))
                                 continue; // we need a properties file that cannot save itself
                             if (parameter.getValue() != null) {
@@ -1155,7 +1157,9 @@ public class Start {
      * @return
      */
     private static String getCalculatedDefaultValue(Parameter parameter, InstallationContext installationContext) {
-
+        if (parameter.getName().equals("operating_system")) {
+            int a=3;
+        }
         String result = installationContext.getProperties().getProperty(parameter.getName());
         if (result == null) {
             result = parameter.getDefaultValue();
@@ -1167,15 +1171,16 @@ public class Start {
                     result = split1[0];
                     String[] split = new String[0];
                     if (split1[1].contains(",")) split = split1[1].split(",");
-                    if (split1[1].contains("|")) split = split1[1].split("|");
+                    if (split1[1].contains("|")) split = split1[1].split("\\|");
+                    if (parameter.getListOptions()!=null) {
+                        parameter.getListOptions().clear();
+                        //handle special case where there is only one option
 
-                    parameter.getListOptions().clear();
-                    //handle special case where there is only one option
-
-                    parameter.getListOptions().addAll(Arrays.asList(split));
-                    parameter.getListOptions().remove(result);
-                    Collections.sort(parameter.getListOptions());
-                    parameter.getListOptions().add(0, result); //selected must be first in the list
+                        parameter.getListOptions().addAll(Arrays.asList(split));
+                        parameter.getListOptions().remove(result);
+                        Collections.sort(parameter.getListOptions());
+                        parameter.getListOptions().add(0, result); //selected must be first in the list
+                    }
                 } else {
                     severe("the parameter: " + parameter.getName() + " is of list type but has no list in the properties file");
                 }
@@ -1832,12 +1837,21 @@ public class Start {
             double totalServiceRestartTime = 0d;
             double totalFinalizersTime = 0d;
             context.calculateFactor(); //allow properties file to affect duration (an UI too)
+            StringBuilder sb=new StringBuilder();
+            int count=0;
+            sb.append("\n---------------------- tsaks to be installed in the calculated order--------");
+
             for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
+
+                sb.append("\n "+(++count)+"    "+installationTask.getName()+"  "+installationTask.getDescription());
                 ((InstallationTask) installationTask).setDry(dry); //cater for dry in parameters
                 totalInstallersTime += (installationTask.isEnabled() && !installationTask.isWrongOS()) ? ((InstallationTask) installationTask).getFactoredDuration() : 0d;
                 totalServiceRestartTime += (installationTask.isEnabled() && !installationTask.isWrongOS()) ? ((InstallationTask) installationTask).getFactoredServiceDuration() : 0d;
                 totalFinalizersTime += (installationTask.isEnabled() && !installationTask.isWrongOS()) ? ((InstallationTask) installationTask).getFactoredFinalizerDuration() : 0d;
             }
+            sb.append("------------------------------------------------------------------------------");
+            info(sb.toString());
+
             info("Total installer time is: " + totalInstallersTime);
             info("Total service restart time is: " + totalServiceRestartTime);
             info("total finalizers time is: " + totalFinalizersTime);
@@ -1875,7 +1889,7 @@ public class Start {
                     continue;
 
                 }
-                StringBuilder sb=new StringBuilder();
+                 sb=new StringBuilder();
                 sb.append("\n**********************************************");
                 sb.append("\nwill now " + (unInstall ? "uninstall" : "install ") + installationTask.getName() + " id: " + installationTask.getId());
                 sb.append("\ndetails: " + installationTask.getDescription());
