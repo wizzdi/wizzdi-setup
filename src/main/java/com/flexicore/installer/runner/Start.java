@@ -292,7 +292,7 @@ public class Start {
             }
             if (!tested) {
                 UserAction ua = getUIAction();
-                tested=true;
+                tested = true;
                 getUserResponse(installationContext, ua);
             }
 
@@ -306,6 +306,7 @@ public class Start {
 
     /**
      * for tests only
+     *
      * @return
      */
     private static UserAction getUIAction() {
@@ -326,8 +327,8 @@ public class Start {
                 setInputType(UserMessage.InputType.string).
                 setCreateText(true).
                 setLeftMargin(50).
-                        setSide(UserMessage.Side.left)
-                        .setInputWidth(200));
+                setSide(UserMessage.Side.left)
+                .setInputWidth(200));
         ua.addMessage(new UserMessage().setMessage("password").
                 setInputType(UserMessage.InputType.password).
                 setCreateText(true).
@@ -735,7 +736,7 @@ public class Start {
 
     private static UserResponse getUserResponse(InstallationContext context, UserAction userAction) {
 
-        if (uiComponents != null && uiComponents.size()!=0) {
+        if (uiComponents != null && uiComponents.size() != 0) {
             List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
             if (filtered.size() > 0) {
                 return filtered.get(0).askUser(context, userAction);
@@ -802,7 +803,7 @@ public class Start {
 
             } while (response == null);
         } catch (Exception e) {
-            severe("Error while getting user console input", e);
+            //severe("Error while getting user console input", e);
         } finally {
             if (userAction.isUseAnsiColorsInConsole()) AnsiConsole.systemUninstall();
 
@@ -1157,8 +1158,8 @@ public class Start {
      * @return
      */
     private static String getCalculatedDefaultValue(Parameter parameter, InstallationContext installationContext) {
-        if (parameter.getName().equals("operating_system")) {
-            int a=3;
+        if (parameter.getName().equals("autosshPort")) {
+            int a = 3;
         }
         String result = installationContext.getProperties().getProperty(parameter.getName());
         if (result == null) {
@@ -1170,17 +1171,23 @@ public class Start {
                 if (split1.length > 0) {
                     result = split1[0];
                     String[] split = new String[0];
-                    if (split1[1].contains(",")) split = split1[1].split(",");
-                    if (split1[1].contains("|")) split = split1[1].split("\\|");
-                    if (parameter.getListOptions()!=null) {
-                        parameter.getListOptions().clear();
-                        //handle special case where there is only one option
-
-                        parameter.getListOptions().addAll(Arrays.asList(split));
-                        parameter.getListOptions().remove(result);
-                        Collections.sort(parameter.getListOptions());
-                        parameter.getListOptions().add(0, result); //selected must be first in the list
+                    if (split1.length > 1) {
+                        if (split1[1].contains(",")) split = split1[1].split(",");
+                        if (split1[1].contains("|")) split = split1[1].split("\\|");
+                    } else {
+                        split = new String[1];
+                        split[0] = split1[0];
                     }
+                    if (parameter.getListOptions() == null) parameter.setListOptions(new ArrayList<>());
+
+                    parameter.getListOptions().clear();
+
+
+                    parameter.getListOptions().addAll(Arrays.asList(split));
+                    parameter.getListOptions().remove(result);
+                    Collections.sort(parameter.getListOptions());
+                    parameter.getListOptions().add(0, result); //selected must be first in the list
+
                 } else {
                     severe("the parameter: " + parameter.getName() + " is of list type but has no list in the properties file");
                 }
@@ -1837,13 +1844,13 @@ public class Start {
             double totalServiceRestartTime = 0d;
             double totalFinalizersTime = 0d;
             context.calculateFactor(); //allow properties file to affect duration (an UI too)
-            StringBuilder sb=new StringBuilder();
-            int count=0;
+            StringBuilder sb = new StringBuilder();
+            int count = 0;
             sb.append("\n---------------------- tsaks to be installed in the calculated order--------");
 
             for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
 
-                sb.append("\n "+(++count)+"    "+installationTask.getName()+"  "+installationTask.getDescription());
+                sb.append("\n " + (++count) + "    " + installationTask.getName() + "  " + installationTask.getDescription());
                 ((InstallationTask) installationTask).setDry(dry); //cater for dry in parameters
                 totalInstallersTime += (installationTask.isEnabled() && !installationTask.isWrongOS()) ? ((InstallationTask) installationTask).getFactoredDuration() : 0d;
                 totalServiceRestartTime += (installationTask.isEnabled() && !installationTask.isWrongOS()) ? ((InstallationTask) installationTask).getFactoredServiceDuration() : 0d;
@@ -1889,7 +1896,7 @@ public class Start {
                     continue;
 
                 }
-                 sb=new StringBuilder();
+                sb = new StringBuilder();
                 sb.append("\n**********************************************");
                 sb.append("\nwill now " + (unInstall ? "uninstall" : "install ") + installationTask.getName() + " id: " + installationTask.getId());
                 sb.append("\ndetails: " + installationTask.getDescription());

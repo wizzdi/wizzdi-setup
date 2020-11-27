@@ -900,7 +900,7 @@ public class Parameter {
             newValue, ValidationMessage validationMessage) {
         try {
             int p = Integer.parseInt(newValue.toString());
-            if (p < 1000 || p < 65535) {
+            if (p < 1000 || p > 65535) {
                 validationMessage.setMessage("Port must be greater than 1000 and lower than 65535, value is: " + p);
                 return false;
             }

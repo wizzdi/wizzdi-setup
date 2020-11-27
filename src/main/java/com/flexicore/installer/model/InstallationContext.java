@@ -51,12 +51,14 @@ public class InstallationContext {
     private String mainTitle;
     private File iconFile;
     private File imageFile;
+    private boolean freshInstall=false;
     public Logger getLogger() {
         return logger;
     }
     public void incSuccess() {
         successFullyInstalled++;
     }
+
     public void incFailures() {
         failedToInstall++;
     }
@@ -420,6 +422,14 @@ public class InstallationContext {
         return this;
     }
 
+    public boolean isFreshInstall() {
+        return freshInstall;
+    }
+
+    public InstallationContext setFreshInstall(boolean freshInstall) {
+        this.freshInstall = freshInstall;
+        return this;
+    }
 
     public double getTimeFactor() {
         return timeFactor;
