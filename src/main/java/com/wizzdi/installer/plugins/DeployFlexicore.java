@@ -7,9 +7,12 @@ import org.pf4j.Extension;
 import org.zeroturnaround.zip.ZipUtil;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -94,10 +97,49 @@ public class DeployFlexicore extends InstallationTask {
                             "can be overridden by running update on the \n" +
                             "plugins installer",
                     true,
-                    "false",
+                    "true",
                     ParameterType.STRING,
                     ParameterSource.CODE,
-                    270,
+                    275,
+                    null,
+                    false,
+                    true,
+                    OperatingSystem.All
+            ),
+            new Parameter("adminemail",
+                    "the super administrator email",
+                    true,
+                    "admin@flexicore.com",
+                    ParameterType.STRING,
+                    ParameterSource.CODE,
+                    280,
+                    Parameter::validateEmail,
+                    false,
+                    true,
+                    OperatingSystem.All
+            ),
+            new Parameter("adminpassword",
+                    "the super administrator password",
+                    true,
+                    "",
+                    ParameterType.PASSWORD,
+                    ParameterSource.CODE,
+                    285,
+                    null,
+                    false,
+                    true,
+                    OperatingSystem.All
+            ),
+            new Parameter("freshinstallwithplugins",
+                    "this is a hidden parameter to signal \n" +
+                            "components installers that they do not need to run\n" +
+                            "can be overridden by running update on the \n" +
+                            "plugins installer",
+                    true,
+                    "true",
+                    ParameterType.STRING,
+                    ParameterSource.CODE,
+                    290,
                     null,
                     false,
                     true,
@@ -159,7 +201,7 @@ public class DeployFlexicore extends InstallationTask {
                     return succeeded();
                 } else {
                     if (exists(flexicoreHome)) {
-                        info("Found previous installation at:  "+flexicoreHome);
+                        info("Found previous installation at:  " + flexicoreHome);
                         if (!is64) {
 //                            if (updateToSpring()) {
 //                                return succeeded();
@@ -169,15 +211,17 @@ public class DeployFlexicore extends InstallationTask {
                         }
                         if (!isUpdateThis() && !update) {
 
-                            return new InstallationResult().setUserAction(askUserFprUpdate(ownerName));
+                            return new InstallationResult().setUserAction(askUserForUpdate(ownerName));
                         }
-                    }else {
+                    } else {
                         info("It is assumed that is Flexicore first installation so included plugins need no\n" +
                                 "additional installation from the same package");
-                        Parameter parameter=installationContext.getParameter("freshinstallwithplugins");
-                        if (parameter!=null) {
+                        Parameter parameter = installationContext.getParameter("freshinstallwithplugins");
+
+                        if (parameter != null) {
                             parameter.setValue("true");
                         }
+                        installationContext.setFreshInstall(true);
                     }
                     if (copyFlexicoreFilesForSpring(installationContext)) {
                         copySucceeded = true;
@@ -217,9 +261,16 @@ public class DeployFlexicore extends InstallationTask {
                 if (!update && !isUpdateThis()) {
                     if (copy(flexicoreSourceFolder, flexicoreHome, installationContext)) {
                         updateProgress(installationContext, "Have copied flexicore folder");
-                        boolean fixed = fixFlexicoreHome(installationContext);
+                        Credentials credentials = getCredentials(installationContext);
+                        boolean fixed = fixConfigFile(installationContext, credentials);
                         if (fixed) {
                             info("Have fixed paths in application.properties file in: " + flexicoreHome + "config/ folder");
+                        }
+                        if (!credentials.getPassword().equals("")) {
+                            boolean result= fixFirstRun(credentials);
+                            if (result) {
+                                info("Have fixed credentials " + flexicoreHome + "config/ folder");
+                            }
                         }
                         return true;
                     } else {
@@ -244,25 +295,72 @@ public class DeployFlexicore extends InstallationTask {
         return false;
     }
 
+    private boolean fixFirstRun(Credentials credentials) {
+        String filePath = "";
+        String config = flexicoreHome + "config/application.properties";
+        try {
+            Properties properties = new Properties();
+            FileInputStream is = new FileInputStream(config);
+            properties.load(is);
+            filePath = properties.getProperty("flexicore.users.firstRunPath");
+            FileWriter fileWriter = new FileWriter(filePath);
+            fileWriter.write(credentials.getPassword());
+            fileWriter.close();
+            info ("First set password of "+credentials.getEmail()+" can be found in: "+filePath);
+            return true;
+        } catch (IOException e) {
+            severe("Error while writing to firstRun.txt at: " + filePath);
+        }
+        return false;
+    }
+
+    private Credentials getCredentials(InstallationContext context) {
+
+        Credentials credentials = new Credentials();
+        Parameter parameter = context.getParameter("adminemail");
+        if (parameter != null) {
+            if (!parameter.getValue().equals("admin@flexicore.com")) {
+                credentials.setEmail(parameter.getValue());
+            } else {
+                credentials.setEmail("admin@flexicore.com");
+            }
+
+        }
+        parameter = context.getParameter("adminpassword");
+        if (parameter != null) {
+            if (!parameter.getValue().isEmpty()) {
+                credentials.setPassword(parameter.getValue());
+            } else {
+                credentials.setPassword("");
+            }
+
+        }
+        return credentials;
+    }
+
+
     /**
      * change the path of properties in application.properties file in flexicoreHome+"/config"
      *
      * @param installationContext
+     * @param credentials
      * @return
      * @throws IOException
      */
-    private boolean fixFlexicoreHome(InstallationContext installationContext) throws IOException {
+    private boolean fixConfigFile(InstallationContext installationContext, Credentials credentials) throws IOException {
         if (isLinux) {
-
-            if (!flexicoreHome.equals("/home/flexicore/") && !flexicoreHome.equals("/home/flexicore//")) {
-                File file = new File(flexicoreHome + "config/application.properties");
-                if (file.exists()) {
-                    String intermediate = editFile(file.getAbsolutePath(), "", "/home/flexicore/", flexicoreHome, false, false, true, true);
-                    return true;
-
-                } else {
-
+            File file = new File(flexicoreHome + "config/application.properties");
+            if (file.exists()) {
+                String intermediate = "";
+                if (!credentials.getEmail().isEmpty()) {
+                    intermediate = editFile(file.getAbsolutePath(), "", "admin@flexicore.com", credentials.getEmail(), false, false, false, true);
+                    if (intermediate.equals("")) return false;
                 }
+                if (!flexicoreHome.equals("/home/flexicore/") && !flexicoreHome.equals("/home/flexicore//")) {
+                    intermediate = editFile(file.getAbsolutePath(), intermediate, "/home/flexicore/", flexicoreHome, false, false, true, true);
+                    return intermediate.equals("") ? false : true;
+                }
+                return true;
             }
         }
         return false;
@@ -466,7 +564,7 @@ public class DeployFlexicore extends InstallationTask {
                             if (isLinux) {
                                 if (executeCommand("chown -R flexicore.flexicore " + flexicoreHome, "", ownerName)) {
                                     setServiceToStart(serviceName, ownerName);
-                                    info ("Have started service: "+serviceName);
+                                    info("Have started service: " + serviceName);
                                     return succeeded();
                                 } else {
                                     info("Cannot set " + flexicoreHome + " to flexicore owner");
@@ -646,7 +744,7 @@ public class DeployFlexicore extends InstallationTask {
      * @return
      * @throws IOException
      */
-    private boolean fixLinks(InstallationContext installationContext)  {
+    private boolean fixLinks(InstallationContext installationContext) {
         try {
             String candidate = getLatestVersion(springSourceFolder, "FlexiCore-", ".jar");
 
@@ -670,7 +768,7 @@ public class DeployFlexicore extends InstallationTask {
             }
             return false;
         } catch (IOException e) {
-            severe("Error while fixing links in "+ownerName,e);
+            severe("Error while fixing links in " + ownerName, e);
         }
         return false;
     }
@@ -726,9 +824,6 @@ public class DeployFlexicore extends InstallationTask {
         if (!installSpring) {
             result.add("Wildfly-installer"); //otherwise we cannot install deployment
         }
-        result.add("mongodb-installer");
-        result.add("PostgresSQL-installer");
-        result.add("common-parameters");
         result.add("java-installer");
 
         return result;
