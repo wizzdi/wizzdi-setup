@@ -113,7 +113,7 @@ public class DeployFlexicore extends InstallationTask {
                     ParameterType.STRING,
                     ParameterSource.CODE,
                     280,
-                    Parameter::validateEmail,
+                    null,
                     false,
                     true,
                     OperatingSystem.All
@@ -267,7 +267,7 @@ public class DeployFlexicore extends InstallationTask {
                             info("Have fixed paths in application.properties file in: " + flexicoreHome + "config/ folder");
                         }
                         if (!credentials.getPassword().equals("")) {
-                            boolean result= fixFirstRun(credentials);
+                            boolean result = fixFirstRun(credentials);
                             if (result) {
                                 info("Have fixed credentials " + flexicoreHome + "config/ folder");
                             }
@@ -306,7 +306,7 @@ public class DeployFlexicore extends InstallationTask {
             FileWriter fileWriter = new FileWriter(filePath);
             fileWriter.write(credentials.getPassword());
             fileWriter.close();
-            info ("First set password of "+credentials.getEmail()+" can be found in: "+filePath);
+            info("First set password of " + credentials.getEmail() + " can be found in: " + filePath);
             return true;
         } catch (IOException e) {
             severe("Error while writing to firstRun.txt at: " + filePath);
@@ -348,21 +348,28 @@ public class DeployFlexicore extends InstallationTask {
      * @throws IOException
      */
     private boolean fixConfigFile(InstallationContext installationContext, Credentials credentials) throws IOException {
-        if (isLinux) {
+
             File file = new File(flexicoreHome + "config/application.properties");
             if (file.exists()) {
                 String intermediate = "";
                 if (!credentials.getEmail().isEmpty()) {
-                    intermediate = editFile(file.getAbsolutePath(), "", "admin@flexicore.com", credentials.getEmail(), false, false, false, true);
+                    intermediate = editFile(file.getAbsolutePath(), "", "admin@flexicore.com", credentials.getEmail(), false, false, true, true);
                     if (intermediate.equals("")) return false;
                 }
-                if (!flexicoreHome.equals("/home/flexicore/") && !flexicoreHome.equals("/home/flexicore//")) {
-                    intermediate = editFile(file.getAbsolutePath(), intermediate, "/home/flexicore/", flexicoreHome, false, false, true, true);
-                    return intermediate.equals("") ? false : true;
+                if (isLinux) {
+                    if (!flexicoreHome.equals("/home/flexicore/") && !flexicoreHome.equals("/home/flexicore//")) {
+                        intermediate = editFile(file.getAbsolutePath(), intermediate, "/home/flexicore/", flexicoreHome, false, false, true, true);
+                        return intermediate.equals("") ? false : true;
+                    }
+                }else {
+                    if (!flexicoreHome.equals("/wizzdi/server/flexicore/") && !flexicoreHome.equals("/wizzdi/server/flexicore//")) {
+                        intermediate = editFile(file.getAbsolutePath(), intermediate, "/wizzdi/server/flexicore/", flexicoreHome, false, false, true, true);
+                        return intermediate.equals("") ? false : true;
+                    }
                 }
                 return true;
             }
-        }
+
         return false;
     }
 
@@ -707,6 +714,15 @@ public class DeployFlexicore extends InstallationTask {
                         return false;
                     }
                 } else { //windows here
+                    if (updateHeap) {
+                        String result = editFile(springXML, "", "2048", heapMemory, false, false, true, false);
+                        if (result==null) {
+                          severe("Could not update heap memory in: "+springXML);
+                          return false;
+                        }else {
+                            info("Updated FlexiCore heap memory to: "+heapMemory);
+                        }
+                    }
                     String target = flexicoreHome + "spring/flexicore.exe";
                     if (exists(target)) {
                         String args[] = {target, "install"};

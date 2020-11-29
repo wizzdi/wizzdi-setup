@@ -5,33 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5a5edd4e-73f9-41ab-925c-ed8a5f34bf28" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_wizzdi_wizzdi_installer_1_0_27.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/Credentials.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_github_zafarkhaja_java_semver_0_9_0.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_google_guava_guava_20_0.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_wizzdi_installer_shortcuts_1_0_0.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__com_wizzdi_wizzdi_installer_1_0_24.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__commons_beanutils_commons_beanutils_1_9_4.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__commons_cli_commons_cli_1_4.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__commons_collections_commons_collections_3_2_2.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__commons_digester_commons_digester_1_8_1.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__commons_logging_commons_logging_1_2.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__commons_validator_commons_validator_1_6.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_apache_commons_commons_lang3_3_9.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_fusesource_jansi_jansi_1_18.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_javassist_javassist_3_21_0_GA.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_jgrapht_jgrapht_core_1_3_1.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_jheaps_jheaps_0_10.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_ow2_asm_asm_7_1.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_pf4j_pf4j_3_0_1.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_postgresql_postgresql_42_2_9.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_reflections_reflections_0_9_11.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_slf4j_slf4j_api_1_7_26.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_slf4j_slf4j_jdk14_1_7_25.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Maven__org_zeroturnaround_zt_zip_1_13.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/debug.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/runConfigurations/debug.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/deploy-flexicore.iml" beforeDir="false" afterPath="$PROJECT_DIR$/deploy-flexicore.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -77,7 +52,7 @@
     <property name="aspect.path.notification.shown" value="true" />
     <property name="dart.analysis.tool.window.visible" value="false" />
     <property name="extract.method.default.visibility" value="private" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../itamar-components" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../itamar-users-manager" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -91,14 +66,16 @@
     <property name="project.structure.side.proportion" value="0.0" />
     <property name="show.migrate.to.gradle.popup" value="false" />
   </component>
-  <component name="RunManager" selected="Maven.package">
-    <configuration default="true" type="ArquillianJUnit" factoryName="" nameIsGenerated="true">
+  <component name="RunManager" selected="Remote.debug">
+    <configuration default="true" type="ArquillianTestNG" factoryName="" nameIsGenerated="true">
       <option name="arquillianRunConfiguration">
         <value>
           <option name="containerStateName" value="" />
         </value>
       </option>
-      <option name="TEST_OBJECT" value="class" />
+      <option name="TEST_OBJECT" value="CLASS" />
+      <properties />
+      <listeners />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -234,21 +211,8 @@
       <workItem from="1605696341256" duration="597000" />
       <workItem from="1605702691201" duration="2746000" />
       <workItem from="1605867661669" duration="597000" />
-      <workItem from="1606496284138" duration="9027000" />
-    </task>
-    <task id="LOCAL-00011" summary="added support for deployment wait">
-      <created>1579000742538</created>
-      <option name="number" value="00011" />
-      <option name="presentableId" value="LOCAL-00011" />
-      <option name="project" value="LOCAL" />
-      <updated>1579000742538</updated>
-    </task>
-    <task id="LOCAL-00012" summary="added support for deployment wait">
-      <created>1579005035563</created>
-      <option name="number" value="00012" />
-      <option name="presentableId" value="LOCAL-00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1579005035563</updated>
+      <workItem from="1606496284138" duration="11710000" />
+      <workItem from="1606628815440" duration="4750000" />
     </task>
     <task id="LOCAL-00013" summary="added support for deployment wait">
       <created>1579005290431</created>
@@ -579,7 +543,21 @@
       <option name="project" value="LOCAL" />
       <updated>1605702786317</updated>
     </task>
-    <option name="localTasksCounter" value="60" />
+    <task id="LOCAL-00060" summary="added support for credentials control of super admin (the first user)">
+      <created>1606568045715</created>
+      <option name="number" value="00060" />
+      <option name="presentableId" value="LOCAL-00060" />
+      <option name="project" value="LOCAL" />
+      <updated>1606568045715</updated>
+    </task>
+    <task id="LOCAL-00061" summary="1.0.3">
+      <created>1606568069403</created>
+      <option name="number" value="00061" />
+      <option name="presentableId" value="LOCAL-00061" />
+      <option name="project" value="LOCAL" />
+      <updated>1606568069403</updated>
+    </task>
+    <option name="localTasksCounter" value="62" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -596,82 +574,104 @@
     <MESSAGE value="changed default target folder to /opt/flexicore/&#10;this is for supporting mounted /home/flexicore" />
     <MESSAGE value="no user dir" />
     <MESSAGE value="linux changes" />
-    <option name="LAST_COMMIT_MESSAGE" value="linux changes" />
+    <MESSAGE value="added support for credentials control of super admin (the first user)" />
+    <MESSAGE value="1.0.3" />
+    <option name="LAST_COMMIT_MESSAGE" value="1.0.3" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="225" y="68" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1601205226071">
-      <screen x="0" y="0" width="1536" height="824" />
+    <state x="250" y="76" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1606629021384">
+      <screen x="0" y="0" width="1707" height="920" />
     </state>
     <state x="225" y="68" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1536.824@0.0.1536.824" timestamp="1601205226071" />
+    <state x="250" y="76" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1707.920@0.0.1707.920" timestamp="1606629021384" />
     <state x="660" y="145" key="#com.intellij.ide.util.MemberChooser" timestamp="1606564616704">
       <screen x="0" y="0" width="1707" height="920" />
     </state>
     <state x="660" y="145" key="#com.intellij.ide.util.MemberChooser/0.0.1707.920@0.0.1707.920" timestamp="1606564616704" />
-    <state x="396" y="0" key="CommitChangelistDialog2" timestamp="1605702785008">
+    <state x="396" y="0" key="CommitChangelistDialog2" timestamp="1606568068371">
       <screen x="0" y="0" width="1707" height="920" />
     </state>
     <state x="356" y="0" key="CommitChangelistDialog2/0.0.1536.824@0.0.1536.824" timestamp="1600705454680" />
-    <state x="396" y="0" key="CommitChangelistDialog2/0.0.1707.920@0.0.1707.920" timestamp="1605702785008" />
-    <state x="611" y="188" key="FileChooserDialogImpl" timestamp="1606546223572">
+    <state x="396" y="0" key="CommitChangelistDialog2/0.0.1707.920@0.0.1707.920" timestamp="1606568068371" />
+    <state x="611" y="188" key="FileChooserDialogImpl" timestamp="1606632848169">
       <screen x="0" y="0" width="1707" height="920" />
     </state>
     <state x="550" y="168" key="FileChooserDialogImpl/0.0.1536.824@0.0.1536.824" timestamp="1598758923043" />
-    <state x="611" y="188" key="FileChooserDialogImpl/0.0.1707.920@0.0.1707.920" timestamp="1606546223572" />
-    <state width="1664" height="194" key="GridCell.Tab.0.bottom" timestamp="1605704233285">
+    <state x="611" y="188" key="FileChooserDialogImpl/0.0.1707.920@0.0.1707.920" timestamp="1606632848169" />
+    <state width="1664" height="178" key="GridCell.Tab.0.bottom" timestamp="1606632484241">
       <screen x="0" y="0" width="1707" height="920" />
     </state>
     <state width="1493" height="169" key="GridCell.Tab.0.bottom/0.0.1536.824@0.0.1536.824" timestamp="1601298546562" />
-    <state width="1664" height="194" key="GridCell.Tab.0.bottom/0.0.1707.920@0.0.1707.920" timestamp="1605704233285" />
-    <state width="1664" height="194" key="GridCell.Tab.0.center" timestamp="1605704233284">
+    <state width="1664" height="178" key="GridCell.Tab.0.bottom/0.0.1707.920@0.0.1707.920" timestamp="1606632484241" />
+    <state width="1664" height="178" key="GridCell.Tab.0.center" timestamp="1606632484241">
       <screen x="0" y="0" width="1707" height="920" />
     </state>
     <state width="1493" height="169" key="GridCell.Tab.0.center/0.0.1536.824@0.0.1536.824" timestamp="1601298546561" />
-    <state width="1664" height="194" key="GridCell.Tab.0.center/0.0.1707.920@0.0.1707.920" timestamp="1605704233284" />
-    <state width="1664" height="194" key="GridCell.Tab.0.left" timestamp="1605704233284">
+    <state width="1664" height="178" key="GridCell.Tab.0.center/0.0.1707.920@0.0.1707.920" timestamp="1606632484241" />
+    <state width="1664" height="178" key="GridCell.Tab.0.left" timestamp="1606632484240">
       <screen x="0" y="0" width="1707" height="920" />
     </state>
     <state width="1493" height="169" key="GridCell.Tab.0.left/0.0.1536.824@0.0.1536.824" timestamp="1601298546560" />
-    <state width="1664" height="194" key="GridCell.Tab.0.left/0.0.1707.920@0.0.1707.920" timestamp="1605704233284" />
-    <state width="1664" height="194" key="GridCell.Tab.0.right" timestamp="1605704233285">
+    <state width="1664" height="178" key="GridCell.Tab.0.left/0.0.1707.920@0.0.1707.920" timestamp="1606632484240" />
+    <state width="1664" height="178" key="GridCell.Tab.0.right" timestamp="1606632484241">
       <screen x="0" y="0" width="1707" height="920" />
     </state>
     <state width="1493" height="169" key="GridCell.Tab.0.right/0.0.1536.824@0.0.1536.824" timestamp="1601298546562" />
-    <state width="1664" height="194" key="GridCell.Tab.0.right/0.0.1707.920@0.0.1707.920" timestamp="1605704233285" />
-    <state width="1493" height="372" key="GridCell.Tab.1.bottom" timestamp="1601298546539">
-      <screen x="0" y="0" width="1536" height="824" />
+    <state width="1664" height="178" key="GridCell.Tab.0.right/0.0.1707.920@0.0.1707.920" timestamp="1606632484241" />
+    <state width="1664" height="178" key="GridCell.Tab.1.bottom" timestamp="1606632602258">
+      <screen x="0" y="0" width="1707" height="920" />
     </state>
     <state width="1493" height="372" key="GridCell.Tab.1.bottom/0.0.1536.824@0.0.1536.824" timestamp="1601298546539" />
-    <state width="1493" height="372" key="GridCell.Tab.1.center" timestamp="1601298546539">
-      <screen x="0" y="0" width="1536" height="824" />
+    <state width="1664" height="178" key="GridCell.Tab.1.bottom/0.0.1707.920@0.0.1707.920" timestamp="1606632602258" />
+    <state width="1664" height="178" key="GridCell.Tab.1.center" timestamp="1606632602257">
+      <screen x="0" y="0" width="1707" height="920" />
     </state>
     <state width="1493" height="372" key="GridCell.Tab.1.center/0.0.1536.824@0.0.1536.824" timestamp="1601298546539" />
-    <state width="1493" height="372" key="GridCell.Tab.1.left" timestamp="1601298546538">
-      <screen x="0" y="0" width="1536" height="824" />
+    <state width="1664" height="178" key="GridCell.Tab.1.center/0.0.1707.920@0.0.1707.920" timestamp="1606632602257" />
+    <state width="1664" height="178" key="GridCell.Tab.1.left" timestamp="1606632602257">
+      <screen x="0" y="0" width="1707" height="920" />
     </state>
     <state width="1493" height="372" key="GridCell.Tab.1.left/0.0.1536.824@0.0.1536.824" timestamp="1601298546538" />
-    <state width="1493" height="372" key="GridCell.Tab.1.right" timestamp="1601298546539">
-      <screen x="0" y="0" width="1536" height="824" />
+    <state width="1664" height="178" key="GridCell.Tab.1.left/0.0.1707.920@0.0.1707.920" timestamp="1606632602257" />
+    <state width="1664" height="178" key="GridCell.Tab.1.right" timestamp="1606632602257">
+      <screen x="0" y="0" width="1707" height="920" />
     </state>
     <state width="1493" height="372" key="GridCell.Tab.1.right/0.0.1536.824@0.0.1536.824" timestamp="1601298546539" />
-    <state x="402" y="175" key="Vcs.Push.Dialog.v2" timestamp="1605702788947">
+    <state width="1664" height="178" key="GridCell.Tab.1.right/0.0.1707.920@0.0.1707.920" timestamp="1606632602257" />
+    <state x="402" y="175" key="Vcs.Push.Dialog.v2" timestamp="1606568071601">
       <screen x="0" y="0" width="1707" height="920" />
     </state>
     <state x="362" y="157" key="Vcs.Push.Dialog.v2/0.0.1536.824@0.0.1536.824" timestamp="1600706291464" />
-    <state x="402" y="175" key="Vcs.Push.Dialog.v2/0.0.1707.920@0.0.1707.920" timestamp="1605702788947" />
+    <state x="402" y="175" key="Vcs.Push.Dialog.v2/0.0.1707.920@0.0.1707.920" timestamp="1606568071601" />
     <state x="324" y="142" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2" timestamp="1599397466097">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="324" y="142" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2/0.0.1536.824@0.0.1536.824" timestamp="1599397466097" />
-    <state x="477" y="145" width="582" height="534" key="find.popup" timestamp="1598966782333">
-      <screen x="0" y="0" width="1536" height="824" />
+    <state x="530" y="162" width="647" height="597" key="find.popup" timestamp="1606633140407">
+      <screen x="0" y="0" width="1707" height="920" />
     </state>
     <state x="477" y="145" width="582" height="534" key="find.popup/0.0.1536.824@0.0.1536.824" timestamp="1598966782333" />
+    <state x="530" y="162" width="647" height="597" key="find.popup/0.0.1707.920@0.0.1707.920" timestamp="1606633140407" />
     <state x="481" y="315" key="git4idea.remote.GitConfigureRemotesDialog" timestamp="1599637637156">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="481" y="315" key="git4idea.remote.GitConfigureRemotesDialog/0.0.1536.824@0.0.1536.824" timestamp="1599637637156" />
   </component>
   <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java</url>
+          <line>262</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java</url>
+          <line>548</line>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
     <watches-manager>
       <configuration name="Remote">
         <watch expression="parameter" />
