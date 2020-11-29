@@ -109,7 +109,7 @@ public class DeployFlexicore extends InstallationTask {
             new Parameter("adminemail",
                     "the super administrator email",
                     true,
-                    "admin@flexicore.com",
+                    "admin@itamar.com",
                     ParameterType.STRING,
                     ParameterSource.CODE,
                     280,
