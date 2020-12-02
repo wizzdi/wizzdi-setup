@@ -606,6 +606,61 @@ public class InstallationTask implements IInstallationTask {
         }
     }
 
+    public ScriptResult executeBashScriptExt(String script, String toFind, String ownerName, boolean setCurrentFolder) {
+        ScriptResult result = new ScriptResult();
+        if (exists(script)) {
+            if (isLinux) {
+
+
+                String[] cmd = new String[]{"/bin/sh", script};
+                try {
+
+
+                    ProcessBuilder processBuilder = new ProcessBuilder(cmd);
+                    if (setCurrentFolder) {
+                        processBuilder.directory(new File(script).getParentFile());
+                    }
+                    result.setResult(processBuilder.start().waitFor());
+
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(
+                            processBuilder.start().getInputStream()));
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        result.getOutput().add(line);
+                    }
+                    reader = new BufferedReader(new InputStreamReader(
+                            processBuilder.start().getErrorStream()));
+
+                    while ((line = reader.readLine()) != null) {
+                        result.getErrors().add(line);
+                    }
+                    if (toFind!=null && !toFind.isEmpty()) {
+                        for (String theLine:result.getOutput()) {
+                            if (theLine.contains(toFind )) return result;
+                        }
+                        severe("Cannot find  "+toFind+" in the output stream");
+                        return null;
+                    }
+
+
+                    info("Result from script execution was: " + result);
+                    return result;
+                } catch (IOException | InterruptedException e) {
+                    severe("Exception while running script: " + script, e);
+
+                }
+            } else {
+
+                info ("this method is for Linux only" +script );
+
+
+            }
+        }else {
+            severe("Cannot find file: "+script);
+        }
+        return null;
+    }
+
     /**
      * taskbar not supported as of 13-apr
      */
@@ -1027,17 +1082,18 @@ public class InstallationTask implements IInstallationTask {
 
     /**
      * get list of services starting with pattern (with * wildcard)
+     *
      * @param pattern
      * @param logger
      * @return
      */
-    public List<WindowsInstalledService> getServices(String pattern,Logger logger) {
+    public List<WindowsInstalledService> getServices(String pattern, Logger logger) {
         String command;
 
         command = "Get-Service " + pattern;
 
         PowerShellReturn response = executePowerShellCommand(command, logger);
-        return parseServices(response,pattern);
+        return parseServices(response, pattern);
 
     }
 
@@ -1105,9 +1161,9 @@ public class InstallationTask implements IInstallationTask {
         return result;
     }
 
-    private List<WindowsInstalledService> parseServices (PowerShellReturn response,String pattern) {
+    private List<WindowsInstalledService> parseServices(PowerShellReturn response, String pattern) {
         List<WindowsInstalledService> result = new ArrayList<>();
-        if (pattern.endsWith("*")) pattern=pattern.substring(0,pattern.indexOf("*"));
+        if (pattern.endsWith("*")) pattern = pattern.substring(0, pattern.indexOf("*"));
 
         if (response != null) {
 
@@ -1124,8 +1180,8 @@ public class InstallationTask implements IInstallationTask {
                     if (parsed.length != 1) {
                         WindowsInstalledService service = new WindowsInstalledService();
                         service.setStatus(parsed[0].trim());
-                        service.setName(pattern+(parsed[1].trim()));
-                        service.setDisplayName(pattern+(parsed[2].trim()));
+                        service.setName(pattern + (parsed[1].trim()));
+                        service.setDisplayName(pattern + (parsed[2].trim()));
                         result.add(service);
                     }
                 }
@@ -1175,6 +1231,27 @@ public class InstallationTask implements IInstallationTask {
 
     }
 
+    /**
+     * Execute a Shell command so users can respond to instructions on screen
+     * @param commandArgs
+     * @return
+     */
+    public int executeCommandByBuilderInteractive(String [] commandArgs) {
+        final ProcessBuilder p = new ProcessBuilder(commandArgs);
+
+        try {
+            p.redirectInput(ProcessBuilder.Redirect.INHERIT);
+            p.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+            p.redirectError(ProcessBuilder.Redirect.INHERIT);
+
+            int result = p.start().waitFor();
+        } catch (InterruptedException e) {
+           severe("Error while executing command interactively ",e);
+        } catch (IOException e) {
+            severe("Error while executing command interactively ",e);
+        }
+        return -1;
+    }
     public boolean executeCommandByBuilder(String[] args, String toFind, boolean notToFind, String ownerName, String currentFolder) throws IOException {
 
 
@@ -2051,18 +2128,25 @@ public class InstallationTask implements IInstallationTask {
     }
 
     public String getScriptsPath() {
-        return getContext().getParamaters().getValue("scriptspath") + "/";
+
+        String result= getContext().getParamaters().getValue("scriptspath");
+        if (isLinux) result=new File(result).getAbsolutePath();
+        return result+"/";
 
     }
 
     public String getServicesPath() {
-        return getContext().getParamaters().getValue("servicespath") + "/";
+        String result= getContext().getParamaters().getValue("servicespath");
+        if (isLinux) result=new File(result).getAbsolutePath();
+        return result+"/";
 
     }
 
     public String getIoTPath() {
-        String value = context.getParameter("iotpath").getValue();
-        return value + "/";
+
+        String result= getContext().getParamaters().getValue("iotpath");
+        if (isLinux) result=new File(result).getAbsolutePath();
+        return result+"/";
 
     }
 
@@ -3007,7 +3091,7 @@ public class InstallationTask implements IInstallationTask {
      * @param ownerName
      * @return
      */
-    protected UserAction askUserFprUpdate(String ownerName) {
+    protected UserAction askUserForUpdate(String ownerName) {
         UserAction ua = new UserAction();
         ua.addMessage(new UserMessage().setMessage(ownerName + ": a version is already installed").setEmphasize(2)
                 .setSide(UserMessage.Side.left).setColor(Ansi.Color.GREEN).setFontSize(26).setUseFont(true));

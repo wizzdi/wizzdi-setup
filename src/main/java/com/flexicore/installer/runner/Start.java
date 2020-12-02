@@ -4,10 +4,8 @@ import com.flexicore.installer.exceptions.MissingInstallationTaskDependency;
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.interfaces.IUIComponent;
 import com.flexicore.installer.model.*;
-
 import org.apache.commons.cli.*;
 import org.apache.commons.lang3.SystemUtils;
-
 import org.fusesource.jansi.AnsiConsole;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -17,7 +15,6 @@ import org.pf4j.DefaultPluginManager;
 import org.pf4j.PluginManager;
 
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -177,11 +174,7 @@ public class Start {
         ArrayList<String> softRequired = new ArrayList<>();
         ArrayList<IInstallationTask> finalizers = new ArrayList<>();
         ArrayList<IInstallationTask> softNeed = new ArrayList<>();
-//        while(topologicalOrderIterator.hasNext()) {
-//            String installationTaskUniqueId = topologicalOrderIterator.next();
-//            System.out.println(installationTaskUniqueId);
-//        }
-//        topologicalOrderIterator = getInstallationTaskIterator(installationTasks);
+
         while (topologicalOrderIterator.hasNext()) {
             String installationTaskUniqueId = topologicalOrderIterator.next();
             IInstallationTask task = installationTasks.get(installationTaskUniqueId);
@@ -193,7 +186,7 @@ public class Start {
                 //check if required task has been added already.
                 boolean defer = false;
                 for (String req : task.getSoftPrerequisitesTask()) {
-                    if (installationContext.getiInstallationTasks().containsKey(req)) {
+                    if (installationTasks.containsKey(req)) {
                         defer = true;
                         if (!softRequired.contains(req)) {
                             softRequired.add(req);
@@ -303,6 +296,10 @@ public class Start {
         exit(0);
 
     }
+
+
+
+
 
     /**
      * for tests only
@@ -1158,9 +1155,7 @@ public class Start {
      * @return
      */
     private static String getCalculatedDefaultValue(Parameter parameter, InstallationContext installationContext) {
-        if (parameter.getName().equals("autosshPort")) {
-            int a = 3;
-        }
+
         String result = installationContext.getProperties().getProperty(parameter.getName());
         if (result == null) {
             result = parameter.getDefaultValue();

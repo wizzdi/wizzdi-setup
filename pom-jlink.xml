@@ -6,7 +6,7 @@
 
     <groupId>com.wizzdi</groupId>
     <artifactId>wizzdi-installer</artifactId>
-    <version>1.0.25</version>
+    <version>1.0.27</version>
     <distributionManagement>
         <repository>
             <id>flexicore-local</id>
