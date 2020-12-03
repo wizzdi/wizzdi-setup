@@ -171,9 +171,9 @@ public class Start {
         }
         readProperties(installationContext, propertiesFile);
         installationContext.getiInstallationTasks().clear();
-        ArrayList<String> softRequired = new ArrayList<>();
+        ArrayList<String> tasksNeededAssoft = new ArrayList<>();
         ArrayList<IInstallationTask> finalizers = new ArrayList<>();
-        ArrayList<IInstallationTask> softNeed = new ArrayList<>();
+        ArrayList<IInstallationTask> taskNeedingSoft = new ArrayList<>();
 
         while (topologicalOrderIterator.hasNext()) {
             String installationTaskUniqueId = topologicalOrderIterator.next();
@@ -185,21 +185,23 @@ public class Start {
             if (!task.getSoftPrerequisitesTask().isEmpty()) { //task has soft prerequisites.
                 //check if required task has been added already.
                 boolean defer = false;
-                for (String req : task.getSoftPrerequisitesTask()) {
-                    if (installationTasks.containsKey(req)) {
-                        defer = true;
-                        if (!softRequired.contains(req)) {
-                            softRequired.add(req);
+                for (String requiredSoft : task.getSoftPrerequisitesTask()) {
+                    if (installationTasks.containsKey(requiredSoft) ) {
+                        if (!installationContext.getTask(requiredSoft).isAdded()) {
+                            defer = true;
+                            if (!tasksNeededAssoft.contains(requiredSoft)) {
+                                tasksNeededAssoft.add(requiredSoft);
+                            }
                         }
                     }
                 }
                 if (defer) {
-                    softNeed.add(task);
+                    taskNeedingSoft.add(task);
                     continue; //we will not add this task now
                 }
             }
             ArrayList<IInstallationTask> needThis = new ArrayList<>();
-            for (IInstallationTask needingTask : softNeed) {
+            for (IInstallationTask needingTask : taskNeedingSoft) {
                 if (needingTask.getSoftPrerequisitesTask().contains(installationTaskUniqueId)) {
                     needThis.add(needingTask); //these tasks will be added after this task
                 }
@@ -207,6 +209,20 @@ public class Start {
 
             if (!handleTask(installationContext, task, mainCmd, args, parser)) {
                 exit(0);
+            }
+            if (tasksNeededAssoft.contains(task.getId())) {
+                for (IInstallationTask task1:taskNeedingSoft) {
+                    if (task1.getSoftPrerequisitesTask().contains(task.getId())) {
+                        task1.getSoftPrerequisitesTask().remove(task.getId());
+                        if (task1.getSoftPrerequisitesTask().size()==0) { //adding task only if found
+                            if (!handleTask(installationContext,task1,mainCmd,args,parser)) {
+                                exit (0);
+                            }
+                            taskNeedingSoft.remove(task1);
+                        }
+                    }
+
+                }
             }
 
             for (IInstallationTask needingTask : needThis) {
@@ -220,8 +236,8 @@ public class Start {
                 }
             }
 
-        }
-        for (IInstallationTask task : softNeed) {
+        } //while end here
+        for (IInstallationTask task : taskNeedingSoft) {
             if (!installationContext.getiInstallationTasks().containsKey(task.getId())) {
                 handleTask(installationContext, task, mainCmd, args, parser);
             }
@@ -600,6 +616,7 @@ public class Start {
                 formatter.printHelp(installationTask.isWindows() ? "Start.bat " : "/.Start", taskOptions);
             }
         }
+        task.setAdded(true);
         return true;
     }
 

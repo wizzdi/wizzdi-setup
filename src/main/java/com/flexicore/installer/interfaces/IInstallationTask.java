@@ -53,7 +53,8 @@ public interface IInstallationTask extends ExtensionPoint {
     int mergeParameters(InstallationContext installationContext);
 
     boolean isEnabled();
-
+    boolean isAdded();
+    IInstallationTask setAdded(boolean added);
     IInstallationTask setEnabled(boolean value);
     boolean isStop();
     IInstallationTask setSTop(boolean value);

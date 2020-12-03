@@ -47,6 +47,7 @@ public class InstallationTask implements IInstallationTask {
     private boolean finalizerReported;
 
 
+
     private InstallationStatus status = InstallationStatus.CREATED;
     private String description = "no description";
     private String message = "";
@@ -1661,6 +1662,17 @@ public class InstallationTask implements IInstallationTask {
     @Override
     public boolean isEnabled() {
         return enabled;
+    }
+    private boolean added=false;
+    @Override
+    public boolean isAdded() {
+        return added;
+    }
+
+    @Override
+    public IInstallationTask setAdded(boolean added) {
+        this.added=added;
+        return this;
     }
 
     @Override
