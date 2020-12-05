@@ -186,8 +186,9 @@ public class Start {
                 //check if required task has been added already.
                 boolean defer = false;
                 for (String requiredSoft : task.getSoftPrerequisitesTask()) {
-                    if (installationTasks.containsKey(requiredSoft) ) {
-                        if (!installationContext.getTask(requiredSoft).isAdded()) {
+                    if (installationTasks.containsKey(requiredSoft)) {
+                        int a=installationContext.getiInstallationTasks().size();
+                        if (installationContext.getTask(requiredSoft)==null){
                             defer = true;
                             if (!tasksNeededAssoft.contains(requiredSoft)) {
                                 tasksNeededAssoft.add(requiredSoft);
@@ -200,7 +201,7 @@ public class Start {
                     continue; //we will not add this task now
                 }
             }
-            ArrayList<IInstallationTask> needThis = new ArrayList<>();
+            ArrayList<IInstallationTask> needThis = new ArrayList<>(); //build a list of tasks soft need this task.
             for (IInstallationTask needingTask : taskNeedingSoft) {
                 if (needingTask.getSoftPrerequisitesTask().contains(installationTaskUniqueId)) {
                     needThis.add(needingTask); //these tasks will be added after this task
@@ -211,12 +212,12 @@ public class Start {
                 exit(0);
             }
             if (tasksNeededAssoft.contains(task.getId())) {
-                for (IInstallationTask task1:taskNeedingSoft) {
+                for (IInstallationTask task1 : taskNeedingSoft) {
                     if (task1.getSoftPrerequisitesTask().contains(task.getId())) {
                         task1.getSoftPrerequisitesTask().remove(task.getId());
-                        if (task1.getSoftPrerequisitesTask().size()==0) { //adding task only if found
-                            if (!handleTask(installationContext,task1,mainCmd,args,parser)) {
-                                exit (0);
+                        if (task1.getSoftPrerequisitesTask().size() == 0) { //adding task only if found
+                            if (!handleTask(installationContext, task1, mainCmd, args, parser)) {
+                                exit(0);
                             }
                             taskNeedingSoft.remove(task1);
                         }
@@ -236,12 +237,9 @@ public class Start {
                 }
             }
 
-        } //while end here
-        for (IInstallationTask task : taskNeedingSoft) {
-            if (!installationContext.getiInstallationTasks().containsKey(task.getId())) {
-                handleTask(installationContext, task, mainCmd, args, parser);
-            }
-        }
+        } //while ends here
+
+
         for (IInstallationTask task : finalizers) {
 
             handleTask(installationContext, task, mainCmd, args, parser);
@@ -255,8 +253,13 @@ public class Start {
         installationContext.getiInstallationTasks().values().forEach(iInstallationTask -> iInstallationTask.initialize(installationContext));
         int order = 1;
         for (IInstallationTask task : installationContext.getiInstallationTasks().values()) task.setOrder(order++);
+        if (!verifyDependecies()) {
+            info (" cannot continue, dependencies are not properly set");
+            exit(0);
+        }
         Collections.sort(versions);
-
+        String displayTasks = installationContext.getParamaters().getValue("display");
+        displayTasks(displayTasks);
         loadUiComponents();  //currently asynchronous
 
         if (!uiFoundandRun) {
@@ -313,8 +316,72 @@ public class Start {
 
     }
 
+    private static boolean  verifyDependecies() {
 
+        boolean result = true;
+        for (IInstallationTask task: installationContext.getiInstallationTasks().values()) {
+            Set<String> depemdOnTasks = task.getPrerequisitesTask();
+            for (String ptask:depemdOnTasks) {
+                IInstallationTask dependon=installationContext.getiInstallationTasks().get(ptask);
+                if (dependon.getOrder()>=task.getOrder()) {
+                    result=false;
+                    severe("------hard, order of tasks is wrong "+task.getId()+" will be performed ahead of depend on task: "+dependon);
+                }
+            }
+            depemdOnTasks = task.getSoftPrerequisitesTask();
+            if (depemdOnTasks!=null) {
+                for (String ptask : depemdOnTasks) {
+                    IInstallationTask dependon = installationContext.getiInstallationTasks().get(ptask);
+                    if (dependon.getOrder() >= task.getOrder()) {
+                        result=false;
+                        severe("------soft order of tasks is wrong " + task.getId() + " will be performed ahead of depend on task: " + dependon);
+                    }
+                }
+            }
 
+        }
+        return result;
+    }
+
+    private static void displayTasks(String argument) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n******************** installation tasks included *******************\n");
+        int i = 1;
+        for (IInstallationTask task : installationContext.getiInstallationTasks().values()) {
+
+            if (argument.contains("details")) {
+                sb.append("\n------------\n" + i++ + "  " + task.getId() + "\n");
+                List<Parameter> parameters = installationContext.getParamaters().byTask(task);
+                if (parameters != null) {
+                    if (parameters.size() > 0) {
+                        sb.append("   parameters:\n");
+                    }
+                    for (Parameter parameter : parameters) {
+                        sb.append("\n    name: " + parameter.getName() + "\n");
+                        sb.append("              " + parameter.getDescription().replace("\n", " ") + "\n");
+                        sb.append("     Type: " + parameter.getType() + "\n");
+                        sb.append("     Value: " + parameter.getValue() + "\n");
+                        sb.append("     Value Source: " + parameter.getSource() + "\n");
+                        if (parameter.getType().equals(ParameterType.LIST)) {
+                            sb.append("     available options:\n");
+                            for (String option : parameter.getListOptions()) {
+                                sb.append("        " + option + "\n");
+
+                            }
+                        }
+                    }
+                }
+            } else {
+                sb.append(i++ + " " + task.getId() + "\n");
+            }
+        }
+
+        sb.append("\n***************************\n");
+        info(sb.toString());
+        if (argument.contains("quit")) {
+            exit(0);
+        }
+    }
 
 
     /**
