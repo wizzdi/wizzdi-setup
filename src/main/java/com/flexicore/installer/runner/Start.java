@@ -254,7 +254,7 @@ public class Start {
         int order = 1;
         for (IInstallationTask task : installationContext.getiInstallationTasks().values()) task.setOrder(order++);
         if (!verifyDependecies()) {
-            info (" cannot continue, dependencies are not properly set");
+            severe  ("++++++++++++++++ cannot continue, dependencies are not properly set ++++++++++++++++");
             exit(0);
         }
         Collections.sort(versions);
@@ -323,18 +323,25 @@ public class Start {
             Set<String> depemdOnTasks = task.getPrerequisitesTask();
             for (String ptask:depemdOnTasks) {
                 IInstallationTask dependon=installationContext.getiInstallationTasks().get(ptask);
-                if (dependon.getOrder()>=task.getOrder()) {
-                    result=false;
-                    severe("------hard, order of tasks is wrong "+task.getId()+" will be performed ahead of depend on task: "+dependon);
+                if (dependon!=null) {
+                    if (dependon.getOrder() >= task.getOrder()) {
+                        result = false;
+                        severe("------hard, order of tasks is wrong " + task.getId() + " will be performed ahead of depend on task: " + dependon);
+                    }
+                }else {
+                    info ("+_+_+_+_+_+_+_+_+_ Warning! task "+ptask+" which is requird by "+task.getId()+" is not present");
+
                 }
             }
             depemdOnTasks = task.getSoftPrerequisitesTask();
             if (depemdOnTasks!=null) {
                 for (String ptask : depemdOnTasks) {
                     IInstallationTask dependon = installationContext.getiInstallationTasks().get(ptask);
-                    if (dependon.getOrder() >= task.getOrder()) {
-                        result=false;
-                        severe("------soft order of tasks is wrong " + task.getId() + " will be performed ahead of depend on task: " + dependon);
+                    if (dependon!=null) {
+                        if (dependon.getOrder() >= task.getOrder()) {
+                            result = false;
+                            severe("------soft order of tasks is wrong " + task.getId() + " will be performed ahead of depend on task: " + dependon);
+                        }
                     }
                 }
             }
@@ -815,7 +822,7 @@ public class Start {
         return true;
     }
 
-    private static UserResponse getUserResponse(InstallationContext context, UserAction userAction) {
+    public static UserResponse getUserResponse(InstallationContext context, UserAction userAction) {
 
         if (uiComponents != null && uiComponents.size() != 0) {
             List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
@@ -1923,19 +1930,25 @@ public class Start {
             double totalServiceRestartTime = 0d;
             double totalFinalizersTime = 0d;
             context.calculateFactor(); //allow properties file to affect duration (an UI too)
+            boolean stopatend=context.getParamaters().getBooleanValue("stopattaskend");
             StringBuilder sb = new StringBuilder();
             int count = 0;
             sb.append("\n---------------------- tsaks to be installed in the calculated order--------");
 
             for (IInstallationTask installationTask : context.getiInstallationTasks().values()) {
 
-                sb.append("\n " + (++count) + "    " + installationTask.getName() + "  " + installationTask.getDescription());
+                sb.append("\n\n\n " + (++count) + "    " + installationTask.getName() + "  " + installationTask.getDescription());
                 ((InstallationTask) installationTask).setDry(dry); //cater for dry in parameters
                 totalInstallersTime += (installationTask.isEnabled() && !installationTask.isWrongOS()) ? ((InstallationTask) installationTask).getFactoredDuration() : 0d;
                 totalServiceRestartTime += (installationTask.isEnabled() && !installationTask.isWrongOS()) ? ((InstallationTask) installationTask).getFactoredServiceDuration() : 0d;
                 totalFinalizersTime += (installationTask.isEnabled() && !installationTask.isWrongOS()) ? ((InstallationTask) installationTask).getFactoredFinalizerDuration() : 0d;
+                if (stopatend) {
+                    UserResponse result = askUserToContinue(installationTask);
+                    if (result.equals(UserResponse.SKIP)) continue;
+                    if (result.equals(UserResponse.FORCESTOP)) break;
+                }
             }
-            sb.append("------------------------------------------------------------------------------");
+            sb.append("----------------------done with installation-------------------------------------------------------");
             info(sb.toString());
 
             info("Total installer time is: " + totalInstallersTime);
@@ -2086,6 +2099,18 @@ public class Start {
             }
             myResult = false;
             return this;
+        }
+
+        private UserResponse askUserToContinue(IInstallationTask task) {
+            UserAction ua = new UserAction();
+            ua.addMessage(new UserMessage().setMessage("New task "+ task.getId()+" is ready to install ").
+                    setEmphasize(3).
+                    setColor(Color.RED));
+            ua.setPossibleAnswers(new UserResponse[]{UserResponse.CONTINUE, UserResponse.SKIP,UserResponse.FORCESTOP});
+            ua.setUseAnsiColorsInConsole(true);
+
+            UserResponse userResponse = getUserResponse(context, ua);
+            return  userResponse;
         }
 
 

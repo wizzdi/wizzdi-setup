@@ -141,44 +141,8 @@
                     <source>${java.main.version}</source>
                 </configuration>
             </plugin>
+
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.1</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-
-                            <minimizeJar>false</minimizeJar>
-                            <createDependencyReducedPom>true</createDependencyReducedPom>
-                            <dependencyReducedPomLocation>
-                                ${java.io.tmpdir}/dependency-reduced-pom.xml
-                            </dependencyReducedPomLocation>
-                            <relocations>
-                                <relocation>
-                                    <pattern>com.acme.coyote</pattern>
-                                    <shadedPattern>hidden.coyote</shadedPattern>
-                                </relocation>
-                            </relocations>
-                            <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.flexicore.installer.runner.Start</mainClass>
-
-                                </transformer>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>META-INF/cxf/bus-extensions.txt</resource>
-                                </transformer>
-                            </transformers>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-<!--            <plugin>
                 <groupId>org.moditect</groupId>
                 <artifactId>moditect-maven-plugin</artifactId>
                 <version>1.0.0.beta2</version>
@@ -365,7 +329,7 @@
                                     </artifact>
                                     <moduleInfo>
                                         <name>org.fusesource.jansi</name>
-                                        &lt;!&ndash;                                        The full name must be provided here&ndash;&gt;
+                                        <!--                                        The full name must be provided here-->
                                     </moduleInfo>
 
                                 </module>
@@ -396,8 +360,8 @@
                                 <path>${project.build.directory}/${artifactId}-${version}.jar</path>
 
                             </modulePath>
-                            <baseJdk>${linuxARM64}</baseJdk>
-                            &lt;!&ndash;                            change above to the correct property for each of the three os&ndash;&gt;
+                            <baseJdk>${windows}</baseJdk>
+                            <!--                            change above to the correct property for each of the three os-->
                             <modules>
                                 <module>flexicore.installer</module>
 
@@ -417,8 +381,27 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>-->
+            </plugin>
+            <!--    <plugin>
+                    <artifactId>maven-invoker-plugin</artifactId>
+                    <version>3.2.1</version>
+                    <configuration>
+                        <debug>true</debug>
+                        <projectsDirectory>src</projectsDirectory>
 
+                        <postBuildHookScript>verify.bsh</postBuildHookScript>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>integration-test</id>
+                            <goals>
+                                <goal>run</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+    -->
         </plugins>
         <resources>
             <resource>
