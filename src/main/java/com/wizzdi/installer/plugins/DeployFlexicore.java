@@ -2,6 +2,7 @@ package com.wizzdi.installer.plugins;
 
 import com.flexicore.installer.interfaces.IInstallationTask;
 import com.flexicore.installer.model.*;
+import com.flexicore.installer.runner.Start;
 import com.flexicore.installer.utilities.Utilities;
 import org.pf4j.Extension;
 import org.zeroturnaround.zip.ZipUtil;
@@ -23,7 +24,7 @@ import java.util.logging.Logger;
  */
 public class DeployFlexicore extends InstallationTask {
     private boolean copySucceeded;
-
+    private boolean updateConfirmed;
     @Override
     public String getVersion() {
         return "Deploy Flexicore 1.0.1";
@@ -182,6 +183,21 @@ public class DeployFlexicore extends InstallationTask {
     }
 
     File deployments;
+    private boolean  confirmUpdate() {
+
+
+            UserAction ua = new UserAction();
+            ua.addMessage(new UserMessage().setMessage(" FlexiCore already installed, update?\n in case of doubt, confirm"));
+            ua.setTitle("Warning");
+            UserResponse[] userResponses = {UserResponse.OK, UserResponse.STOP};
+            ua.setPossibleAnswers(userResponses);
+            InstallationResult ir = new InstallationResult().setUserAction(ua);
+            UserResponse response = Start.getUserResponse(getContext(), ua);
+            return response.equals(UserResponse.OK);
+
+
+
+    }
 
     /**
      * this is the main installation entry point. Install starts here
@@ -200,8 +216,14 @@ public class DeployFlexicore extends InstallationTask {
                     }
                     return succeeded();
                 } else {
-                    if (exists(flexicoreHome)) {
+                    if (exists(flexicoreHome + (installSpring ? "config" : "entities"))) {
                         info("Found previous installation at:  " + flexicoreHome);
+                        try {
+                            updateConfirmed= confirmUpdate();
+                        } catch (Exception e) {
+                            severe("Error while confirming update",e);
+                        }
+                        info("Confirmation for update: "+updateConfirmed);
                         if (!is64) {
 //                            if (updateToSpring()) {
 //                                return succeeded();
@@ -209,10 +231,7 @@ public class DeployFlexicore extends InstallationTask {
 //
 //                            }
                         }
-                        if (!isUpdateThis() && !update) {
 
-                            return new InstallationResult().setUserAction(askUserForUpdate(ownerName));
-                        }
                     } else {
                         info("It is assumed that is Flexicore first installation so included plugins need no\n" +
                                 "additional installation from the same package");
@@ -223,6 +242,7 @@ public class DeployFlexicore extends InstallationTask {
                         }
                         installationContext.setFreshInstall(true);
                     }
+
                     if (copyFlexicoreFilesForSpring(installationContext)) {
                         copySucceeded = true;
                         return succeeded();
@@ -257,8 +277,8 @@ public class DeployFlexicore extends InstallationTask {
 
         if (exists(flexicoreSourceFolder)) { //todo: fix files to correct flexicoreHome location
 
-            if (!exists(flexicoreHome) || update || isUpdateThis()) {
-                if (!update && !isUpdateThis()) {
+            if (!exists(flexicoreHome + (installSpring ? "config" : "entities")) || update || updateConfirmed) {
+                if (!update && !updateConfirmed) {
                     if (copy(flexicoreSourceFolder, flexicoreHome, installationContext)) {
                         updateProgress(installationContext, "Have copied flexicore folder");
                         Credentials credentials = getCredentials(installationContext);
@@ -299,17 +319,22 @@ public class DeployFlexicore extends InstallationTask {
         String filePath = "";
         String config = flexicoreHome + "config/application.properties";
         try {
-            Properties properties = new Properties();
-            FileInputStream is = new FileInputStream(config);
-            properties.load(is);
-            filePath = properties.getProperty("flexicore.users.firstRunPath");
-            FileWriter fileWriter = new FileWriter(filePath);
-            fileWriter.write(credentials.getPassword());
-            fileWriter.close();
-            info("First set password of " + credentials.getEmail() + " can be found in: " + filePath);
-            return true;
+            if (credentials != null && credentials.getPassword() != null) {
+                Properties properties = new Properties();
+                FileInputStream is = new FileInputStream(config);
+                properties.load(is);
+                filePath = properties.getProperty("flexicore.users.firstRunPath");
+                if (filePath!=null) {
+                    FileWriter fileWriter = new FileWriter(filePath);
+                    fileWriter.write(credentials.getPassword());
+                    fileWriter.close();
+                    info("First set password of " + credentials.getEmail() + " can be found in: " + filePath);
+                    return true;
+                }
+
+            }
         } catch (IOException e) {
-            severe("Error while writing to firstRun.txt at: " + filePath);
+            severe("Error while writing to firstRun.txt at: " + filePath,e);
         }
         return false;
     }
@@ -349,26 +374,26 @@ public class DeployFlexicore extends InstallationTask {
      */
     private boolean fixConfigFile(InstallationContext installationContext, Credentials credentials) throws IOException {
 
-            File file = new File(flexicoreHome + "config/application.properties");
-            if (file.exists()) {
-                String intermediate = "";
-                if (!credentials.getEmail().isEmpty()) {
-                    intermediate = editFile(file.getAbsolutePath(), "", "admin@flexicore.com", credentials.getEmail(), false, false, true, true);
-                    if (intermediate.equals("")) return false;
-                }
-                if (isLinux) {
-                    if (!flexicoreHome.equals("/home/flexicore/") && !flexicoreHome.equals("/home/flexicore//")) {
-                        intermediate = editFile(file.getAbsolutePath(), intermediate, "/home/flexicore/", flexicoreHome, false, false, true, true);
-                        return intermediate.equals("") ? false : true;
-                    }
-                }else {
-                    if (!flexicoreHome.equals("/wizzdi/server/flexicore/") && !flexicoreHome.equals("/wizzdi/server/flexicore//")) {
-                        intermediate = editFile(file.getAbsolutePath(), intermediate, "/wizzdi/server/flexicore/", flexicoreHome, false, false, true, true);
-                        return intermediate.equals("") ? false : true;
-                    }
-                }
-                return true;
+        File file = new File(flexicoreHome + "config/application.properties");
+        if (file.exists()) {
+            String intermediate = "";
+            if (!credentials.getEmail().isEmpty()) {
+                intermediate = editFile(file.getAbsolutePath(), "", "admin@flexicore.com", credentials.getEmail(), false, false, true, true);
+                if (intermediate.equals("")) return false;
             }
+            if (isLinux) {
+                if (!flexicoreHome.equals("/home/flexicore/") && !flexicoreHome.equals("/home/flexicore//")) {
+                    intermediate = editFile(file.getAbsolutePath(), intermediate, "/home/flexicore/", flexicoreHome, false, false, true, true);
+                    return intermediate.equals("") ? false : true;
+                }
+            } else {
+                if (!flexicoreHome.equals("/wizzdi/server/flexicore/") && !flexicoreHome.equals("/wizzdi/server/flexicore//")) {
+                    intermediate = editFile(file.getAbsolutePath(), intermediate, "/wizzdi/server/flexicore/", flexicoreHome, false, false, true, true);
+                    return intermediate.equals("") ? false : true;
+                }
+            }
+            return true;
+        }
 
         return false;
     }
@@ -395,7 +420,7 @@ public class DeployFlexicore extends InstallationTask {
                     try {
                         deleteDirectoryStream(deployments.getAbsolutePath() + "/FlexiCore.war");
                     } catch (Exception e) {
-                        severe("error while deleting folder: " + deployments.getAbsolutePath() + "/FlexiCore.war");
+                        severe("error while deleting folder: " + deployments.getAbsolutePath() + "/FlexiCore.war",e);
                         return false;
                     }
                     File[] files = deployments.listFiles();
@@ -405,7 +430,7 @@ public class DeployFlexicore extends InstallationTask {
                             Files.deleteIfExists(Paths.get(fileis));
                             info("Deleted " + file.getAbsolutePath());
                         } catch (Exception e) {
-                            severe("error while deleting file: " + file.getAbsolutePath());
+                            severe("error while deleting file: " + file.getAbsolutePath(),e);
                         }
                     }
 
@@ -527,7 +552,7 @@ public class DeployFlexicore extends InstallationTask {
             if (exists(path + "/flexicore.war.isdeploying")) return DeployState.isdeploying;
             if (exists(path + "/flexicore.war.dodeploy")) return DeployState.dodeploy;
         } catch (InterruptedException e) {
-            info("Stopped while waiting");
+            severe("Stopped while waiting",e);
         }
         return DeployState.undefined;
     }
@@ -716,11 +741,11 @@ public class DeployFlexicore extends InstallationTask {
                 } else { //windows here
                     if (updateHeap) {
                         String result = editFile(springXML, "", "2048", heapMemory, false, false, true, false);
-                        if (result==null) {
-                          severe("Could not update heap memory in: "+springXML);
-                          return false;
-                        }else {
-                            info("Updated FlexiCore heap memory to: "+heapMemory);
+                        if (result == null) {
+                            severe("Could not update heap memory in: " + springXML);
+                            return false;
+                        } else {
+                            info("Updated FlexiCore heap memory to: " + heapMemory);
                         }
                     }
                     String target = flexicoreHome + "spring/flexicore.exe";
@@ -741,7 +766,7 @@ public class DeployFlexicore extends InstallationTask {
 
 
             } catch (Exception e) {
-                error("Error while installing ", e);
+                severe("Error while installing "+getId(), e);
 
             }
             setProgress(100);
@@ -840,8 +865,17 @@ public class DeployFlexicore extends InstallationTask {
         if (!installSpring) {
             result.add("Wildfly-installer"); //otherwise we cannot install deployment
         }
-        result.add("java-installer");
 
+        result.add("PostgresSQL-installer");
+        return result;
+    }
+
+    @Override
+    public Set<String> getSoftPrerequisitesTask() {
+
+        Set<String> result = new HashSet<>();
+        result.add("java-installer"); //soft as it may be a 32 bit system with Java installed in an earlier stage
+        result.add("mongodb-installer");
         return result;
     }
 

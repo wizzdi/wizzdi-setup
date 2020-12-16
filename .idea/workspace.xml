@@ -5,6 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5a5edd4e-73f9-41ab-925c-ed8a5f34bf28" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/debug.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/runConfigurations/debug.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java" afterDir="false" />
     </list>
@@ -29,13 +30,6 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="JupyterTrust" id="355634b4-dde8-453f-b9a4-6a13df81bb27" />
-  <component name="MavenImportPreferences">
-    <option name="generalSettings">
-      <MavenGeneralSettings>
-        <option name="mavenHome" value="C:\Users\Avishay Ben Natan\IntelliJ IDEA 2020.1\plugins\maven\lib\maven3" />
-      </MavenGeneralSettings>
-    </option>
-  </component>
   <component name="ProjectId" id="1UdezTS1WSR9OuV1FJ1FRyJcuJQ" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
@@ -51,7 +45,7 @@
     <property name="aspect.path.notification.shown" value="true" />
     <property name="dart.analysis.tool.window.visible" value="false" />
     <property name="extract.method.default.visibility" value="private" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../FlexicoreUniqueArtifact" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -65,11 +59,37 @@
     <property name="project.structure.side.proportion" value="0.0" />
     <property name="show.migrate.to.gradle.popup" value="false" />
   </component>
-  <component name="RunManager" selected="Maven.package">
+  <component name="RunManager" selected="Maven.install">
+    <configuration name="install" type="MavenRunConfiguration" factoryName="Maven">
+      <MavenSettings>
+        <option name="myGeneralSettings" />
+        <option name="myRunnerSettings" />
+        <option name="myRunnerParameters">
+          <MavenRunnerParameters>
+            <option name="profiles">
+              <set />
+            </option>
+            <option name="goals">
+              <list>
+                <option value="install" />
+              </list>
+            </option>
+            <option name="pomFileName" />
+            <option name="profilesMap">
+              <map />
+            </option>
+            <option name="resolveToWorkspace" value="false" />
+            <option name="workingDirPath" value="$PROJECT_DIR$" />
+          </MavenRunnerParameters>
+        </option>
+      </MavenSettings>
+      <method v="2" />
+    </configuration>
     <list>
+      <item itemvalue="Maven.install" />
       <item itemvalue="Maven.deploy" />
       <item itemvalue="Maven.package" />
-      <item itemvalue="Remote.debug" />
+      <item itemvalue="Remote JVM Debug.debug" />
     </list>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="project-level" UseSingleDictionary="true" transferred="true" />
@@ -201,14 +221,19 @@
       <workItem from="1606628815440" duration="9669000" />
       <workItem from="1606660706647" duration="582000" />
       <workItem from="1606755108944" duration="175000" />
-      <workItem from="1606759842156" duration="639000" />
-    </task>
-    <task id="LOCAL-00016" summary="added support for deployment wait">
-      <created>1580056847262</created>
-      <option name="number" value="00016" />
-      <option name="presentableId" value="LOCAL-00016" />
-      <option name="project" value="LOCAL" />
-      <updated>1580056847262</updated>
+      <workItem from="1606759842156" duration="1978000" />
+      <workItem from="1606960706067" duration="897000" />
+      <workItem from="1606972662386" duration="7236000" />
+      <workItem from="1606993733682" duration="1621000" />
+      <workItem from="1607002652159" duration="264000" />
+      <workItem from="1607050411303" duration="2294000" />
+      <workItem from="1607222774893" duration="584000" />
+      <workItem from="1607246412736" duration="589000" />
+      <workItem from="1607270423694" duration="591000" />
+      <workItem from="1607504675973" duration="135000" />
+      <workItem from="1608009122124" duration="2302000" />
+      <workItem from="1608034239055" duration="1013000" />
+      <workItem from="1608106141107" duration="577000" />
     </task>
     <task id="LOCAL-00017" summary="added support for deployment wait">
       <created>1580152007776</created>
@@ -546,7 +571,14 @@
       <option name="project" value="LOCAL" />
       <updated>1606755149484</updated>
     </task>
-    <option name="localTasksCounter" value="65" />
+    <task id="LOCAL-00065" summary="fixed superadmin and password settings">
+      <created>1606798984035</created>
+      <option name="number" value="00065" />
+      <option name="presentableId" value="LOCAL-00065" />
+      <option name="project" value="LOCAL" />
+      <updated>1606798984035</updated>
+    </task>
+    <option name="localTasksCounter" value="66" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -568,97 +600,28 @@
     <MESSAGE value="fixed superadmin and password settings" />
     <option name="LAST_COMMIT_MESSAGE" value="fixed superadmin and password settings" />
   </component>
-  <component name="WindowStateProjectService">
-    <state x="250" y="76" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1606629021384">
-      <screen x="0" y="0" width="1707" height="920" />
-    </state>
-    <state x="225" y="68" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1536.824@0.0.1536.824" timestamp="1601205226071" />
-    <state x="250" y="76" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1707.920@0.0.1707.920" timestamp="1606629021384" />
-    <state x="660" y="145" key="#com.intellij.ide.util.MemberChooser" timestamp="1606564616704">
-      <screen x="0" y="0" width="1707" height="920" />
-    </state>
-    <state x="660" y="145" key="#com.intellij.ide.util.MemberChooser/0.0.1707.920@0.0.1707.920" timestamp="1606564616704" />
-    <state x="396" y="0" key="CommitChangelistDialog2" timestamp="1606755148359">
-      <screen x="0" y="0" width="1707" height="920" />
-    </state>
-    <state x="356" y="0" key="CommitChangelistDialog2/0.0.1536.824@0.0.1536.824" timestamp="1600705454680" />
-    <state x="396" y="0" key="CommitChangelistDialog2/0.0.1707.920@0.0.1707.920" timestamp="1606755148359" />
-    <state x="611" y="188" key="FileChooserDialogImpl" timestamp="1606632848169">
-      <screen x="0" y="0" width="1707" height="920" />
-    </state>
-    <state x="550" y="168" key="FileChooserDialogImpl/0.0.1536.824@0.0.1536.824" timestamp="1598758923043" />
-    <state x="611" y="188" key="FileChooserDialogImpl/0.0.1707.920@0.0.1707.920" timestamp="1606632848169" />
-    <state width="1664" height="247" key="GridCell.Tab.0.bottom" timestamp="1606755283741">
-      <screen x="0" y="0" width="1707" height="920" />
-    </state>
-    <state width="1493" height="169" key="GridCell.Tab.0.bottom/0.0.1536.824@0.0.1536.824" timestamp="1601298546562" />
-    <state width="1664" height="247" key="GridCell.Tab.0.bottom/0.0.1707.920@0.0.1707.920" timestamp="1606755283741" />
-    <state width="1664" height="247" key="GridCell.Tab.0.center" timestamp="1606755283741">
-      <screen x="0" y="0" width="1707" height="920" />
-    </state>
-    <state width="1493" height="169" key="GridCell.Tab.0.center/0.0.1536.824@0.0.1536.824" timestamp="1601298546561" />
-    <state width="1664" height="247" key="GridCell.Tab.0.center/0.0.1707.920@0.0.1707.920" timestamp="1606755283741" />
-    <state width="1664" height="247" key="GridCell.Tab.0.left" timestamp="1606755283741">
-      <screen x="0" y="0" width="1707" height="920" />
-    </state>
-    <state width="1493" height="169" key="GridCell.Tab.0.left/0.0.1536.824@0.0.1536.824" timestamp="1601298546560" />
-    <state width="1664" height="247" key="GridCell.Tab.0.left/0.0.1707.920@0.0.1707.920" timestamp="1606755283741" />
-    <state width="1664" height="247" key="GridCell.Tab.0.right" timestamp="1606755283741">
-      <screen x="0" y="0" width="1707" height="920" />
-    </state>
-    <state width="1493" height="169" key="GridCell.Tab.0.right/0.0.1536.824@0.0.1536.824" timestamp="1601298546562" />
-    <state width="1664" height="247" key="GridCell.Tab.0.right/0.0.1707.920@0.0.1707.920" timestamp="1606755283741" />
-    <state width="1664" height="178" key="GridCell.Tab.1.bottom" timestamp="1606634272395">
-      <screen x="0" y="0" width="1707" height="920" />
-    </state>
-    <state width="1493" height="372" key="GridCell.Tab.1.bottom/0.0.1536.824@0.0.1536.824" timestamp="1601298546539" />
-    <state width="1664" height="178" key="GridCell.Tab.1.bottom/0.0.1707.920@0.0.1707.920" timestamp="1606634272395" />
-    <state width="1664" height="178" key="GridCell.Tab.1.center" timestamp="1606634272394">
-      <screen x="0" y="0" width="1707" height="920" />
-    </state>
-    <state width="1493" height="372" key="GridCell.Tab.1.center/0.0.1536.824@0.0.1536.824" timestamp="1601298546539" />
-    <state width="1664" height="178" key="GridCell.Tab.1.center/0.0.1707.920@0.0.1707.920" timestamp="1606634272394" />
-    <state width="1664" height="178" key="GridCell.Tab.1.left" timestamp="1606634272394">
-      <screen x="0" y="0" width="1707" height="920" />
-    </state>
-    <state width="1493" height="372" key="GridCell.Tab.1.left/0.0.1536.824@0.0.1536.824" timestamp="1601298546538" />
-    <state width="1664" height="178" key="GridCell.Tab.1.left/0.0.1707.920@0.0.1707.920" timestamp="1606634272394" />
-    <state width="1664" height="178" key="GridCell.Tab.1.right" timestamp="1606634272395">
-      <screen x="0" y="0" width="1707" height="920" />
-    </state>
-    <state width="1493" height="372" key="GridCell.Tab.1.right/0.0.1536.824@0.0.1536.824" timestamp="1601298546539" />
-    <state width="1664" height="178" key="GridCell.Tab.1.right/0.0.1707.920@0.0.1707.920" timestamp="1606634272395" />
-    <state x="402" y="175" key="Vcs.Push.Dialog.v2" timestamp="1606755151398">
-      <screen x="0" y="0" width="1707" height="920" />
-    </state>
-    <state x="362" y="157" key="Vcs.Push.Dialog.v2/0.0.1536.824@0.0.1536.824" timestamp="1600706291464" />
-    <state x="402" y="175" key="Vcs.Push.Dialog.v2/0.0.1707.920@0.0.1707.920" timestamp="1606755151398" />
-    <state x="324" y="142" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2" timestamp="1599397466097">
-      <screen x="0" y="0" width="1536" height="824" />
-    </state>
-    <state x="324" y="142" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2/0.0.1536.824@0.0.1536.824" timestamp="1599397466097" />
-    <state x="530" y="162" width="647" height="597" key="find.popup" timestamp="1606646693763">
-      <screen x="0" y="0" width="1707" height="920" />
-    </state>
-    <state x="477" y="145" width="582" height="534" key="find.popup/0.0.1536.824@0.0.1536.824" timestamp="1598966782333" />
-    <state x="530" y="162" width="647" height="597" key="find.popup/0.0.1707.920@0.0.1707.920" timestamp="1606646693763" />
-    <state x="481" y="315" key="git4idea.remote.GitConfigureRemotesDialog" timestamp="1599637637156">
-      <screen x="0" y="0" width="1536" height="824" />
-    </state>
-    <state x="481" y="315" key="git4idea.remote.GitConfigureRemotesDialog/0.0.1536.824@0.0.1536.824" timestamp="1599637637156" />
-  </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java</url>
-          <line>262</line>
-          <option name="timeStamp" value="3" />
+          <line>206</line>
+          <option name="timeStamp" value="5" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java</url>
-          <line>548</line>
-          <option name="timeStamp" value="4" />
+          <line>277</line>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java</url>
+          <line>318</line>
+          <option name="timeStamp" value="7" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java</url>
+          <line>573</line>
+          <option name="timeStamp" value="8" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
