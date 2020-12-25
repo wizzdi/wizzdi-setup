@@ -456,9 +456,10 @@ public class DeployFlexicore extends InstallationTask {
         }
         return false;
     }
-
+boolean serviceWasRunning=false;
     private void verifyStop() {
         if (serviceRunning) {
+            serviceWasRunning=true;
             if (installSpring) {
                 stopWildfly(ownerName, 20000);
             } else {
@@ -591,7 +592,7 @@ public class DeployFlexicore extends InstallationTask {
             } else {
                 //Spring installation here.
                 if (copySucceeded) {
-                    if (!update && !isUpdateThis()) {
+                    if (!update && !isUpdateThis() && !serviceWasRunning) {
                         if (installSpringAsService(installationContext)) {
                             if (isLinux) {
                                 if (executeCommand("chown -R flexicore.flexicore " + flexicoreHome, "", ownerName)) {

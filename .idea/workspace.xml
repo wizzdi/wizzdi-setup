@@ -7,6 +7,7 @@
     <list default="true" id="5a5edd4e-73f9-41ab-925c-ed8a5f34bf28" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/debug.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/runConfigurations/debug.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -59,7 +60,18 @@
     <property name="project.structure.side.proportion" value="0.0" />
     <property name="show.migrate.to.gradle.popup" value="false" />
   </component>
-  <component name="RunManager" selected="Maven.install">
+  <component name="RunManager" selected="Maven.package">
+    <configuration default="true" type="ArquillianJUnit" factoryName="" nameIsGenerated="true">
+      <option name="arquillianRunConfiguration">
+        <value>
+          <option name="containerStateName" value="" />
+        </value>
+      </option>
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="install" type="MavenRunConfiguration" factoryName="Maven">
       <MavenSettings>
         <option name="myGeneralSettings" />
@@ -234,13 +246,10 @@
       <workItem from="1608009122124" duration="2302000" />
       <workItem from="1608034239055" duration="1013000" />
       <workItem from="1608106141107" duration="577000" />
-    </task>
-    <task id="LOCAL-00017" summary="added support for deployment wait">
-      <created>1580152007776</created>
-      <option name="number" value="00017" />
-      <option name="presentableId" value="LOCAL-00017" />
-      <option name="project" value="LOCAL" />
-      <updated>1580152007776</updated>
+      <workItem from="1608144280824" duration="195000" />
+      <workItem from="1608517775080" duration="802000" />
+      <workItem from="1608528012467" duration="440000" />
+      <workItem from="1608869023582" duration="1228000" />
     </task>
     <task id="LOCAL-00018" summary="added support for deployment wait">
       <created>1580321674576</created>
@@ -578,7 +587,14 @@
       <option name="project" value="LOCAL" />
       <updated>1606798984035</updated>
     </task>
-    <option name="localTasksCounter" value="66" />
+    <task id="LOCAL-00066" summary="fixed superadmin and password settings">
+      <created>1608144352078</created>
+      <option name="number" value="00066" />
+      <option name="presentableId" value="LOCAL-00066" />
+      <option name="project" value="LOCAL" />
+      <updated>1608144352078</updated>
+    </task>
+    <option name="localTasksCounter" value="67" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -605,11 +621,6 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java</url>
-          <line>206</line>
-          <option name="timeStamp" value="5" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java</url>
           <line>277</line>
           <option name="timeStamp" value="6" />
         </line-breakpoint>
@@ -617,11 +628,6 @@
           <url>file://$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java</url>
           <line>318</line>
           <option name="timeStamp" value="7" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java</url>
-          <line>573</line>
-          <option name="timeStamp" value="8" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
