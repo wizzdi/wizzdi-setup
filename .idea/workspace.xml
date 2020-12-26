@@ -5,9 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5a5edd4e-73f9-41ab-925c-ed8a5f34bf28" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/debug.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/runConfigurations/debug.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -249,14 +247,9 @@
       <workItem from="1608144280824" duration="195000" />
       <workItem from="1608517775080" duration="802000" />
       <workItem from="1608528012467" duration="440000" />
-      <workItem from="1608869023582" duration="1228000" />
-    </task>
-    <task id="LOCAL-00018" summary="added support for deployment wait">
-      <created>1580321674576</created>
-      <option name="number" value="00018" />
-      <option name="presentableId" value="LOCAL-00018" />
-      <option name="project" value="LOCAL" />
-      <updated>1580321674576</updated>
+      <workItem from="1608869023582" duration="2474000" />
+      <workItem from="1608974082094" duration="588000" />
+      <workItem from="1608996713514" duration="1726000" />
     </task>
     <task id="LOCAL-00019" summary="added support for uninstall">
       <created>1582434168163</created>
@@ -594,7 +587,14 @@
       <option name="project" value="LOCAL" />
       <updated>1608144352078</updated>
     </task>
-    <option name="localTasksCounter" value="67" />
+    <task id="LOCAL-00067" summary="fixed failure when service was already installed and update requested">
+      <created>1608870838772</created>
+      <option name="number" value="00067" />
+      <option name="presentableId" value="LOCAL-00067" />
+      <option name="project" value="LOCAL" />
+      <updated>1608870838773</updated>
+    </task>
+    <option name="localTasksCounter" value="68" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -614,19 +614,20 @@
     <MESSAGE value="added support for credentials control of super admin (the first user)" />
     <MESSAGE value="1.0.3" />
     <MESSAGE value="fixed superadmin and password settings" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed superadmin and password settings" />
+    <MESSAGE value="fixed failure when service was already installed and update requested" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed failure when service was already installed and update requested" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java</url>
-          <line>277</line>
+          <line>280</line>
           <option name="timeStamp" value="6" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/com/wizzdi/installer/plugins/DeployFlexicore.java</url>
-          <line>318</line>
+          <line>321</line>
           <option name="timeStamp" value="7" />
         </line-breakpoint>
       </breakpoints>
