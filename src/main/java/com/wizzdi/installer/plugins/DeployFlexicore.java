@@ -189,7 +189,7 @@ public class DeployFlexicore extends InstallationTask {
             UserAction ua = new UserAction();
             ua.addMessage(new UserMessage().setMessage(" FlexiCore already installed, update?\n" +
                     " in case of doubt, confirm\n" +
-                    "if confirmed, Itamar specific components including the user-interface will be updated too" +
+                    "if confirmed, plugins included in the installation including the user-interface will be updated too" +
                     "\n from the full installation\n"));
             ua.setTitle("Warning");
             UserResponse[] userResponses = {UserResponse.OK, UserResponse.STOP};
