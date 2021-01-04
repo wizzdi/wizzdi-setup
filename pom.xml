@@ -196,15 +196,15 @@
                                     </moduleInfo>
 
                                 </module>
-                                <module>
-                                    <artifact>
-                                        <groupId>org.apache.commons</groupId>
-                                        <artifactId>commons-lang3</artifactId>
-                                    </artifact>
-                                    <moduleInfo>
-                                        <name>org.apache.commons.lang3</name>
-                                    </moduleInfo>
-                                </module>
+<!--                                <module>-->
+<!--                                    <artifact>-->
+<!--                                        <groupId>org.apache.commons</groupId>-->
+<!--                                        <artifactId>commons-lang3</artifactId>-->
+<!--                                    </artifact>-->
+<!--                                    <moduleInfo>-->
+<!--                                        <name>org.apache.commons.lang3</name>-->
+<!--                                    </moduleInfo>-->
+<!--                                </module>-->
                                 <module>
                                     <artifact>
                                         <groupId>org.apache.commons</groupId>
@@ -360,8 +360,8 @@
                                 <path>${project.build.directory}/${artifactId}-${version}.jar</path>
 
                             </modulePath>
-                            <baseJdk>${windows}</baseJdk>
-                            <!--                            change above to the correct property for each of the three os-->
+                            <baseJdk>${linuxAMD64}</baseJdk>
+
                             <modules>
                                 <module>flexicore.installer</module>
 

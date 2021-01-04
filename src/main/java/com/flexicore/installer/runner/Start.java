@@ -153,6 +153,7 @@ public class Start {
         // handle parameters and command line options here. do it at the dependency order.
 
         for (IInstallationTask task : installationTasks.values()) {
+
             versions.add(task.getVersion());
 
         }
@@ -176,7 +177,10 @@ public class Start {
         ArrayList<IInstallationTask> taskNeedingSoft = new ArrayList<>();
 
         while (topologicalOrderIterator.hasNext()) {
+
             String installationTaskUniqueId = topologicalOrderIterator.next();
+
+
             IInstallationTask task = installationTasks.get(installationTaskUniqueId);
             if (task.isFinalizerOnly()) {
                 finalizers.add(task);
@@ -187,7 +191,7 @@ public class Start {
                 boolean defer = false;
                 for (String requiredSoft : task.getSoftPrerequisitesTask()) {
                     if (installationTasks.containsKey(requiredSoft)) {
-                        int a=installationContext.getiInstallationTasks().size();
+
                         if (installationContext.getTask(requiredSoft)==null){
                             defer = true;
                             if (!tasksNeededAssoft.contains(requiredSoft)) {
@@ -201,6 +205,7 @@ public class Start {
                     continue; //we will not add this task now
                 }
             }
+
             ArrayList<IInstallationTask> needThis = new ArrayList<>(); //build a list of tasks soft need this task.
             for (IInstallationTask needingTask : taskNeedingSoft) {
                 if (needingTask.getSoftPrerequisitesTask().contains(installationTaskUniqueId)) {
@@ -243,6 +248,11 @@ public class Start {
         for (IInstallationTask task : finalizers) {
 
             handleTask(installationContext, task, mainCmd, args, parser);
+        }
+        for (IInstallationTask task:taskNeedingSoft) {;// add all tasks that were not added
+            if (handleTask(installationContext,task,mainCmd,args,parser)) {
+                info("have added a new task from the list of soft-needing tasks "+task.getId());
+            }
         }
         //do pass two, brute force second pass on all parameters we cannot fix references unless we have them all.
         for (IInstallationTask task : installationContext.getiInstallationTasks().values()) {
@@ -662,6 +672,10 @@ public class Start {
                                       IInstallationTask task,
                                       CommandLine mainCmd, String[] args, CommandLineParser parser) {
         boolean found = false;
+        if (installationContext.getiInstallationTasks().containsKey(task.getId())) {
+            logger.info("This "+task.getId()+" is already stored");
+            return false;
+        }
         task.setContext(installationContext);
         OperatingSystem cos = task.getCurrentOperatingSystem();
         for (OperatingSystem os : task.getOperatingSystems()) {
