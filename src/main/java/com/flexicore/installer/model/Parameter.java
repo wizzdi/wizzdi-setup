@@ -1,6 +1,7 @@
 package com.flexicore.installer.model;
 
 import com.flexicore.installer.interfaces.IInstallationTask;
+import com.flexicore.installer.runner.Start;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.apache.commons.validator.routines.UrlValidator;
 
@@ -8,10 +9,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Parameter {
-    private  boolean donotSave=false;
+    private boolean donotSave = false;
     private String name;
     private String description;
     private String defaultValue;
@@ -28,7 +30,7 @@ public class Parameter {
     private Double minDoubleValue = Double.MIN_VALUE;
     private Double maxDoubleValue = Double.MAX_VALUE;
     private ParameterType type = ParameterType.STRING;
-
+    private Object userData;
     private ParameterSource source = ParameterSource.CODE;
     private boolean sandSymbolPresent = false;
     private boolean hasValue;
@@ -198,7 +200,7 @@ public class Parameter {
      * @param validator
      * @param autoCreate
      * @param hidden
-     * @param donotSave if true will not be saved in a properties file
+     * @param donotSave       if true will not be saved in a properties file
      */
     public Parameter(String name,
                      String description,
@@ -219,7 +221,7 @@ public class Parameter {
         this.parameterValidator = validator;
         this.autocreate = autoCreate;
         this.setHidden(hidden);
-        this.donotSave=donotSave;
+        this.donotSave = donotSave;
 
     }
 
@@ -411,6 +413,7 @@ public class Parameter {
 
     /**
      * creates a correct value for List type.
+     *
      * @return
      */
     public String getValueForProperties() {
@@ -424,7 +427,7 @@ public class Parameter {
                         first = false;
                         result = result + v;
                     } else {
-                        result = result+"|" + v;
+                        result = result + "|" + v;
                     }
                 }
                 return result;
@@ -435,6 +438,7 @@ public class Parameter {
 
     /**
      * split options from properties file
+     *
      * @param value
      * @return
      */
@@ -455,6 +459,7 @@ public class Parameter {
 
     public Parameter setValue(String value) {
 
+
         if (type.equals(ParameterType.FOLDER) || type.equals(ParameterType.FILE)) {
             if (value.toLowerCase().startsWith("c:\\")) {
                 value = value.replace("/", "\\");
@@ -468,24 +473,98 @@ public class Parameter {
         }
         return this;
     }
-
+    private void info (String message) {
+        Start.getLogger().log(Level.INFO,message);
+    }
+    private void severe (String message) {
+        Start.getLogger().log(Level.SEVERE,message);
+    }
+    private void severe (String message,Throwable e) {
+        Start.getLogger().log(Level.SEVERE,message,e);
+    }
     private void informSubscribers() {
+       
         if (!preventCircular) {
             preventCircular = true;
+
             for (Parameter parameter : subscribers) {
-                parameter.refreshData();
+
+              //  System.out.println("subscriber: "+parameter.getName()+"    "+parameter.getUserData()!=null ? parameter.getUserData():"");
+               if (parameter.getType().equals(ParameterType.LIST)) {
+                   if (sameData(parameter)) {
+                        parameter.setValue(this.getValue());
+                       parameter.refreshData();
+                   } else {
+
+                       if (sameSize(parameter)) {
+                           parameter.setIndex(getIndex());
+                           parameter.refreshData();
+                       } else {
+
+                           severe("Cannot update list when data is not the same size of same components ");
+                       }
+
+                   }
+               }else {
+                   parameter.setValue(this.getValue());
+                   parameter.refreshData();
+               }
             }
             preventCircular = false;
         } else {
+           // System.out.println(" prevent circular is "+preventCircular);
             // TODO: 02-Feb-20 add logging for circular dependency cases.
         }
     }
 
     /**
-     * trigger datarefresh in a task parameter. task may inform UI (if there is any) of the change.
+     * get the current index of the current value if list type
+     * @return
+     */
+    private int getIndex() {
+        int i = 0;
+        for (String data : listOptions) {
+            if (data.equals(getValue())) return i;
+            i++;
+        }
+        return 0;
+    }
+
+    private boolean sameSize(Parameter parameter) {
+        return type.equals(ParameterType.LIST) && parameter.getType().equals(ParameterType.LIST) && listOptions.size() == parameter.listOptions.size();
+    }
+
+    private void setIndex(int index) {
+
+       // System.out.println("Seeting the index of "+this.getName()+" to "+index+" to value: "+listOptions.get(index));
+        setValue(listOptions.get(index));
+    }
+
+    private boolean sameData(Parameter parameter) {
+        if (this.getType().equals(parameter.getType())) {
+            switch (getType()) {
+                case LIST:
+                    if (listOptions.size() == parameter.getListOptions().size()) {
+                        int i = 0;
+                        for (String data : listOptions) {
+                            if (!data.equals(parameter.listOptions.get(i++))) return false;
+                        }
+                        return true;
+                    }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * trigger data refresh in a task parameter. task may inform UI (if there is any) of the change.
      */
     private void refreshData() {
-        iInstallationTask.refreshData(installationContext, this);
+        if (iInstallationTask!=null) {
+            iInstallationTask.refreshData(installationContext, this);
+        }else {
+           // System.out.println("iInstallation task is null!!!");
+        }
     }
 
     boolean preventCircular = false;
@@ -1026,8 +1105,12 @@ public class Parameter {
      * @return
      */
 
-    public void addSubscriber(Parameter parameter) {
-        if (!subscribers.contains(parameter)) subscribers.add(parameter);
+    public Parameter addSubscriber(Parameter parameter) {
+        if (parameter!=null && !subscribers.contains(parameter)){
+            subscribers.add(parameter);
+            
+        }
+         return this;
     }
 
     public void removeSubscriber(Parameter parameter) {
@@ -1062,6 +1145,15 @@ public class Parameter {
 
     public Parameter setEditable(boolean editable) {
         this.editable = editable;
+        return this;
+    }
+
+    public Object getUserData() {
+        return userData;
+    }
+
+    public Parameter setUserData(Object userData) {
+        this.userData = userData;
         return this;
     }
 }

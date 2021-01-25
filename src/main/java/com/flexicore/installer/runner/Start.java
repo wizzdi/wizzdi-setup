@@ -126,7 +126,8 @@ public class Start {
                         setInstallerProgress(Start::InstallerProgress).
                         setUpdateService(Start::uiUpdateService).
                         setFilesProgress(Start::updateFilesProgress).
-                        setUiToggle(Start::uiComponentToggle).setUpdateSingleComponent(Start::doUpdateComponent).
+                        setUiToggle(Start::uiComponentToggle).
+                        setUpdateSingleComponent(Start::doUpdateComponent).
                         setUiAskUSer(Start::getUserResponse).
                         setShowSystemData(Start::uiComponentShowSystemData).
                         setShowPagedData(Start::uiShowPagedList);
@@ -182,6 +183,9 @@ public class Start {
 
 
             IInstallationTask task = installationTasks.get(installationTaskUniqueId);
+            if (task.getId()!="bay-setup" && task.getId()!="common-parameters") {
+                task.setEnabled(false);
+            }
             if (task.isFinalizerOnly()) {
                 finalizers.add(task);
                 continue;
@@ -359,7 +363,9 @@ public class Start {
         }
         return result;
     }
-
+    public static Logger getLogger() {
+        return logger;
+    }
     private static void displayTasks(String argument) {
         StringBuilder sb = new StringBuilder();
         sb.append("\n******************** installation tasks included *******************\n");
@@ -825,11 +831,12 @@ public class Start {
      * @param parameter
      * @return
      */
-    private static boolean doUpdateComponent(InstallationContext installationContext, IInstallationTask task, Parameter parameter) {
+    public static boolean doUpdateComponent(InstallationContext installationContext, IInstallationTask task, Parameter parameter) {
         if (uiComponents != null) {
             List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
 
             for (IUIComponent component : filtered) {
+                //System.out.println(parameter.getName());
                 component.updateWidget(installationContext, task, parameter);
             }
         }
@@ -1198,6 +1205,10 @@ public class Start {
             for (String name : taskParameters.getKeys()) {
 
                 Parameter parameter = taskParameters.getParameter(name);
+                if (parameter.getiInstallationTask()==null ) {
+                    parameter.setiInstallationTask(task);
+                }
+                parameter.setInstallationContext(installationContext);
                 if (parameter.isHasValue()) {
                     parameter.setValue(cmd.getOptionValue(name, getCalculatedDefaultValue(parameter, installationContext))); //set correct value for parameter
                     parameter.setSource(cmd.hasOption(name) ? ParameterSource.COMMANDLINE : parameter.getSource());

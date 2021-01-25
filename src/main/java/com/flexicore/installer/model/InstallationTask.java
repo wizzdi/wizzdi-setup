@@ -1822,7 +1822,10 @@ public class InstallationTask implements IInstallationTask {
 
     @Override
     public boolean refreshData(InstallationContext context, Parameter parameter) {
-        return false;
+
+
+        return context.getUpdateSingleComponent().updateComponent(context,this, parameter);
+
     }
 
     @Override
@@ -1907,7 +1910,22 @@ public class InstallationTask implements IInstallationTask {
                 .forEach(File::delete);
     }
 
+    public void populateParamterList(Parameter parameter, String[] strings) {
+        if (parameter.getListOptions() == null) {
+            ArrayList<String> list = new ArrayList<>();
+            list.addAll(Arrays.asList(strings));
+            parameter.setListOptions(list);
 
+        }
+    }
+    public void populateParamterList(Parameter parameter, List<String> dataList,boolean refresh) {
+        if (parameter.getListOptions() == null || refresh) {
+            ArrayList<String> list = new ArrayList<>();
+            list.addAll(dataList);
+            parameter.setListOptions(list);
+
+        }
+    }
     /**
      * delete the content of a folder.
      *
