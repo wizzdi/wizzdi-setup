@@ -183,9 +183,7 @@ public class Start {
 
 
             IInstallationTask task = installationTasks.get(installationTaskUniqueId);
-            if (task.getId()!="bay-setup" && task.getId()!="common-parameters") {
-                task.setEnabled(false);
-            }
+
             if (task.isFinalizerOnly()) {
                 finalizers.add(task);
                 continue;
@@ -1212,6 +1210,9 @@ public class Start {
                 if (parameter.isHasValue()) {
                     parameter.setValue(cmd.getOptionValue(name, getCalculatedDefaultValue(parameter, installationContext))); //set correct value for parameter
                     parameter.setSource(cmd.hasOption(name) ? ParameterSource.COMMANDLINE : parameter.getSource());
+                   if (parameter.getSource().equals(ParameterSource.COMMANDLINE)) {
+                       parameter.setWaitOnSubscribers(true);
+                   }
                 } else {
                     // if a parameter has no value it means that it's existence changes the parameter value to true, unless the properties file changes it or
                     // overridden from the command line
@@ -1219,10 +1220,15 @@ public class Start {
                     if (!cmd.hasOption(name)) {
                         if (!getNewParameterFromProperties(parameter, installationContext)) {
                             parameter.setValue(String.valueOf(cmd.hasOption(name))); // will set the value of the parameter requiring no value to false as properties file hasn't changed it
-                        } else parameter.setSource(ParameterSource.PROPERTIES_FILE);
+                        } else {
+                            parameter.setSource(ParameterSource.PROPERTIES_FILE);
+                            parameter.setWaitOnSubscribers(true);
+                        }
                     } else {
                         parameter.setSource(ParameterSource.COMMANDLINE);
                         parameter.setValue(String.valueOf(cmd.hasOption(name))); // this is for non value switches indicated in command line
+                        parameter.setWaitOnSubscribers(true);
+
                     }
 
                 }

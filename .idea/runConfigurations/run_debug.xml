@@ -2,6 +2,7 @@
   <configuration default="false" name="run-debug" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="com.flexicore.installer.runner.Start" />
     <module name="wizzdi-installer" />
+    <option name="PROGRAM_PARAMETERS" value="-setupBayTypeString 1000" />
     <option name="VM_PARAMETERS" value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005" />
     <method v="2">
       <option name="Make" enabled="true" />

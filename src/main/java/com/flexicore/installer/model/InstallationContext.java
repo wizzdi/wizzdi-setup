@@ -111,6 +111,7 @@ public class InstallationContext {
     }
 
     public Properties getProperties() {
+
         return properties;
     }
 

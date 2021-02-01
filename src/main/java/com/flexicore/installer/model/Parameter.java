@@ -13,6 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Parameter {
+    private boolean waitOnSubscribers = false;
     private boolean donotSave = false;
     private String name;
     private String description;
@@ -458,7 +459,7 @@ public class Parameter {
     }
 
     public Parameter setValue(String value) {
-
+      
 
         if (type.equals(ParameterType.FOLDER) || type.equals(ParameterType.FILE)) {
             if (value.toLowerCase().startsWith("c:\\")) {
@@ -473,52 +474,61 @@ public class Parameter {
         }
         return this;
     }
-    private void info (String message) {
-        Start.getLogger().log(Level.INFO,message);
+
+    private void info(String message) {
+        Start.getLogger().log(Level.INFO, message);
     }
-    private void severe (String message) {
-        Start.getLogger().log(Level.SEVERE,message);
+
+    private void severe(String message) {
+        Start.getLogger().log(Level.SEVERE, message);
     }
-    private void severe (String message,Throwable e) {
-        Start.getLogger().log(Level.SEVERE,message,e);
+
+    private void severe(String message, Throwable e) {
+        Start.getLogger().log(Level.SEVERE, message, e);
     }
+
     private void informSubscribers() {
-       
+
         if (!preventCircular) {
             preventCircular = true;
 
             for (Parameter parameter : subscribers) {
 
-              //  System.out.println("subscriber: "+parameter.getName()+"    "+parameter.getUserData()!=null ? parameter.getUserData():"");
-               if (parameter.getType().equals(ParameterType.LIST)) {
-                   if (sameData(parameter)) {
-                        parameter.setValue(this.getValue());
-                       parameter.refreshData();
-                   } else {
-
-                       if (sameSize(parameter)) {
-                           parameter.setIndex(getIndex());
-                           parameter.refreshData();
-                       } else {
-
-                           severe("Cannot update list when data is not the same size of same components ");
-                       }
-
-                   }
-               }else {
-                   parameter.setValue(this.getValue());
-                   parameter.refreshData();
-               }
+                //  System.out.println("subscriber: "+parameter.getName()+"    "+parameter.getUserData()!=null ? parameter.getUserData():"");
+                informSubscriber(parameter);
             }
             preventCircular = false;
         } else {
-           // System.out.println(" prevent circular is "+preventCircular);
+            // System.out.println(" prevent circular is "+preventCircular);
             // TODO: 02-Feb-20 add logging for circular dependency cases.
+        }
+    }
+
+    private void informSubscriber(Parameter parameter) {
+        if (parameter.getType().equals(ParameterType.LIST)) {
+            if (sameData(parameter)) {
+                parameter.setValue(this.getValue());
+                parameter.refreshData();
+            } else {
+
+                if (sameSize(parameter)) {
+                    parameter.setIndex(getIndex());
+                    parameter.refreshData();
+                } else {
+
+                    severe("Cannot update list when data is not the same size of same components ");
+                }
+
+            }
+        } else {
+            parameter.setValue(this.getValue());
+            parameter.refreshData();
         }
     }
 
     /**
      * get the current index of the current value if list type
+     *
      * @return
      */
     private int getIndex() {
@@ -531,12 +541,14 @@ public class Parameter {
     }
 
     private boolean sameSize(Parameter parameter) {
-        return type.equals(ParameterType.LIST) && parameter.getType().equals(ParameterType.LIST) && listOptions.size() == parameter.listOptions.size();
+       if( listOptions!=null && parameter.getListOptions()!=null) {
+           return type.equals(ParameterType.LIST) && parameter.getType().equals(ParameterType.LIST) && listOptions.size() == parameter.listOptions.size();
+       }else return false;
     }
 
     private void setIndex(int index) {
 
-       // System.out.println("Seeting the index of "+this.getName()+" to "+index+" to value: "+listOptions.get(index));
+        // System.out.println("Seeting the index of "+this.getName()+" to "+index+" to value: "+listOptions.get(index));
         setValue(listOptions.get(index));
     }
 
@@ -544,12 +556,14 @@ public class Parameter {
         if (this.getType().equals(parameter.getType())) {
             switch (getType()) {
                 case LIST:
-                    if (listOptions.size() == parameter.getListOptions().size()) {
-                        int i = 0;
-                        for (String data : listOptions) {
-                            if (!data.equals(parameter.listOptions.get(i++))) return false;
+                    if (listOptions != null && parameter.getListOptions() != null) {
+                        if (listOptions.size() == parameter.getListOptions().size()) {
+                            int i = 0;
+                            for (String data : listOptions) {
+                                if (!data.equals(parameter.listOptions.get(i++))) return false;
+                            }
+                            return true;
                         }
-                        return true;
                     }
             }
         }
@@ -560,10 +574,10 @@ public class Parameter {
      * trigger data refresh in a task parameter. task may inform UI (if there is any) of the change.
      */
     private void refreshData() {
-        if (iInstallationTask!=null) {
+        if (iInstallationTask != null) {
             iInstallationTask.refreshData(installationContext, this);
-        }else {
-           // System.out.println("iInstallation task is null!!!");
+        } else {
+            // System.out.println("iInstallation task is null!!!");
         }
     }
 
@@ -1106,12 +1120,16 @@ public class Parameter {
      */
 
     public Parameter addSubscriber(Parameter parameter) {
-        if (parameter!=null && !subscribers.contains(parameter)){
+        if (parameter != null && !subscribers.contains(parameter)) {
             subscribers.add(parameter);
-            
+            if (waitOnSubscribers) {
+                informSubscriber(parameter);
+            }
+
         }
-         return this;
+        return this;
     }
+
 
     public void removeSubscriber(Parameter parameter) {
         if (subscribers.contains(parameter)) subscribers.remove(parameter);
@@ -1154,6 +1172,15 @@ public class Parameter {
 
     public Parameter setUserData(Object userData) {
         this.userData = userData;
+        return this;
+    }
+
+    public boolean isWaitOnSubscribers() {
+        return waitOnSubscribers;
+    }
+
+    public Parameter setWaitOnSubscribers(boolean waitOnSubscribers) {
+        this.waitOnSubscribers = waitOnSubscribers;
         return this;
     }
 }
