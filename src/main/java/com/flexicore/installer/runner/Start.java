@@ -183,66 +183,67 @@ public class Start {
 
 
             IInstallationTask task = installationTasks.get(installationTaskUniqueId);
-
+            handleTask(installationContext, task, mainCmd, args, parser);
+            System.out.println(task.getName());
             if (task.isFinalizerOnly()) {
                 finalizers.add(task);
                 continue;
             }
-            if (!task.getSoftPrerequisitesTask().isEmpty()) { //task has soft prerequisites.
-                //check if required task has been added already.
-                boolean defer = false;
-                for (String requiredSoft : task.getSoftPrerequisitesTask()) {
-                    if (installationTasks.containsKey(requiredSoft)) {
+//            if (!task.getSoftPrerequisitesTask().isEmpty()) { //task has soft prerequisites.
+//                //check if required task has been added already.
+//                boolean defer = false;
+//                for (String requiredSoft : task.getSoftPrerequisitesTask()) {
+//                    if (installationTasks.containsKey(requiredSoft)) {
+//
+//                        if (installationContext.getTask(requiredSoft)==null){
+//                            defer = true;
+//                            if (!tasksNeededAssoft.contains(requiredSoft)) {
+//                                tasksNeededAssoft.add(requiredSoft);
+//                            }
+//                        }
+//                    }
+//                }
+//                if (defer) {
+//                    taskNeedingSoft.add(task);
+//                    continue; //we will not add this task now
+//                }
+//            }
 
-                        if (installationContext.getTask(requiredSoft)==null){
-                            defer = true;
-                            if (!tasksNeededAssoft.contains(requiredSoft)) {
-                                tasksNeededAssoft.add(requiredSoft);
-                            }
-                        }
-                    }
-                }
-                if (defer) {
-                    taskNeedingSoft.add(task);
-                    continue; //we will not add this task now
-                }
-            }
+//            ArrayList<IInstallationTask> needThis = new ArrayList<>(); //build a list of tasks soft need this task.
+//            for (IInstallationTask needingTask : taskNeedingSoft) {
+//                if (needingTask.getSoftPrerequisitesTask().contains(installationTaskUniqueId)) {
+//                    needThis.add(needingTask); //these tasks will be added after this task
+//                }
+//            }
 
-            ArrayList<IInstallationTask> needThis = new ArrayList<>(); //build a list of tasks soft need this task.
-            for (IInstallationTask needingTask : taskNeedingSoft) {
-                if (needingTask.getSoftPrerequisitesTask().contains(installationTaskUniqueId)) {
-                    needThis.add(needingTask); //these tasks will be added after this task
-                }
-            }
+//            if (!handleTask(installationContext, task, mainCmd, args, parser)) {
+//                exit(0);
+//            }
+//            if (tasksNeededAssoft.contains(task.getId())) {
+//                for (IInstallationTask task1 : taskNeedingSoft) {
+//                    if (task1.getSoftPrerequisitesTask().contains(task.getId())) {
+//                        task1.getSoftPrerequisitesTask().remove(task.getId());
+//                        if (task1.getSoftPrerequisitesTask().size() == 0) { //adding task only if found
+//                            if (!handleTask(installationContext, task1, mainCmd, args, parser)) {
+//                                exit(0);
+//                            }
+//                            taskNeedingSoft.remove(task1);
+//                        }
+//                    }
+//
+//                }
+//            }
 
-            if (!handleTask(installationContext, task, mainCmd, args, parser)) {
-                exit(0);
-            }
-            if (tasksNeededAssoft.contains(task.getId())) {
-                for (IInstallationTask task1 : taskNeedingSoft) {
-                    if (task1.getSoftPrerequisitesTask().contains(task.getId())) {
-                        task1.getSoftPrerequisitesTask().remove(task.getId());
-                        if (task1.getSoftPrerequisitesTask().size() == 0) { //adding task only if found
-                            if (!handleTask(installationContext, task1, mainCmd, args, parser)) {
-                                exit(0);
-                            }
-                            taskNeedingSoft.remove(task1);
-                        }
-                    }
-
-                }
-            }
-
-            for (IInstallationTask needingTask : needThis) {
-                if (needingTask.getSoftPrerequisitesTask().size() == 1) { //task will be added only if all soft have been added so far
-
-                    if (!handleTask(installationContext, needingTask, mainCmd, args, parser)) {
-                        exit(0);
-                    }
-                } else {
-                    needingTask.getSoftPrerequisitesTask().remove(installationTaskUniqueId);
-                }
-            }
+//            for (IInstallationTask needingTask : needThis) {
+//                if (needingTask.getSoftPrerequisitesTask().size() == 1) { //task will be added only if all soft have been added so far
+//
+//                    if (!handleTask(installationContext, needingTask, mainCmd, args, parser)) {
+//                        exit(0);
+//                    }
+//                } else {
+//                    needingTask.getSoftPrerequisitesTask().remove(installationTaskUniqueId);
+//                }
+//            }
 
         } //while ends here
 
@@ -264,11 +265,14 @@ public class Start {
         if (installationContext.getParamaters() != null) installationContext.getParamaters().sort();
         installationContext.getiInstallationTasks().values().forEach(iInstallationTask -> iInstallationTask.initialize(installationContext));
         int order = 1;
-        for (IInstallationTask task : installationContext.getiInstallationTasks().values()) task.setOrder(order++);
-        if (!verifyDependecies()) {
-            severe  ("++++++++++++++++ cannot continue, dependencies are not properly set ++++++++++++++++");
-            exit(0);
+        for (IInstallationTask task : installationContext.getiInstallationTasks().values()){
+            task.setOrder(order++);
         }
+
+//        if (!verifyDependecies()) {
+//            severe  ("++++++++++++++++ cannot continue, dependencies are not properly set ++++++++++++++++");
+//            exit(0);
+//        }
         Collections.sort(versions);
         String displayTasks = installationContext.getParamaters().getValue("display");
         displayTasks(displayTasks);
@@ -1356,7 +1360,7 @@ public class Start {
 
             }
         }
-        for (IInstallationTask installationTask : installationTasks.values()) {
+;        for (IInstallationTask installationTask : installationTasks.values()) {
             if (installationTask.isFinalizerOnly()) {
                 String id;
                 g.addVertex(id = installationTask.getId());

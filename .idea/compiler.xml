@@ -6,7 +6,6 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="wizzdi-installer (1)" />
         <module name="wizzdi-installer (2)" />
         <module name="wizzdi-installer" />
         <module name="wizzdi-installer (3)" />
@@ -14,6 +13,7 @@
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="flexicore-installer" target="11" />
+      <module name="wizzdi-installer (1)" target="1.5" />
     </bytecodeTargetLevel>
   </component>
 </project>
