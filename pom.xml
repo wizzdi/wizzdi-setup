@@ -6,7 +6,7 @@
 
     <groupId>com.wizzdi</groupId>
     <artifactId>wizzdi-installer</artifactId>
-    <version>1.0.27</version>
+    <version>1.0.28</version>
     <distributionManagement>
         <repository>
             <id>flexicore-local</id>
@@ -361,7 +361,7 @@
                                 <path>${project.build.directory}/${artifactId}-${version}.jar</path>
 
                             </modulePath>
-                            <baseJdk>${linuxARM64}</baseJdk>
+                            <baseJdk>${linuxAMD64}</baseJdk>
                             <!--                            change above to the correct property for each of the three os-->
                             <modules>
                                 <module>flexicore.installer</module>
