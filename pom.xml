@@ -22,6 +22,8 @@
         <windows>version=11,vendor=openjdk,platform=windows</windows>
         <linuxAMD64>version=11,vendor=openjdk,platform=Linux_x86_64</linuxAMD64>
         <linuxARM64>version=11,vendor=openjdk,platform=arm_64</linuxARM64>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
     </properties>
     <dependencies>
 

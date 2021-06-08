@@ -62,7 +62,12 @@ public class Start {
     private static boolean tested;
 
     public static void main(String[] args) throws MissingInstallationTaskDependency, ParseException, InterruptedException {
+        StringBuilder sb = new StringBuilder();
+        for (String one : args) {
+            sb.append(one);
+        }
 
+        System.out.println(sb.toString());
         Options options = initOptions();
         CommandLineParser parser = new DefaultParser();
         String[] trueArgs = getTrueArgs(args, options);
@@ -252,9 +257,10 @@ public class Start {
 
             handleTask(installationContext, task, mainCmd, args, parser);
         }
-        for (IInstallationTask task:taskNeedingSoft) {;// add all tasks that were not added
-            if (handleTask(installationContext,task,mainCmd,args,parser)) {
-                info("have added a new task from the list of soft-needing tasks "+task.getId());
+        for (IInstallationTask task : taskNeedingSoft) {
+            ;// add all tasks that were not added
+            if (handleTask(installationContext, task, mainCmd, args, parser)) {
+                info("have added a new task from the list of soft-needing tasks " + task.getId());
             }
         }
         //do pass two, brute force second pass on all parameters we cannot fix references unless we have them all.
@@ -265,7 +271,7 @@ public class Start {
         if (installationContext.getParamaters() != null) installationContext.getParamaters().sort();
         installationContext.getiInstallationTasks().values().forEach(iInstallationTask -> iInstallationTask.initialize(installationContext));
         int order = 1;
-        for (IInstallationTask task : installationContext.getiInstallationTasks().values()){
+        for (IInstallationTask task : installationContext.getiInstallationTasks().values()) {
             task.setOrder(order++);
         }
 
@@ -300,12 +306,8 @@ public class Start {
                 }
 
             }
+            install(installationContext, false, false);
 
-            if (installationContext.getParamaters().getBooleanValue("install")) {
-                install(installationContext, false, false);
-            } else {
-                info(" there is no 'install' parameter set to true that will start installation");
-            }
         } else {
 
         }
@@ -332,28 +334,28 @@ public class Start {
 
     }
 
-    private static boolean  verifyDependecies() {
+    private static boolean verifyDependecies() {
 
         boolean result = true;
-        for (IInstallationTask task: installationContext.getiInstallationTasks().values()) {
+        for (IInstallationTask task : installationContext.getiInstallationTasks().values()) {
             Set<String> depemdOnTasks = task.getPrerequisitesTask();
-            for (String ptask:depemdOnTasks) {
-                IInstallationTask dependon=installationContext.getiInstallationTasks().get(ptask);
-                if (dependon!=null) {
+            for (String ptask : depemdOnTasks) {
+                IInstallationTask dependon = installationContext.getiInstallationTasks().get(ptask);
+                if (dependon != null) {
                     if (dependon.getOrder() >= task.getOrder()) {
                         result = false;
                         severe("------hard, order of tasks is wrong " + task.getId() + " will be performed ahead of depend on task: " + dependon);
                     }
-                }else {
-                    info ("+_+_+_+_+_+_+_+_+_ Warning! task "+ptask+" which is requird by "+task.getId()+" is not present");
+                } else {
+                    info("+_+_+_+_+_+_+_+_+_ Warning! task " + ptask + " which is requird by " + task.getId() + " is not present");
 
                 }
             }
             depemdOnTasks = task.getSoftPrerequisitesTask();
-            if (depemdOnTasks!=null) {
+            if (depemdOnTasks != null) {
                 for (String ptask : depemdOnTasks) {
                     IInstallationTask dependon = installationContext.getiInstallationTasks().get(ptask);
-                    if (dependon!=null) {
+                    if (dependon != null) {
                         if (dependon.getOrder() >= task.getOrder()) {
                             result = false;
                             severe("------soft order of tasks is wrong " + task.getId() + " will be performed ahead of depend on task: " + dependon);
@@ -365,9 +367,11 @@ public class Start {
         }
         return result;
     }
+
     public static Logger getLogger() {
         return logger;
     }
+
     private static void displayTasks(String argument) {
         StringBuilder sb = new StringBuilder();
         sb.append("\n******************** installation tasks included *******************\n");
@@ -681,7 +685,7 @@ public class Start {
                                       CommandLine mainCmd, String[] args, CommandLineParser parser) {
         boolean found = false;
         if (installationContext.getiInstallationTasks().containsKey(task.getId())) {
-            logger.info("This "+task.getId()+" is already stored");
+            logger.info("This " + task.getId() + " is already stored");
             return false;
         }
         task.setContext(installationContext);
@@ -810,17 +814,19 @@ public class Start {
      * @param installationContext
      */
     private static void doUpdateUI(IInstallationTask task, InstallationContext installationContext) {
-        List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
-        boolean someFound = false;
-        for (IUIComponent component : filtered) {
-            component.updateProgress(installationContext, task);
-            someFound = true;
-        }
-        if (someFound) {
-            try {
-                Thread.sleep(PROGRESS_DELAY);
-            } catch (InterruptedException e) {
-                severe("Interrupted");
+        if (uiComponents != null) {
+            List<IUIComponent> filtered = uiComponents.stream().filter(IUIComponent::isShowing).collect(Collectors.toList());
+            boolean someFound = false;
+            for (IUIComponent component : filtered) {
+                component.updateProgress(installationContext, task);
+                someFound = true;
+            }
+            if (someFound) {
+                try {
+                    Thread.sleep(PROGRESS_DELAY);
+                } catch (InterruptedException e) {
+                    severe("Interrupted");
+                }
             }
         }
     }
@@ -1207,16 +1213,16 @@ public class Start {
             for (String name : taskParameters.getKeys()) {
 
                 Parameter parameter = taskParameters.getParameter(name);
-                if (parameter.getiInstallationTask()==null ) {
+                if (parameter.getiInstallationTask() == null) {
                     parameter.setiInstallationTask(task);
                 }
                 parameter.setInstallationContext(installationContext);
                 if (parameter.isHasValue()) {
                     parameter.setValue(cmd.getOptionValue(name, getCalculatedDefaultValue(parameter, installationContext))); //set correct value for parameter
                     parameter.setSource(cmd.hasOption(name) ? ParameterSource.COMMANDLINE : parameter.getSource());
-                   if (parameter.getSource().equals(ParameterSource.COMMANDLINE)) {
-                       parameter.setWaitOnSubscribers(true);
-                   }
+                    if (parameter.getSource().equals(ParameterSource.COMMANDLINE)) {
+                        parameter.setWaitOnSubscribers(true);
+                    }
                 } else {
                     // if a parameter has no value it means that it's existence changes the parameter value to true, unless the properties file changes it or
                     // overridden from the command line
@@ -1360,7 +1366,8 @@ public class Start {
 
             }
         }
-;        for (IInstallationTask installationTask : installationTasks.values()) {
+        ;
+        for (IInstallationTask installationTask : installationTasks.values()) {
             if (installationTask.isFinalizerOnly()) {
                 String id;
                 g.addVertex(id = installationTask.getId());
@@ -1965,7 +1972,7 @@ public class Start {
             double totalServiceRestartTime = 0d;
             double totalFinalizersTime = 0d;
             context.calculateFactor(); //allow properties file to affect duration (an UI too)
-            boolean stopatend=context.getParamaters().getBooleanValue("stopattaskend");
+            boolean stopatend = context.getParamaters().getBooleanValue("stopattaskend");
             StringBuilder sb = new StringBuilder();
             int count = 0;
             sb.append("\n---------------------- tsaks to be installed in the calculated order--------");
@@ -2138,14 +2145,14 @@ public class Start {
 
         private UserResponse askUserToContinue(IInstallationTask task) {
             UserAction ua = new UserAction();
-            ua.addMessage(new UserMessage().setMessage("New task "+ task.getId()+" is ready to install ").
+            ua.addMessage(new UserMessage().setMessage("New task " + task.getId() + " is ready to install ").
                     setEmphasize(3).
                     setColor(Color.RED));
-            ua.setPossibleAnswers(new UserResponse[]{UserResponse.CONTINUE, UserResponse.SKIP,UserResponse.FORCESTOP});
+            ua.setPossibleAnswers(new UserResponse[]{UserResponse.CONTINUE, UserResponse.SKIP, UserResponse.FORCESTOP});
             ua.setUseAnsiColorsInConsole(true);
 
             UserResponse userResponse = getUserResponse(context, ua);
-            return  userResponse;
+            return userResponse;
         }
 
 
