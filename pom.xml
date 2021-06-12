@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <properties>
-        <wizzdi-installer-version>1.0.27</wizzdi-installer-version>
+        <wizzdi-installer-version>1.0.28</wizzdi-installer-version>
         <java-version>11</java-version>
     </properties>
     <groupId>com.wizzdi.installer.plugins</groupId>

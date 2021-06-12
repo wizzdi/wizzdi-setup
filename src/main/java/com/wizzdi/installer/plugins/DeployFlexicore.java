@@ -222,7 +222,7 @@ public class DeployFlexicore extends InstallationTask {
                     if (exists(flexicoreHome + (installSpring ? "config" : "entities"))) {
                         info("Found previous installation at:  " + flexicoreHome);
                         try {
-                            updateConfirmed= confirmUpdate();
+                            if (serviceRunning) updateConfirmed= confirmUpdate();
                         } catch (Exception e) {
                             severe("Error while confirming update",e);
                         }

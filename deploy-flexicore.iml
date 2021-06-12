@@ -9,7 +9,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: com.wizzdi:wizzdi-installer:1.0.27" level="project" />
+    <orderEntry type="library" name="Maven: com.wizzdi:wizzdi-installer:1.0.28" level="project" />
     <orderEntry type="library" name="Maven: org.pf4j:pf4j:3.0.1" level="project" />
     <orderEntry type="library" name="Maven: org.fusesource.jansi:jansi:1.18" level="project" />
     <orderEntry type="library" name="Maven: com.wizzdi.installer:shortcuts:1.0.0" level="project" />
